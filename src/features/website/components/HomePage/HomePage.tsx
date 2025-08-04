@@ -1,3 +1,4 @@
+import TodoSections from "@todoApp/components/TodoSections";
 import styles from "./homepage.module.css";
 
 const HomePage = () => {
@@ -14,6 +15,7 @@ const HomePage = () => {
           <li>Games</li>
         </ol>
       </hgroup>
+      <TodoSections />
     </div>
   );
 };

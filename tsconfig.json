@@ -19,8 +19,8 @@
       }
     ],
     "paths": {
-      // "@/*": ["./src/*"],
-      "@website/*": ["./src/features/website/*"]
+      "@website/*": ["./src/features/website/*"],
+      "@todoApp/*": ["./src/features/todoApp/*"]
     }
   },
   "include": ["next-env.d.ts", "**/*.ts", "**/*.tsx", ".next/types/**/*.ts"],

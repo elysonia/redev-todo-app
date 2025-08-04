@@ -14,7 +14,8 @@ const geistMono = Geist_Mono({
 
 export const metadata: Metadata = {
   title: "Re:Dev",
-  description: "what if you isekaid as a dev from your previous life as a dev.",
+  description:
+    "what if you isekaid from your previous life as a dev to a new life...as a dev.",
 };
 
 export default function RootLayout({
