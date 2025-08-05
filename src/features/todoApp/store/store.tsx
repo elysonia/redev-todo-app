@@ -7,11 +7,11 @@ export type TodoState = {
 
 export type TodoActions = {
   addTodoSection: (todoSection: TodoSection) => void;
-  addTodoItem: (sectionKey: string, item: TodoItem) => void;
-  removeTodoSection: (sectionKey: string) => void;
-  removeTodoItem: (sectionKey: string, item: TodoItem) => void;
+  addTodoItem: (sectionId: string, item: TodoItem) => void;
+  removeTodoSection: (sectionId: string) => void;
+  removeTodoItem: (sectionId: string, item: TodoItem) => void;
   updateTodoSection: (section: TodoSection) => void;
-  updateTodoItem: (sectionKey: string, item: TodoItem) => void;
+  updateTodoItem: (sectionId: string, item: TodoItem) => void;
 };
 
 export type TodoStore = TodoState & TodoActions;
@@ -21,25 +21,25 @@ const defaultState: TodoState = {
 };
 
 const addTodoSection = (todoSection: TodoSection) => (state: TodoStore) => {
-  const sectionKey = todoSection.id;
+  const sectionId = todoSection.id;
 
   return {
     todoSections: {
       ...state.todoSections,
-      [sectionKey]: todoSection,
+      [sectionId]: todoSection,
     },
   };
 };
 
 const addTodoItem =
-  (sectionKey: string, item: TodoItem) => (state: TodoStore) => {
-    const todoSection = state.todoSections[sectionKey];
+  (sectionId: string, item: TodoItem) => (state: TodoStore) => {
+    const todoSection = state.todoSections[sectionId];
     const newTodoList = [...todoSection.list, item];
 
     return {
       todoSections: {
         ...state.todoSections,
-        [sectionKey]: {
+        [sectionId]: {
           ...todoSection,
           list: newTodoList,
         },
@@ -47,24 +47,24 @@ const addTodoItem =
     };
   };
 
-const removeTodoSection = (sectionKey: string) => (state: TodoStore) => {
+const removeTodoSection = (sectionId: string) => (state: TodoStore) => {
   const newTodoSections = Object.fromEntries(
-    Object.entries(state.todoSections).filter(([key]) => key != sectionKey)
+    Object.entries(state.todoSections).filter(([key]) => key != sectionId)
   );
 
   return { todoSections: newTodoSections };
 };
 
 const removeTodoItem =
-  (sectionKey: string, item: TodoItem) => (state: TodoStore) => {
-    const todoSection = state.todoSections[sectionKey];
+  (sectionId: string, item: TodoItem) => (state: TodoStore) => {
+    const todoSection = state.todoSections[sectionId];
     const newTodoList = todoSection.list.filter(
       ({ id }: TodoItem) => id != item.id
     );
     return {
       todoSections: {
         ...state.todoSections,
-        [sectionKey]: {
+        [sectionId]: {
           ...todoSection,
           list: newTodoList,
         },
@@ -87,8 +87,8 @@ const updateTodoSection = (section: TodoSection) => (state: TodoStore) => {
 };
 
 const updateTodoItem =
-  (sectionKey: string, item: TodoItem) => (state: TodoStore) => {
-    const existingTodoSection = state.todoSections[sectionKey];
+  (sectionId: string, item: TodoItem) => (state: TodoStore) => {
+    const existingTodoSection = state.todoSections[sectionId];
     const newTodoList = existingTodoSection.list.map(
       (existingItem: TodoItem) => {
         if (existingItem.id === item.id) {
@@ -105,7 +105,7 @@ const updateTodoItem =
     return {
       todoSections: {
         ...state.todoSections,
-        [sectionKey]: {
+        [sectionId]: {
           ...existingTodoSection,
           list: newTodoList,
         },
