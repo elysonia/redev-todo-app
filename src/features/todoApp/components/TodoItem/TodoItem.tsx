@@ -4,19 +4,20 @@ import { TodoItem as TodoItemType } from "@todoApp/types";
 import clsx from "clsx";
 import { useState } from "react";
 import styles from "./todoItem.module.css";
-interface TodoItemProps {
-  sectionName: string;
-  item: TodoItemType;
-}
 
-const TodoItem = ({ sectionName, item }: TodoItemProps) => {
+type TodoItemProps = {
+  sectionId: string;
+  item: TodoItemType;
+};
+
+const TodoItem = ({ sectionId, item }: TodoItemProps) => {
   const [isCompleted, setCompleted] = useState(false);
   const removeTodoItem = useTodoStore((state) => state.removeTodoItem);
 
   const handleChange = (event: React.ChangeEvent<HTMLInputElement>) => {
     setCompleted(event.target.checked);
     if (event.target.checked) {
-      setTimeout(() => removeTodoItem(sectionName, item), 500);
+      setTimeout(() => removeTodoItem(sectionId, item), 500);
     }
   };
 

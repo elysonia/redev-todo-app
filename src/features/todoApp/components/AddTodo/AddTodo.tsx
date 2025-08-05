@@ -1,54 +1,38 @@
 import { Button, TextField } from "@mui/material";
 import { useTodoStore } from "@todoApp/providers/TodoStoreProvider/TodoStoreProvider";
-import { TodoSections } from "@todoApp/types";
+import { defaultTodoSection, TodoItem, TodoSection } from "@todoApp/types";
 import { uniqueId } from "lodash";
 import { useState } from "react";
 
-interface AddTodoProps {
-  sectionName?: string;
-}
-
-const validateSectionName = (
-  sectionName: string,
-  todoSections: TodoSections
-) => {
-  const hasDuplicateName =
-    Object.keys(todoSections).findIndex((key) => key === sectionName) >= 0;
-
-  if (hasDuplicateName) {
-    return [false, `There is already a todo list called "${sectionName}"`];
-  }
-
-  return [true, ""];
+type AddTodoProps = {
+  sectionId?: string;
 };
 
-const AddTodo = ({ sectionName = "" }: AddTodoProps) => {
+const AddTodo = ({ sectionId }: AddTodoProps) => {
   const [inputValue, setInputValue] = useState("");
   const { addTodoItem, addTodoSection, todoSections } = useTodoStore(
     (state) => state
   );
 
-  const buttonName = sectionName
-    ? `Add to "${sectionName}" list`
-    : "Add todo list";
-  const handleAddTodo = () => {
-    if (!sectionName) {
-      const [isInputValid, message] = validateSectionName(
-        inputValue,
-        todoSections
-      );
+  const buttonName = sectionId ? `Add to list` : "Add to new list";
 
-      if (isInputValid) {
-        addTodoSection(inputValue);
-      } else {
-        alert(message);
-      }
-    } else {
-      const todoItem = {
+  /* TODO: Form validation */
+  const handleAddTodo = () => {
+    const todoItem: TodoItem = {
+      id: uniqueId(),
+      text: inputValue,
+    };
+
+    if (!sectionId) {
+      const todoSection: TodoSection = {
         id: uniqueId(),
-        text: inputValue,
+        name: defaultTodoSection.name,
+        list: [todoItem],
       };
-      addTodoItem(sectionName, todoItem);
+
+      addTodoSection(todoSection);
+    } else {
+      addTodoItem(sectionId, todoItem);
     }
 
     setInputValue("");

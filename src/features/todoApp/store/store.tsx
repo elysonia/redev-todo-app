@@ -1,18 +1,18 @@
-import { TodoItem, TodoSections } from "@todoApp/types";
+import { TodoItem, TodoSection, TodoSections } from "@todoApp/types";
 import { createStore } from "zustand";
 
-export interface TodoState {
+export type TodoState = {
   todoSections: TodoSections;
-}
+};
 
-export interface TodoActions {
-  addTodoSection: (sectionName: string) => void;
-  addTodoItem: (sectionName: string, item: TodoItem) => void;
-  removeTodoSection: (sectionName: string) => void;
-  removeTodoItem: (sectionName: string, item: TodoItem) => void;
-  updateTodoSection: (newSectionName: string, oldSectionName: string) => void;
-  updateTodoItem: (id: number, newText: string, sectionName: string) => void;
-}
+export type TodoActions = {
+  addTodoSection: (todoSection: TodoSection) => void;
+  addTodoItem: (sectionKey: string, item: TodoItem) => void;
+  removeTodoSection: (sectionKey: string) => void;
+  removeTodoItem: (sectionKey: string, item: TodoItem) => void;
+  updateTodoSection: (section: TodoSection) => void;
+  updateTodoItem: (sectionKey: string, item: TodoItem) => void;
+};
 
 export type TodoStore = TodoState & TodoActions;
 
@@ -20,83 +20,95 @@ const defaultState: TodoState = {
   todoSections: {},
 };
 
-const addTodoSection = (sectionName: string) => (state: TodoState) => {
+const addTodoSection = (todoSection: TodoSection) => (state: TodoStore) => {
+  const sectionKey = todoSection.id;
+
   return {
     todoSections: {
       ...state.todoSections,
-      [sectionName]: [],
+      [sectionKey]: todoSection,
     },
   };
 };
 
 const addTodoItem =
-  (sectionName: string, item: TodoItem) => (state: TodoState) => {
-    const todoSection = state.todoSections[sectionName];
-    const newTodoSection = [...todoSection, item];
+  (sectionKey: string, item: TodoItem) => (state: TodoStore) => {
+    const todoSection = state.todoSections[sectionKey];
+    const newTodoList = [...todoSection.list, item];
+
     return {
       todoSections: {
         ...state.todoSections,
-        [sectionName]: newTodoSection,
+        [sectionKey]: {
+          ...todoSection,
+          list: newTodoList,
+        },
       },
     };
   };
 
-const removeTodoSection = (sectionName: string) => (state: TodoState) => {
+const removeTodoSection = (sectionKey: string) => (state: TodoStore) => {
   const newTodoSections = Object.fromEntries(
-    Object.entries(state.todoSections).filter(([key]) => key != sectionName)
+    Object.entries(state.todoSections).filter(([key]) => key != sectionKey)
   );
+
   return { todoSections: newTodoSections };
 };
 
 const removeTodoItem =
-  (sectionName: string, item: TodoItem) => (state: TodoState) => {
-    const todoSection = state.todoSections[sectionName];
-    const newTodoSection = todoSection.filter(
+  (sectionKey: string, item: TodoItem) => (state: TodoStore) => {
+    const todoSection = state.todoSections[sectionKey];
+    const newTodoList = todoSection.list.filter(
       ({ id }: TodoItem) => id != item.id
     );
     return {
       todoSections: {
         ...state.todoSections,
-        [sectionName]: newTodoSection,
+        [sectionKey]: {
+          ...todoSection,
+          list: newTodoList,
+        },
       },
     };
   };
 
-const updateTodoSection =
-  (newSectionName: string, oldSectionName: string) => (state: TodoStore) => {
-    const newTodoSectionsEntries = Object.entries(state.todoSections).map(
-      ([key, value]) => {
-        if (key === oldSectionName) {
-          return [newSectionName, value];
+const updateTodoSection = (section: TodoSection) => (state: TodoStore) => {
+  const existingTodoSection = state.todoSections[section.id];
+
+  return {
+    todoSections: {
+      ...state.todoSections,
+      [section.id]: {
+        ...existingTodoSection,
+        ...section,
+      },
+    },
+  };
+};
+
+const updateTodoItem =
+  (sectionKey: string, item: TodoItem) => (state: TodoStore) => {
+    const existingTodoSection = state.todoSections[sectionKey];
+    const newTodoList = existingTodoSection.list.map(
+      (existingItem: TodoItem) => {
+        if (existingItem.id === item.id) {
+          return {
+            ...existingItem,
+            ...item,
+          };
         }
-        return [key, value];
+
+        return existingItem;
       }
     );
 
-    const newTodoSections = Object.fromEntries(newTodoSectionsEntries);
-
-    return {
-      todoSections: newTodoSections,
-    };
-  };
-
-const updateTodoItem =
-  (id: number, newText: string, sectionName: string) => (state: TodoStore) => {
-    const section = state.todoSections[sectionName];
-    const newTodoSection = section.map((item: TodoItem) => {
-      if (item.id === id) {
-        return {
-          id,
-          text: newText,
-        };
-      }
-
-      return item;
-    });
     return {
       todoSections: {
         ...state.todoSections,
-        [sectionName]: newTodoSection,
+        [sectionKey]: {
+          ...existingTodoSection,
+          list: newTodoList,
+        },
       },
     };
   };

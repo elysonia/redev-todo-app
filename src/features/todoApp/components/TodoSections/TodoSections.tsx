@@ -12,28 +12,28 @@ const TodoSections = () => {
   const { todoSections, removeTodoSection } = useTodoStore((state) => state);
   const todoSectionEntries = Object.entries(todoSections);
 
-  const handleRemoveSection = ({ sectionName = "" }) => {
-    removeTodoSection(sectionName);
+  const handleRemoveSection = ({ id }: { id: string }) => {
+    removeTodoSection(id);
   };
   /* TODO: Add react-window */
   return (
     <div>
       <AddTodo />
       <div className={styles.todosContainer}>
-        {todoSectionEntries.map(([sectionName, list], index) => (
-          <React.Fragment key={`${sectionName}-${index}`}>
+        {todoSectionEntries.map(([sectionId, todoSection], index) => (
+          <React.Fragment key={`${todoSection.name}-${index}`}>
             <ListSubheader>
-              {sectionName}
+              {todoSection.name}
               <IconButton
                 color="error"
                 size="medium"
-                onClick={() => handleRemoveSection({ sectionName })}
+                onClick={() => handleRemoveSection({ id: todoSection.id })}
               >
                 <Delete />
               </IconButton>
             </ListSubheader>
-            <TodoList sectionName={sectionName} list={list} />
-            <AddTodo sectionName={sectionName} />
+            <TodoList sectionId={todoSection.id} list={todoSection.list} />
+            <AddTodo sectionId={todoSection.id} />
           </React.Fragment>
         ))}
       </div>

@@ -5,15 +5,15 @@ import {
 } from "@todoApp/types";
 import TodoItem from "../TodoItem";
 
-interface TodoListProps {
-  sectionName: string;
+type TodoListProps = {
+  sectionId: string;
   list: TodoListType;
-}
+};
 
-const TodoList = ({ sectionName, list }: TodoListProps) => {
+const TodoList = ({ sectionId, list }: TodoListProps) => {
   return list.map((item: TodoItemType) => (
     <List key={item.id}>
-      <TodoItem sectionName={sectionName} item={item} />
+      <TodoItem sectionId={sectionId} item={item} />
     </List>
   ));
 };
