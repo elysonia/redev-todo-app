@@ -1,21 +1,33 @@
-import { TodoItem, TodoList, TodoSections } from "@todoApp/types";
-import { create } from "zustand";
+import { TodoItem, TodoSections } from "@todoApp/types";
+import { createStore } from "zustand";
 
-interface TodoState {
+export interface TodoState {
   todoSections: TodoSections;
 }
 
-interface StateFn {
-  [key: string]: ReturnType<() => {}>;
+export interface TodoActions {
+  addTodoSection: (sectionName: string) => void;
+  addTodoItem: (sectionName: string, item: TodoItem) => void;
+  removeTodoSection: (sectionName: string) => void;
+  removeTodoItem: (sectionName: string, item: TodoItem) => void;
+  updateTodoSection: (newSectionName: string, oldSectionName: string) => void;
+  updateTodoItem: (id: number, newText: string, sectionName: string) => void;
 }
 
-const addTodoSection =
-  (sectionName: string, list: TodoList) => (state: TodoState) => ({
+export type TodoStore = TodoState & TodoActions;
+
+const defaultState: TodoState = {
+  todoSections: {},
+};
+
+const addTodoSection = (sectionName: string) => (state: TodoState) => {
+  return {
     todoSections: {
       ...state.todoSections,
-      [sectionName]: list,
+      [sectionName]: [],
     },
-  });
+  };
+};
 
 const addTodoItem =
   (sectionName: string, item: TodoItem) => (state: TodoState) => {
@@ -43,41 +55,62 @@ const removeTodoItem =
       ({ id }: TodoItem) => id != item.id
     );
     return {
-      ...state.todoSections,
-      [sectionName]: newTodoSection,
+      todoSections: {
+        ...state.todoSections,
+        [sectionName]: newTodoSection,
+      },
     };
   };
 
-const useTodoStore = create<TodoState & StateFn>((set) => ({
-  todoSections: {
-    todo1: [
-      { id: 1, text: "live life love" },
-      { id: 2, text: "live life love2" },
-    ],
-    todo2: [
-      { id: 1, text: "live life love" },
-      { id: 2, text: "live life love2" },
-    ],
-    todo3: [
-      { id: 1, text: "live life love" },
-      { id: 2, text: "live life love2" },
-    ],
-    todo4: [
-      { id: 1, text: "live life love" },
-      { id: 2, text: "live life love2" },
-    ],
-  },
-  addTodoSection: (sectionName: string, list: TodoList) =>
-    set(addTodoSection(sectionName, list)),
-  addTodoItem: (sectionName: string, item: TodoItem) =>
-    set(addTodoItem(sectionName, item)),
-  removeTodoSection: (sectionName: string) =>
-    set(removeTodoSection(sectionName)),
-  removeTodoItem: (sectionName: string, item: TodoItem) =>
-    set(removeTodoItem(sectionName, item)),
-}));
+const updateTodoSection =
+  (newSectionName: string, oldSectionName: string) => (state: TodoStore) => {
+    const newTodoSectionsEntries = Object.entries(state.todoSections).map(
+      ([key, value]) => {
+        if (key === oldSectionName) {
+          return [newSectionName, value];
+        }
+        return [key, value];
+      }
+    );
 
-export const todoSectionsSelector = () =>
-  useTodoStore((state: TodoState) => state.todoSections);
+    const newTodoSections = Object.fromEntries(newTodoSectionsEntries);
 
-export default useTodoStore;
+    return {
+      todoSections: newTodoSections,
+    };
+  };
+
+const updateTodoItem =
+  (id: number, newText: string, sectionName: string) => (state: TodoStore) => {
+    const section = state.todoSections[sectionName];
+    const newTodoSection = section.map((item: TodoItem) => {
+      if (item.id === id) {
+        return {
+          id,
+          text: newText,
+        };
+      }
+
+      return item;
+    });
+    return {
+      todoSections: {
+        ...state.todoSections,
+        [sectionName]: newTodoSection,
+      },
+    };
+  };
+
+const createTodoStore = (initState: TodoState = defaultState) => {
+  return createStore<TodoStore>()((set) => ({
+    ...initState,
+    addTodoSection: (...props) => set(addTodoSection(...props)),
+    addTodoItem: (...props) => set(addTodoItem(...props)),
+    removeTodoSection: (...props) => set(removeTodoSection(...props)),
+    removeTodoItem: (...props) => set(removeTodoItem(...props)),
+    updateTodoSection: (...props) => set(updateTodoSection(...props)),
+    updateTodoItem: (...props) => set(updateTodoItem(...props)),
+  }));
+};
+
+export default createTodoStore;
