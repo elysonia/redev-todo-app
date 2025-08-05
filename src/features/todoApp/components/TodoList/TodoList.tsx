@@ -13,7 +13,7 @@ interface TodoListProps {
 const TodoList = ({ sectionName, list }: TodoListProps) => {
   return list.map((item: TodoItemType) => (
     <List key={item.id}>
-      <TodoItem item={item} />
+      <TodoItem sectionName={sectionName} item={item} />
     </List>
   ));
 };

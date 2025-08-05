@@ -1,17 +1,33 @@
-import { CheckBox, Delete } from "@mui/icons-material";
-import { ListItem, ListItemText } from "@mui/material";
+import { Checkbox, ListItem, ListItemText } from "@mui/material";
+import { useTodoStore } from "@todoApp/providers/TodoStoreProvider/TodoStoreProvider";
 import { TodoItem as TodoItemType } from "@todoApp/types";
-
+import clsx from "clsx";
+import { useState } from "react";
+import styles from "./todoItem.module.css";
 interface TodoItemProps {
+  sectionName: string;
   item: TodoItemType;
 }
 
-const TodoItem = ({ item }: TodoItemProps) => {
+const TodoItem = ({ sectionName, item }: TodoItemProps) => {
+  const [isCompleted, setCompleted] = useState(false);
+  const removeTodoItem = useTodoStore((state) => state.removeTodoItem);
+
+  const handleChange = (event: React.ChangeEvent<HTMLInputElement>) => {
+    setCompleted(event.target.checked);
+    if (event.target.checked) {
+      setTimeout(() => removeTodoItem(sectionName, item), 500);
+    }
+  };
+
   return (
     <ListItem>
-      <CheckBox />
-      <ListItemText>{item.text}</ListItemText>
-      <Delete />
+      <Checkbox onChange={handleChange} />
+      <ListItemText
+        className={clsx(styles.item, { [styles.completed]: isCompleted })}
+      >
+        {item.text}
+      </ListItemText>
     </ListItem>
   );
 };
