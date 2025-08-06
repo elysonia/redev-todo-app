@@ -1,5 +1,6 @@
 import { TodoItem, TodoSection, TodoSections } from "@todoApp/types";
 import { createStore } from "zustand";
+import { devtools } from "zustand/middleware";
 
 export type TodoState = {
   todoSections: TodoSections;
@@ -21,99 +22,127 @@ const defaultState: TodoState = {
 };
 
 const createTodoStore = (initState: TodoState = defaultState) => {
-  return createStore<TodoStore>()((set) => ({
-    ...initState,
-    addTodoSection: (todoSection: TodoSection) =>
-      set((state: TodoStore) => {
-        const sectionId = todoSection.id;
+  return createStore<TodoStore>()(
+    devtools((set) => ({
+      ...initState,
+      addTodoSection: (todoSection: TodoSection) =>
+        set(
+          (state: TodoStore) => {
+            const sectionId = todoSection.id;
 
-        return {
-          todoSections: {
-            ...state.todoSections,
-            [sectionId]: todoSection,
+            return {
+              todoSections: {
+                ...state.todoSections,
+                [sectionId]: todoSection,
+              },
+            };
           },
-        };
-      }),
-    addTodoItem: (sectionId: string, item: TodoItem) =>
-      set((state: TodoStore) => {
-        const todoSection = state.todoSections[sectionId];
-        const newTodoList = [...todoSection.list, item];
+          undefined,
+          "todo/addTodoSection"
+        ),
+      addTodoItem: (sectionId: string, item: TodoItem) =>
+        set(
+          (state: TodoStore) => {
+            const todoSection = state.todoSections[sectionId];
+            const newTodoList = [...todoSection.list, item];
 
-        return {
-          todoSections: {
-            ...state.todoSections,
-            [sectionId]: {
-              ...todoSection,
-              list: newTodoList,
-            },
+            return {
+              todoSections: {
+                ...state.todoSections,
+                [sectionId]: {
+                  ...todoSection,
+                  list: newTodoList,
+                },
+              },
+            };
           },
-        };
-      }),
-    removeTodoSection: (sectionId: string) =>
-      set((state: TodoStore) => {
-        const newTodoSections = Object.fromEntries(
-          Object.entries(state.todoSections).filter(([key]) => key != sectionId)
-        );
+          undefined,
+          "todo/addTodoItem"
+        ),
+      removeTodoSection: (sectionId: string) =>
+        set(
+          (state: TodoStore) => {
+            const newTodoSections = Object.fromEntries(
+              Object.entries(state.todoSections).filter(
+                ([key]) => key != sectionId
+              )
+            );
 
-        return { todoSections: newTodoSections };
-      }),
-    removeTodoItem: (sectionId: string, item: TodoItem) =>
-      set((state: TodoStore) => {
-        const todoSection = state.todoSections[sectionId];
-        const newTodoList = todoSection.list.filter(
-          ({ id }: TodoItem) => id != item.id
-        );
-        return {
-          todoSections: {
-            ...state.todoSections,
-            [sectionId]: {
-              ...todoSection,
-              list: newTodoList,
-            },
+            return { todoSections: newTodoSections };
           },
-        };
-      }),
-    updateTodoSection: (section: TodoSection) =>
-      set((state: TodoStore) => {
-        const existingTodoSection = state.todoSections[section.id];
-
-        return {
-          todoSections: {
-            ...state.todoSections,
-            [section.id]: {
-              ...existingTodoSection,
-              ...section,
-            },
+          undefined,
+          "todo/removeTodoSection"
+        ),
+      removeTodoItem: (sectionId: string, item: TodoItem) =>
+        set(
+          (state: TodoStore) => {
+            const todoSection = state.todoSections[sectionId];
+            const newTodoList = todoSection.list.filter(
+              ({ id }: TodoItem) => id != item.id
+            );
+            return {
+              todoSections: {
+                ...state.todoSections,
+                [sectionId]: {
+                  ...todoSection,
+                  list: newTodoList,
+                },
+              },
+            };
           },
-        };
-      }),
-    updateTodoItem: (sectionId: string, item: TodoItem) =>
-      set((state: TodoStore) => {
-        const existingTodoSection = state.todoSections[sectionId];
-        const newTodoList = existingTodoSection.list.map(
-          (existingItem: TodoItem) => {
-            if (existingItem.id === item.id) {
-              return {
-                ...existingItem,
-                ...item,
-              };
-            }
+          undefined,
+          "todo/removeTodoItem"
+        ),
+      updateTodoSection: (section: TodoSection) =>
+        set(
+          (state: TodoStore) => {
+            const existingTodoSection = state.todoSections[section.id];
 
-            return existingItem;
-          }
-        );
-
-        return {
-          todoSections: {
-            ...state.todoSections,
-            [sectionId]: {
-              ...existingTodoSection,
-              list: newTodoList,
-            },
+            return {
+              todoSections: {
+                ...state.todoSections,
+                [section.id]: {
+                  ...existingTodoSection,
+                  ...section,
+                },
+              },
+            };
           },
-        };
-      }),
-  }));
+          undefined,
+          "todo/updateTodoSection"
+        ),
+      updateTodoItem: (sectionId: string, item: TodoItem) =>
+        set(
+          (state: TodoStore) => {
+            const existingTodoSection = state.todoSections[sectionId];
+            const newTodoList = existingTodoSection.list.map(
+              (existingItem: TodoItem) => {
+                if (existingItem.id === item.id) {
+                  return {
+                    ...existingItem,
+                    ...item,
+                  };
+                }
+
+                return existingItem;
+              }
+            );
+
+            return {
+              todoSections: {
+                ...state.todoSections,
+                [sectionId]: {
+                  ...existingTodoSection,
+                  list: newTodoList,
+                },
+              },
+            };
+          },
+          undefined,
+          "todo/updateTodoItem"
+        ),
+    }))
+  );
 };
 
 export default createTodoStore;
