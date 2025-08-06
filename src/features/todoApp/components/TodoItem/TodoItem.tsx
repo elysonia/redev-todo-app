@@ -1,56 +1,50 @@
 import { Checkbox, Input, ListItem, ListItemText } from "@mui/material";
-import { useTodoStore } from "@todoApp/providers/TodoStoreProvider/TodoStoreProvider";
 import { TodoItem as TodoItemType } from "@todoApp/types";
-import clsx from "clsx";
-import { debounce } from "lodash";
-import { useCallback, useEffect, useState } from "react";
-import styles from "./todoItem.module.css";
+import { useEffect } from "react";
+import { useFormContext } from "react-hook-form";
 
 type TodoItemProps = {
-  sectionId: string;
-  item: TodoItemType;
+  fieldArrayName: string;
+  itemId: string;
+  value: string;
+  onChange: (event: React.ChangeEvent<HTMLInputElement>) => void;
+  onUpdateItem: (item: TodoItemType) => void;
+  onRemoveItem: (id: string) => void;
 };
 
-const TodoItem = ({ sectionId, item }: TodoItemProps) => {
-  const [isCompleted, setCompleted] = useState(false);
-  const [textInputValue, setTextInputValue] = useState("");
-  const { removeTodoItem, updateTodoItem } = useTodoStore((state) => state);
-
-  const handleChecked = (event: React.ChangeEvent<HTMLInputElement>) => {
-    setCompleted(event.target.checked);
-    /* TODO: Do this with animations. */
-    /* Slightly delay deletion on list completion so the UI feedback doesn't feel too sudden. */
+const TodoItem = ({
+  fieldArrayName,
+  itemId,
+  value,
+  onChange,
+  onUpdateItem,
+  onRemoveItem,
+}: TodoItemProps) => {
+  const { getFieldState, handleSubmit, resetField, formState } =
+    useFormContext();
+  const { isDirty } = getFieldState(fieldArrayName, formState);
+  const handleRemoveItem = (event: React.ChangeEvent<HTMLInputElement>) => {
     if (event.target.checked) {
-      setTimeout(() => removeTodoItem(sectionId, item), 500);
+      onRemoveItem(itemId);
     }
   };
-
-  const debouncedUpdateTodoItem = useCallback(
-    debounce((sectionId: string, textInputValue: string) => {
-      updateTodoItem(sectionId, { id: item.id, text: textInputValue });
-    }, 1000),
-    [sectionId, textInputValue]
-  );
-
   useEffect(() => {
-    debouncedUpdateTodoItem(sectionId, textInputValue);
-  }, [sectionId, textInputValue]);
-
-  useEffect(() => {
-    setTextInputValue(item.text);
-  }, [item]);
+    if (isDirty) {
+      handleSubmit(() =>
+        onUpdateItem({
+          id: itemId,
+          text: value,
+        })
+      )();
+    }
+  }, [value, itemId, isDirty, onUpdateItem]);
 
   return (
     <ListItem>
-      <Checkbox onChange={handleChecked} />
-      <ListItemText
-        className={clsx(styles.item, { [styles.completed]: isCompleted })}
-      >
-        <Input
-          value={textInputValue}
-          disableUnderline
-          onChange={(event) => setTextInputValue(event.target.value)}
-        />
+      <Checkbox onChange={handleRemoveItem} />
+      {/* TODO: Strikethrough when deleted */}
+      <ListItemText>
+        <Input value={value} disableUnderline onChange={onChange} />
       </ListItemText>
     </ListItem>
   );

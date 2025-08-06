@@ -1,43 +1,35 @@
 import { Checkbox, Input, ListSubheader } from "@mui/material";
-import { useTodoStore } from "@todoApp/providers/TodoStoreProvider/TodoStoreProvider";
-import { TodoSection } from "@todoApp/types";
-import { debounce } from "lodash";
-import { useCallback, useEffect, useState } from "react";
+import { useEffect } from "react";
+import { useFormContext } from "react-hook-form";
 
 type TodoListHeaderProps = {
-  section: TodoSection;
+  fieldName: string;
+  value: string;
+  onChange: (event: React.ChangeEvent<HTMLInputElement>) => void;
   onListChecked: (event: React.ChangeEvent<HTMLInputElement>) => void;
+  onUpdateSection: (name: string) => void;
 };
 
-const TodoListHeader = ({ section, onListChecked }: TodoListHeaderProps) => {
-  const [name, setName] = useState("");
-  const { updateTodoSection } = useTodoStore((state) => state);
-
-  const sectionName = section.name;
-
-  const debouncedUpdateTodoSection = useCallback(
-    debounce((name: string) => {
-      updateTodoSection({ ...section, name });
-    }, 1000),
-    [name]
-  );
+const TodoListHeader = ({
+  fieldName,
+  value,
+  onChange,
+  onListChecked,
+  onUpdateSection,
+}: TodoListHeaderProps) => {
+  const { getFieldState, handleSubmit, formState } = useFormContext();
+  const { isDirty } = getFieldState(fieldName, formState);
 
   useEffect(() => {
-    debouncedUpdateTodoSection(name);
-  }, [name]);
-
-  useEffect(() => {
-    setName(sectionName);
-  }, [sectionName]);
+    if (isDirty) {
+      handleSubmit(() => onUpdateSection(value))();
+    }
+  }, [value, isDirty, onUpdateSection]);
 
   return (
     <ListSubheader>
       <Checkbox onChange={onListChecked} />
-      <Input
-        value={name}
-        disableUnderline
-        onChange={(event) => setName(event.target.value)}
-      />
+      <Input value={value} disableUnderline onChange={onChange} />
     </ListSubheader>
   );
 };
