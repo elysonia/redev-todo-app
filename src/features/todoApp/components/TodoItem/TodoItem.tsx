@@ -2,6 +2,7 @@ import { Checkbox, Input, ListItem, ListItemText } from "@mui/material";
 import { useTodoStore } from "@todoApp/providers/TodoStoreProvider/TodoStoreProvider";
 import { TodoItem as TodoItemType } from "@todoApp/types";
 import clsx from "clsx";
+import { debounce } from "lodash";
 import { useCallback, useEffect, useState } from "react";
 import styles from "./todoItem.module.css";
 
@@ -17,29 +18,23 @@ const TodoItem = ({ sectionId, item }: TodoItemProps) => {
 
   const handleChecked = (event: React.ChangeEvent<HTMLInputElement>) => {
     setCompleted(event.target.checked);
+    /* TODO: Do this with animations. */
+    /* Slightly delay deletion on list completion so the UI feedback doesn't feel too sudden. */
     if (event.target.checked) {
       setTimeout(() => removeTodoItem(sectionId, item), 500);
     }
   };
 
-  const handleTextInputValue = (event: React.ChangeEvent<HTMLInputElement>) => {
-    setTextInputValue(event.target.value);
-  };
-
-  const handleUpdateTodoItem = useCallback(
-    (sectionId: string, textInputValue: string) => {
+  const debouncedUpdateTodoItem = useCallback(
+    debounce((sectionId: string, textInputValue: string) => {
       updateTodoItem(sectionId, { id: item.id, text: textInputValue });
-    },
+    }, 1000),
     [sectionId, textInputValue]
   );
 
   useEffect(() => {
-    const debouncedUpdateTodoItem = setTimeout(
-      () => handleUpdateTodoItem(sectionId, textInputValue),
-      1000
-    );
-    return () => clearTimeout(debouncedUpdateTodoItem);
-  }, [textInputValue]);
+    debouncedUpdateTodoItem(sectionId, textInputValue);
+  }, [sectionId, textInputValue]);
 
   useEffect(() => {
     setTextInputValue(item.text);
@@ -54,7 +49,7 @@ const TodoItem = ({ sectionId, item }: TodoItemProps) => {
         <Input
           value={textInputValue}
           disableUnderline
-          onChange={handleTextInputValue}
+          onChange={(event) => setTextInputValue(event.target.value)}
         />
       </ListItemText>
     </ListItem>

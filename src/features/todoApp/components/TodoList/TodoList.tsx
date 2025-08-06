@@ -24,6 +24,7 @@ const TodoList = ({
   const removeTodoSection = useTodoStore((state) => state.removeTodoSection);
 
   useEffect(() => {
+    /* TODO: Do this with animations. */
     /* Slightly delay deletion on list completion so the UI feedback doesn't feel too sudden. */
     let delayedRemoveTodoSection: ReturnType<typeof setTimeout>;
     if (isListCompleted) {

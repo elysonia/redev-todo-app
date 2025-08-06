@@ -1,8 +1,8 @@
 import { Checkbox, Input, ListSubheader } from "@mui/material";
 import { useTodoStore } from "@todoApp/providers/TodoStoreProvider/TodoStoreProvider";
 import { TodoSection } from "@todoApp/types";
+import { debounce } from "lodash";
 import { useCallback, useEffect, useState } from "react";
-import styles from "./todoListHeader.module.css";
 
 type TodoListHeaderProps = {
   section: TodoSection;
@@ -14,27 +14,22 @@ const TodoListHeader = ({ section, onListChecked }: TodoListHeaderProps) => {
   const { updateTodoSection } = useTodoStore((state) => state);
 
   const sectionName = section.name;
-  const handleUpdateTodoSection = useCallback(
-    (name: string) => {
+
+  const debouncedUpdateTodoSection = useCallback(
+    debounce((name: string) => {
       updateTodoSection({ ...section, name });
-    },
+    }, 1000),
     [name]
   );
 
   useEffect(() => {
-    const debouncedUpdateTodoSection = setTimeout(
-      () => handleUpdateTodoSection(name),
-      1000
-    );
-
-    return () => clearTimeout(debouncedUpdateTodoSection);
+    debouncedUpdateTodoSection(name);
   }, [name]);
 
   useEffect(() => {
     setName(sectionName);
   }, [sectionName]);
 
-  console.log({ styles });
   return (
     <ListSubheader>
       <Checkbox onChange={onListChecked} />
