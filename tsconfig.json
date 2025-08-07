@@ -20,7 +20,8 @@
     ],
     "paths": {
       "@website/*": ["./src/features/website/*"],
-      "@todoApp/*": ["./src/features/todoApp/*"]
+      "@todoApp/*": ["./src/features/todoApp/*"],
+      "@shared/utils*": ["./src/shared/utils/*"]
     }
   },
   "include": ["next-env.d.ts", "**/*.ts", "**/*.tsx", ".next/types/**/*.ts"],
