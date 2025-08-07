@@ -4,6 +4,7 @@ import { devtools } from "zustand/middleware";
 
 export type TodoState = {
   todoSections: TodoSections;
+  // editingTodoSection:
 };
 
 export type TodoActions = {
@@ -13,6 +14,7 @@ export type TodoActions = {
   removeTodoItem: (sectionId: string, itemId: string) => void;
   updateTodoSection: (section: TodoSection) => void;
   updateTodoItem: (sectionId: string, item: TodoItem) => void;
+  updateTodoSections: (sections: TodoSection[]) => void;
 };
 
 export type TodoStore = TodoState & TodoActions;
@@ -141,6 +143,14 @@ const createTodoStore = (initState: TodoState = defaultState) => {
           undefined,
           "todo/updateTodoItem"
         ),
+      updateTodoSections: (sections: TodoSection[]) =>
+        set((state: TodoStore) => {
+          const newTodoSections = Object.fromEntries(
+            sections.map((section) => [section.id, section])
+          );
+
+          return { todoSections: newTodoSections };
+        }),
     }))
   );
 };
