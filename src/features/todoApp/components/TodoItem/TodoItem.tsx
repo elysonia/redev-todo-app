@@ -1,80 +1,103 @@
 import { Checkbox, Input, ListItem, ListItemText } from "@mui/material";
-import { TodoItem as TodoItemType } from "@todoApp/types";
-import { uniqueId } from "lodash";
-import { useEffect } from "react";
-import { useFieldArray, useFormContext } from "react-hook-form";
+import { useTodoContext } from "@todoApp/providers/TodoProvider/TodoProvider";
+import { debounce, uniqueId } from "lodash";
+import { useCallback, useEffect, useRef } from "react";
+import { Controller, useFieldArray, useFormContext } from "react-hook-form";
 
 type TodoItemProps = {
   itemIndex: number;
-  listFieldArrayName: string;
   fieldArrayName: string;
-  itemId: string;
-  value: string;
-  onChange: (event: React.ChangeEvent<HTMLInputElement>) => void;
-  onUpdateItem: (item: TodoItemType) => void;
-  onRemoveItem: (id: string) => void;
 };
 
-const TodoItem = ({
-  itemIndex,
-  listFieldArrayName,
-  fieldArrayName,
-  itemId,
-  value,
-  onChange,
-  onUpdateItem,
-  onRemoveItem,
-}: TodoItemProps) => {
-  const { control, getFieldState, handleSubmit, formState } = useFormContext();
-  const { insert } = useFieldArray({
+const TodoItem = ({ itemIndex, fieldArrayName }: TodoItemProps) => {
+  const fieldName = `${fieldArrayName}.${itemIndex}.text`;
+  const { focusedFieldName, onSubmit, setFocusedFieldName } = useTodoContext();
+  const { control, getFieldState, formState } = useFormContext();
+  const { insert, remove } = useFieldArray({
     control,
-    name: listFieldArrayName,
+    name: fieldArrayName,
   });
 
-  const { isDirty, ...state } = getFieldState(fieldArrayName, formState);
+  const inputRef = useRef<HTMLTextAreaElement>(null);
+  const { isDirty } = getFieldState(fieldName, formState);
 
-  const handleRemoveItem = (event: React.ChangeEvent<HTMLInputElement>) => {
-    if (event.target.checked) {
-      onRemoveItem(itemId);
+  const debouncedHandleSubmit = useCallback(
+    debounce(() => {
+      onSubmit();
+    }, 2000),
+    [onSubmit]
+  );
+
+  const handleKeyDown = useCallback(
+    (event: React.KeyboardEvent<HTMLInputElement>) => {
+      if (event.key === "Enter") {
+        event.preventDefault();
+        if (!isDirty) {
+          const nextItemIndex = itemIndex + 1;
+          insert(nextItemIndex, {
+            id: uniqueId(),
+            text: "",
+          });
+        }
+      }
+    },
+    [itemIndex]
+  );
+  const handleRemoveItem = (isItemCompleted: boolean) => {
+    if (isItemCompleted) {
+      remove(itemIndex);
+      onSubmit();
     }
   };
 
-  const handleKeyDown = (event: React.KeyboardEvent<HTMLInputElement>) => {
-    if (event.key === "Enter") {
-      event.preventDefault();
-      // Insert new item in the list
-      // TODO: Fix new item resetting
-      insert(itemIndex++, {
-        id: uniqueId(),
-        text: "",
-      });
-    }
-  };
+  const handleFocus = useCallback(
+    () => setFocusedFieldName(fieldName),
+    [setFocusedFieldName, fieldName]
+  );
 
   useEffect(() => {
     if (isDirty) {
-      handleSubmit(() =>
-        onUpdateItem({
-          id: itemId,
-          text: value,
-        })
-      )();
+      debouncedHandleSubmit();
     }
-  }, [value, itemId, isDirty, onUpdateItem]);
+  }, [isDirty, debouncedHandleSubmit]);
+
+  useEffect(() => {
+    if (!inputRef.current) return;
+
+    /* Prevent losing focus on re-render due to data updates from saving. */
+    if (focusedFieldName === fieldName) {
+      const cursorLocation = inputRef.current.textLength;
+      inputRef.current.focus();
+      inputRef.current.setSelectionRange(
+        cursorLocation,
+        cursorLocation,
+        "forward"
+      );
+    }
+  }, [focusedFieldName]);
 
   return (
     <ListItem>
-      <Checkbox onChange={handleRemoveItem} />
+      <Checkbox onChange={(event) => handleRemoveItem(event.target.checked)} />
       {/* TODO: Strikethrough when deleted */}
-      <ListItemText>
-        <Input
-          value={value}
-          disableUnderline
-          multiline
-          onChange={onChange}
-          onKeyDown={handleKeyDown}
-        />
-      </ListItemText>
+      <Controller
+        control={control}
+        name={fieldName}
+        render={({ field: { value, onChange } }) => {
+          return (
+            <Input
+              inputRef={inputRef}
+              value={value}
+              disableUnderline
+              multiline
+              onFocus={handleFocus}
+              onChange={onChange}
+              onKeyDown={handleKeyDown}
+            />
+          );
+        }}
+      />
+      <ListItemText></ListItemText>
     </ListItem>
   );
 };

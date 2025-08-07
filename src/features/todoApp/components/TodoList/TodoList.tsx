@@ -1,15 +1,15 @@
 import { Check } from "@mui/icons-material";
 import { Button, ClickAwayListener, IconButton, List } from "@mui/material";
-import { useTodoStore } from "@todoApp/providers/TodoStoreProvider/TodoStoreProvider";
+import { useTodoContext } from "@todoApp/providers/TodoProvider/TodoProvider";
 import { TodoItem as TodoItemType, TodoSection } from "@todoApp/types";
-import { debounce } from "lodash";
-import { useCallback, useEffect, useState } from "react";
-import { Controller, useFormContext } from "react-hook-form";
+import { useEffect, useState } from "react";
+import { Controller, useFieldArray, useFormContext } from "react-hook-form";
 import TodoItem from "../TodoItem";
 import TodoListHeader from "../TodoListHeader";
 import styles from "./todoList.module.css";
 
 type TodoListProps = {
+  index: number;
   section: TodoSection;
   fieldArrayName: string;
   isCurrentSection: boolean;
@@ -17,56 +17,25 @@ type TodoListProps = {
 };
 
 const TodoList = ({
+  index,
   section,
   fieldArrayName,
   isCurrentSection,
   onToggleEditSection,
 }: TodoListProps) => {
   const [isListCompleted, setListCompleted] = useState(false);
-  const {
-    removeTodoSection,
-    updateTodoSection,
-    removeTodoItem,
-    updateTodoItem,
-  } = useTodoStore((state) => state);
-  const sectionId = section.id;
+  const { onSubmit } = useTodoContext();
   const { control } = useFormContext();
-
-  const handleUpdateTodoSection = useCallback(
-    debounce((name: string) => {
-      updateTodoSection({ ...section, name });
-    }, 1000),
-    []
-  );
-
-  const handleRemoveTodoItem = useCallback(
-    debounce((id: string) => {
-      removeTodoItem(sectionId, id);
-    }, 500),
-    [sectionId]
-  );
-
-  const handleRemoveTodoSection = useCallback(
-    debounce((sectionId: string) => {
-      removeTodoSection(sectionId);
-    }, 500),
-    []
-  );
-
-  const handleUpdateTodoItem = useCallback(
-    debounce((item: TodoItemType) => {
-      updateTodoItem(sectionId, item);
-    }, 2000),
-    [sectionId]
-  );
+  const { remove } = useFieldArray({ control, name: "todoSections" });
 
   useEffect(() => {
     /* TODO: Do this with animations(?). */
     /* Slightly delay deletion on list completion so the UI feedback doesn't feel too sudden. */
     if (isListCompleted) {
-      handleRemoveTodoSection(section.id);
+      remove(index);
+      onSubmit();
     }
-  }, [isListCompleted, section]);
+  }, [isListCompleted, index, onSubmit]);
 
   return (
     <ClickAwayListener
@@ -75,50 +44,25 @@ const TodoList = ({
       onClickAway={() => onToggleEditSection("")}
     >
       <div role="button" onClick={() => onToggleEditSection(section.id)}>
-        <Controller
-          control={control}
-          name={`${fieldArrayName}.name`}
-          render={({ field: { value, onChange, name } }) => {
-            return (
-              <TodoListHeader
-                fieldName={name}
-                value={value}
-                onChange={onChange}
-                onListChecked={(event) =>
-                  setListCompleted(event.target.checked)
-                }
-                onUpdateSection={handleUpdateTodoSection}
-              />
-            );
-          }}
+        <TodoListHeader
+          fieldArrayName={fieldArrayName}
+          onListChecked={(event) => setListCompleted(event.target.checked)}
         />
-
         <Controller
           control={control}
           name={`${fieldArrayName}.list`}
           render={({ field: { value, name } }) => {
-            return value.map((item: TodoItemType, index) => (
-              <List key={item.id}>
-                <Controller
-                  control={control}
-                  name={`${fieldArrayName}.list.${index}.text`}
-                  render={({ field: { value, onChange } }) => {
-                    return (
-                      <TodoItem
-                        itemIndex={index}
-                        listFieldArrayName={`${fieldArrayName}.list`}
-                        fieldArrayName={name}
-                        itemId={item.id}
-                        value={value}
-                        onChange={onChange}
-                        onUpdateItem={handleUpdateTodoItem}
-                        onRemoveItem={handleRemoveTodoItem}
-                      />
-                    );
-                  }}
-                />
+            return (
+              <List>
+                {value.map((item: TodoItemType, itemIndex: number) => (
+                  <TodoItem
+                    key={item.id}
+                    itemIndex={itemIndex}
+                    fieldArrayName={name}
+                  />
+                ))}
               </List>
-            ));
+            );
           }}
         />
 

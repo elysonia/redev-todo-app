@@ -32,6 +32,7 @@ const TodoSections = () => {
             render={({ field: { value, name } }) => {
               return (
                 <TodoList
+                  index={index}
                   section={value}
                   fieldArrayName={name}
                   isCurrentSection={currentSectionId === section.id}

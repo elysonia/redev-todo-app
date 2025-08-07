@@ -1,35 +1,76 @@
 import { Checkbox, Input, ListSubheader } from "@mui/material";
-import { useEffect } from "react";
-import { useFormContext } from "react-hook-form";
+import { useTodoContext } from "@todoApp/providers/TodoProvider/TodoProvider";
+import { debounce } from "lodash";
+import { useCallback, useEffect, useRef } from "react";
+import { Controller, useFormContext } from "react-hook-form";
 
 type TodoListHeaderProps = {
-  fieldName: string;
-  value: string;
-  onChange: (event: React.ChangeEvent<HTMLInputElement>) => void;
+  fieldArrayName: string;
   onListChecked: (event: React.ChangeEvent<HTMLInputElement>) => void;
-  onUpdateSection: (name: string) => void;
 };
 
 const TodoListHeader = ({
-  fieldName,
-  value,
-  onChange,
+  fieldArrayName,
   onListChecked,
-  onUpdateSection,
 }: TodoListHeaderProps) => {
-  const { getFieldState, handleSubmit, formState } = useFormContext();
+  const fieldName = `${fieldArrayName}.name`;
+  const { focusedFieldName, onSubmit, setFocusedFieldName } = useTodoContext();
+  const { control, getFieldState, formState } = useFormContext();
   const { isDirty } = getFieldState(fieldName, formState);
+  const inputRef = useRef<HTMLTextAreaElement>(null);
+
+  const debouncedHandleSubmit = useCallback(
+    debounce(() => {
+      onSubmit();
+    }, 2000),
+    [onSubmit]
+  );
+
+  const handleFocus = useCallback(
+    () => setFocusedFieldName(fieldName),
+    [setFocusedFieldName, fieldName]
+  );
 
   useEffect(() => {
     if (isDirty) {
-      handleSubmit(() => onUpdateSection(value))();
+      debouncedHandleSubmit();
     }
-  }, [value, isDirty, onUpdateSection]);
+  }, [isDirty, debouncedHandleSubmit]);
+
+  useEffect(() => {
+    if (!inputRef.current) return;
+
+    /* Prevent losing focus on re-render due to data updates from saving. */
+    if (focusedFieldName === fieldName) {
+      const cursorLocation = inputRef.current.textLength;
+      inputRef.current.focus();
+      inputRef.current.setSelectionRange(
+        cursorLocation,
+        cursorLocation,
+        "forward"
+      );
+    }
+  }, [focusedFieldName]);
 
   return (
     <ListSubheader>
       <Checkbox onChange={onListChecked} />
-      <Input value={value} disableUnderline multiline onChange={onChange} />
+      <Controller
+        control={control}
+        name={fieldName}
+        render={({ field: { value, onChange } }) => {
+          return (
+            <Input
+              inputRef={inputRef}
+              value={value}
+              disableUnderline
+              multiline
+              onChange={onChange}
+              onFocus={handleFocus}
+            />
+          );
+        }}
+      />
     </ListSubheader>
   );
 };

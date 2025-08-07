@@ -144,13 +144,17 @@ const createTodoStore = (initState: TodoState = defaultState) => {
           "todo/updateTodoItem"
         ),
       updateTodoSections: (sections: TodoSection[]) =>
-        set((state: TodoStore) => {
-          const newTodoSections = Object.fromEntries(
-            sections.map((section) => [section.id, section])
-          );
+        set(
+          (state: TodoStore) => {
+            const newTodoSections = Object.fromEntries(
+              sections.map((section) => [section.id, section])
+            );
 
-          return { todoSections: newTodoSections };
-        }),
+            return { todoSections: newTodoSections };
+          },
+          undefined,
+          "todo/updateTodoSections"
+        ),
     }))
   );
 };

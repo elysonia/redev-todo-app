@@ -1,12 +1,13 @@
 "use client";
 
-import { TodoSection } from "@todoApp/types";
+import { TodoSection, TodoSections } from "@todoApp/types";
 import {
   createContext,
   PropsWithChildren,
   useContext,
   useEffect,
   useMemo,
+  useState,
 } from "react";
 import { FormProvider, useForm } from "react-hook-form";
 import { useTodoStore } from "../TodoStoreProvider/TodoStoreProvider";
@@ -15,10 +16,18 @@ type TodoForm = {
   todoSections: TodoSection[];
 };
 
-const TodoContext = createContext({});
+type TodoContextTypes = {
+  todoSections: TodoSections;
+  focusedFieldName: string;
+  onSubmit: (e?: React.BaseSyntheticEvent) => Promise<void>;
+  setFocusedFieldName: (fieldName: string) => void;
+};
+
+export const TodoContext = createContext<TodoContextTypes>({});
 
 const TodoProvider = ({ children }: PropsWithChildren) => {
   const { todoSections, updateTodoSections } = useTodoStore((state) => state);
+  const [focusedFieldName, setFocusedFieldName] = useState("");
 
   const methods = useForm<TodoForm>();
   const { reset, handleSubmit: RHFHandleSubmit } = methods;
@@ -31,20 +40,34 @@ const TodoProvider = ({ children }: PropsWithChildren) => {
     updateTodoSections(todoSections);
   });
 
-  const todoFormValue = useMemo(() => {
-    return { todoSections, onSubmit: handleSubmit };
-  }, [todoSections, handleSubmit]);
+  const todoValue = useMemo(() => {
+    return {
+      todoSections,
+      focusedFieldName,
+      onSubmit: handleSubmit,
+      setFocusedFieldName: setFocusedFieldName,
+    };
+  }, [todoSections, focusedFieldName, handleSubmit, setFocusedFieldName]);
 
   useEffect(() => {
     reset({ todoSections: todoSectionValues });
   }, [todoSectionValues]);
 
   return (
-    <TodoContext.Provider value={todoFormValue}>
+    <TodoContext.Provider value={todoValue}>
       <FormProvider {...methods}>{children}</FormProvider>
     </TodoContext.Provider>
   );
 };
 
-export const useTodo = () => useContext(TodoContext);
+export const useTodoContext = () => {
+  const context = useContext(TodoContext);
+
+  if (!context) {
+    throw new Error("useTodoContexkt must be used within a TodoProvider");
+  }
+
+  return context;
+};
+
 export default TodoProvider;
