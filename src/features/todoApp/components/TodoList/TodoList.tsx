@@ -1,7 +1,7 @@
 import { Check } from "@mui/icons-material";
 import { Button, ClickAwayListener, IconButton, List } from "@mui/material";
 import { useTodoContext } from "@todoApp/providers/TodoProvider/TodoProvider";
-import { TodoItem as TodoItemType, TodoSection } from "@todoApp/types";
+import { TodoItem as TodoItemType } from "@todoApp/types";
 import { isEmpty } from "lodash";
 import { useCallback, useEffect, useState } from "react";
 import { Controller, useFieldArray, useFormContext } from "react-hook-form";
@@ -11,11 +11,10 @@ import styles from "./todoList.module.css";
 
 type TodoListProps = {
   index: number;
-  section: TodoSection;
   parentFieldName: string;
 };
 
-const TodoList = ({ index, section, parentFieldName }: TodoListProps) => {
+const TodoList = ({ index, parentFieldName }: TodoListProps) => {
   const [isListCompleted, setListCompleted] = useState(false);
   const {
     sectionFieldArrayName,

@@ -23,13 +23,7 @@ const TodoSections = () => {
             name={`todoSections.${index}`}
             control={control}
             render={({ field: { value, name } }) => {
-              return (
-                <TodoList
-                  index={index}
-                  section={value}
-                  parentFieldName={name}
-                />
-              );
+              return <TodoList index={index} parentFieldName={name} />;
             }}
           />
         ))}
