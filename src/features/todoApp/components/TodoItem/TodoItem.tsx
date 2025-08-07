@@ -32,13 +32,13 @@ const TodoItem = ({ itemIndex, fieldArrayName }: TodoItemProps) => {
     (event: React.KeyboardEvent<HTMLInputElement>) => {
       if (event.key === "Enter") {
         event.preventDefault();
-        if (!isDirty) {
-          const nextItemIndex = itemIndex + 1;
-          insert(nextItemIndex, {
-            id: uniqueId(),
-            text: "",
-          });
-        }
+        const nextItemIndex = itemIndex + 1;
+        const nextFieldName = `${fieldArrayName}.${nextItemIndex}.text`;
+        setFocusedFieldName(nextFieldName);
+        insert(nextItemIndex, {
+          id: uniqueId(),
+          text: "",
+        });
       }
     },
     [itemIndex]
