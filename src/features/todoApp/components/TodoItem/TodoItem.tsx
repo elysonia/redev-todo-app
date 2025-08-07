@@ -16,12 +16,7 @@ const TodoItem = ({
   onSetSectionActive,
 }: TodoItemProps) => {
   const fieldName = `${parentFieldName}.${itemIndex}.text`;
-  const {
-    focusedFieldName,
-    onSubmit,
-    setFocusedFieldName,
-    setSectionFieldArrayName,
-  } = useTodoContext();
+  const { focusedFieldName, onSubmit, setFocusedFieldName } = useTodoContext();
   const { control, formState, getFieldState } = useFormContext();
   const { insert, remove } = useFieldArray({
     control,
