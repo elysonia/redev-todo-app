@@ -105,6 +105,8 @@ const TodoList = ({
                   render={({ field: { value, onChange } }) => {
                     return (
                       <TodoItem
+                        itemIndex={index}
+                        listFieldArrayName={`${fieldArrayName}.list`}
                         fieldArrayName={name}
                         itemId={item.id}
                         value={value}

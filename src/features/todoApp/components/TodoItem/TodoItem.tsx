@@ -1,9 +1,12 @@
 import { Checkbox, Input, ListItem, ListItemText } from "@mui/material";
 import { TodoItem as TodoItemType } from "@todoApp/types";
+import { uniqueId } from "lodash";
 import { useEffect } from "react";
-import { useFormContext } from "react-hook-form";
+import { useFieldArray, useFormContext } from "react-hook-form";
 
 type TodoItemProps = {
+  itemIndex: number;
+  listFieldArrayName: string;
   fieldArrayName: string;
   itemId: string;
   value: string;
@@ -13,6 +16,8 @@ type TodoItemProps = {
 };
 
 const TodoItem = ({
+  itemIndex,
+  listFieldArrayName,
   fieldArrayName,
   itemId,
   value,
@@ -20,14 +25,32 @@ const TodoItem = ({
   onUpdateItem,
   onRemoveItem,
 }: TodoItemProps) => {
-  const { getFieldState, handleSubmit, resetField, formState } =
-    useFormContext();
-  const { isDirty } = getFieldState(fieldArrayName, formState);
+  const { control, getFieldState, handleSubmit, formState } = useFormContext();
+  const { insert } = useFieldArray({
+    control,
+    name: listFieldArrayName,
+  });
+
+  const { isDirty, ...state } = getFieldState(fieldArrayName, formState);
+
   const handleRemoveItem = (event: React.ChangeEvent<HTMLInputElement>) => {
     if (event.target.checked) {
       onRemoveItem(itemId);
     }
   };
+
+  const handleKeyDown = (event: React.KeyboardEvent<HTMLInputElement>) => {
+    if (event.key === "Enter") {
+      event.preventDefault();
+      // Insert new item in the list
+      // TODO: Fix new item resetting
+      insert(itemIndex++, {
+        id: uniqueId(),
+        text: "",
+      });
+    }
+  };
+
   useEffect(() => {
     if (isDirty) {
       handleSubmit(() =>
@@ -44,7 +67,13 @@ const TodoItem = ({
       <Checkbox onChange={handleRemoveItem} />
       {/* TODO: Strikethrough when deleted */}
       <ListItemText>
-        <Input value={value} disableUnderline multiline onChange={onChange} />
+        <Input
+          value={value}
+          disableUnderline
+          multiline
+          onChange={onChange}
+          onKeyDown={handleKeyDown}
+        />
       </ListItemText>
     </ListItem>
   );
