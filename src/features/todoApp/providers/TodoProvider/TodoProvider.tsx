@@ -19,15 +19,19 @@ type TodoForm = {
 type TodoContextType = {
   todoSections: TodoSections;
   focusedFieldName: string;
+  sectionFieldArrayName: string;
   onSubmit: (e?: React.BaseSyntheticEvent) => Promise<void>;
   setFocusedFieldName: (fieldName: string) => void;
+  setSectionFieldArrayName: (sectionId: string) => void;
 };
 
 export const TodoContext = createContext<TodoContextType>({});
 
 const TodoProvider = ({ children }: PropsWithChildren) => {
-  const { todoSections, updateTodoSections } = useTodoStore((state) => state);
+  const [sectionFieldArrayName, setSectionFieldArrayName] = useState("");
   const [focusedFieldName, setFocusedFieldName] = useState("");
+
+  const { todoSections, updateTodoSections } = useTodoStore((state) => state);
 
   const methods = useForm<TodoForm>();
   const { reset, handleSubmit: RHFHandleSubmit } = methods;
@@ -44,10 +48,19 @@ const TodoProvider = ({ children }: PropsWithChildren) => {
     return {
       todoSections,
       focusedFieldName,
+      sectionFieldArrayName,
       onSubmit: handleSubmit,
       setFocusedFieldName: setFocusedFieldName,
+      setSectionFieldArrayName,
     };
-  }, [todoSections, focusedFieldName, handleSubmit, setFocusedFieldName]);
+  }, [
+    todoSections,
+    focusedFieldName,
+    sectionFieldArrayName,
+    handleSubmit,
+    setFocusedFieldName,
+    setSectionFieldArrayName,
+  ]);
 
   useEffect(() => {
     reset({ todoSections: todoSectionValues });
@@ -64,7 +77,7 @@ export const useTodoContext = () => {
   const context = useContext(TodoContext);
 
   if (!context) {
-    throw new Error("useTodoContexkt must be used within a TodoProvider");
+    throw new Error("useTodoContext must be used within a TodoProvider");
   }
 
   return context;

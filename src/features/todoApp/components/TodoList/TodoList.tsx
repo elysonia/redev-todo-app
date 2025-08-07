@@ -2,7 +2,8 @@ import { Check } from "@mui/icons-material";
 import { Button, ClickAwayListener, IconButton, List } from "@mui/material";
 import { useTodoContext } from "@todoApp/providers/TodoProvider/TodoProvider";
 import { TodoItem as TodoItemType, TodoSection } from "@todoApp/types";
-import { useEffect, useState } from "react";
+import { isEmpty } from "lodash";
+import { useCallback, useEffect, useState } from "react";
 import { Controller, useFieldArray, useFormContext } from "react-hook-form";
 import TodoItem from "../TodoItem";
 import TodoListHeader from "../TodoListHeader";
@@ -11,22 +12,44 @@ import styles from "./todoList.module.css";
 type TodoListProps = {
   index: number;
   section: TodoSection;
-  fieldArrayName: string;
-  isCurrentSection: boolean;
-  onToggleEditSection: (sectionId: string) => void;
+  parentFieldName: string;
 };
 
-const TodoList = ({
-  index,
-  section,
-  fieldArrayName,
-  isCurrentSection,
-  onToggleEditSection,
-}: TodoListProps) => {
+const TodoList = ({ index, section, parentFieldName }: TodoListProps) => {
   const [isListCompleted, setListCompleted] = useState(false);
-  const { onSubmit } = useTodoContext();
-  const { control } = useFormContext();
-  const { remove } = useFieldArray({ control, name: "todoSections" });
+  const {
+    sectionFieldArrayName,
+    onSubmit,
+    setFocusedFieldName,
+    setSectionFieldArrayName,
+  } = useTodoContext();
+  const { control, getValues } = useFormContext();
+  const { remove, update } = useFieldArray({ control, name: "todoSections" });
+
+  const isActiveFieldArray = sectionFieldArrayName === parentFieldName;
+
+  /* Filter out empty todo item on clicking away from the section. */
+  const handleClickAway = useCallback(() => {
+    const todoSections = getValues("todoSections");
+    const todoSection = todoSections[index];
+    const newTodoList = todoSection.list.filter((item: TodoItemType) => {
+      return !isEmpty(item.text);
+    });
+    const newTodoSection = {
+      id: todoSection.id,
+      name: todoSection.name,
+      list: newTodoList,
+    };
+
+    update(index, newTodoSection);
+    setSectionFieldArrayName("");
+    setFocusedFieldName("");
+    onSubmit();
+  }, [index, setSectionFieldArrayName]);
+
+  const handleSetSectionActive = useCallback(() => {
+    setSectionFieldArrayName(parentFieldName);
+  }, [parentFieldName]);
 
   useEffect(() => {
     /* TODO: Do this with animations(?). */
@@ -39,18 +62,19 @@ const TodoList = ({
 
   return (
     <ClickAwayListener
-      mouseEvent={isCurrentSection ? "onMouseDown" : false}
-      touchEvent={isCurrentSection ? "onTouchStart" : false}
-      onClickAway={() => onToggleEditSection("")}
+      mouseEvent={isActiveFieldArray ? "onMouseDown" : false}
+      touchEvent={isActiveFieldArray ? "onTouchStart" : false}
+      onClickAway={handleClickAway}
     >
-      <div role="button" onClick={() => onToggleEditSection(section.id)}>
+      <div>
         <TodoListHeader
-          fieldArrayName={fieldArrayName}
+          parentFieldName={parentFieldName}
           onListChecked={(event) => setListCompleted(event.target.checked)}
+          onSetSectionActive={handleSetSectionActive}
         />
         <Controller
           control={control}
-          name={`${fieldArrayName}.list`}
+          name={`${parentFieldName}.list`}
           render={({ field: { value, name } }) => {
             return (
               <List>
@@ -58,7 +82,8 @@ const TodoList = ({
                   <TodoItem
                     key={item.id}
                     itemIndex={itemIndex}
-                    fieldArrayName={name}
+                    parentFieldName={name}
+                    onSetSectionActive={handleSetSectionActive}
                   />
                 ))}
               </List>
@@ -66,7 +91,7 @@ const TodoList = ({
           }}
         />
 
-        {isCurrentSection && (
+        {isActiveFieldArray && (
           <div className={styles.listFooterContainer}>
             <Button>Set reminder</Button>
             <IconButton>

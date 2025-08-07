@@ -5,15 +5,17 @@ import { useCallback, useEffect, useRef } from "react";
 import { Controller, useFormContext } from "react-hook-form";
 
 type TodoListHeaderProps = {
-  fieldArrayName: string;
+  parentFieldName: string;
   onListChecked: (event: React.ChangeEvent<HTMLInputElement>) => void;
+  onSetSectionActive: () => void;
 };
 
 const TodoListHeader = ({
-  fieldArrayName,
+  parentFieldName,
   onListChecked,
+  onSetSectionActive,
 }: TodoListHeaderProps) => {
-  const fieldName = `${fieldArrayName}.name`;
+  const fieldName = `${parentFieldName}.name`;
   const { focusedFieldName, onSubmit, setFocusedFieldName } = useTodoContext();
   const { control, getFieldState, formState } = useFormContext();
   const { isDirty } = getFieldState(fieldName, formState);
@@ -26,10 +28,10 @@ const TodoListHeader = ({
     [onSubmit]
   );
 
-  const handleFocus = useCallback(
-    () => setFocusedFieldName(fieldName),
-    [setFocusedFieldName, fieldName]
-  );
+  const handleFocus = useCallback(() => {
+    setFocusedFieldName(fieldName);
+    onSetSectionActive();
+  }, [setFocusedFieldName, fieldName]);
 
   useEffect(() => {
     if (isDirty) {

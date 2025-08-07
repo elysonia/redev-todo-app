@@ -6,16 +6,26 @@ import { Controller, useFieldArray, useFormContext } from "react-hook-form";
 
 type TodoItemProps = {
   itemIndex: number;
-  fieldArrayName: string;
+  parentFieldName: string;
+  onSetSectionActive: () => void;
 };
 
-const TodoItem = ({ itemIndex, fieldArrayName }: TodoItemProps) => {
-  const fieldName = `${fieldArrayName}.${itemIndex}.text`;
-  const { focusedFieldName, onSubmit, setFocusedFieldName } = useTodoContext();
-  const { control, getFieldState, formState } = useFormContext();
+const TodoItem = ({
+  itemIndex,
+  parentFieldName,
+  onSetSectionActive,
+}: TodoItemProps) => {
+  const fieldName = `${parentFieldName}.${itemIndex}.text`;
+  const {
+    focusedFieldName,
+    onSubmit,
+    setFocusedFieldName,
+    setSectionFieldArrayName,
+  } = useTodoContext();
+  const { control, formState, getFieldState } = useFormContext();
   const { insert, remove } = useFieldArray({
     control,
-    name: fieldArrayName,
+    name: parentFieldName,
   });
 
   const inputRef = useRef<HTMLTextAreaElement>(null);
@@ -33,13 +43,14 @@ const TodoItem = ({ itemIndex, fieldArrayName }: TodoItemProps) => {
       if (event.key === "Enter") {
         event.preventDefault();
         const nextItemIndex = itemIndex + 1;
-        const nextFieldName = `${fieldArrayName}.${nextItemIndex}.text`;
+        const nextFieldName = `${parentFieldName}.${nextItemIndex}.text`;
         setFocusedFieldName(nextFieldName);
         insert(nextItemIndex, {
           id: uniqueId(),
           text: "",
         });
       }
+      // TODO: Backspace key interaction on empty text ("")
     },
     [itemIndex]
   );
@@ -50,10 +61,11 @@ const TodoItem = ({ itemIndex, fieldArrayName }: TodoItemProps) => {
     }
   };
 
-  const handleFocus = useCallback(
-    () => setFocusedFieldName(fieldName),
-    [setFocusedFieldName, fieldName]
-  );
+  const handleFocus = useCallback(() => {
+    /* Record the field name so we can re-focus to it upon re-render on save. */
+    setFocusedFieldName(fieldName);
+    onSetSectionActive();
+  }, [setFocusedFieldName, fieldName]);
 
   useEffect(() => {
     if (isDirty) {
