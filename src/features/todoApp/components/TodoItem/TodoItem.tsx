@@ -44,7 +44,7 @@ const TodoItem = ({
       <Checkbox onChange={handleRemoveItem} />
       {/* TODO: Strikethrough when deleted */}
       <ListItemText>
-        <Input value={value} disableUnderline onChange={onChange} />
+        <Input value={value} disableUnderline multiline onChange={onChange} />
       </ListItemText>
     </ListItem>
   );

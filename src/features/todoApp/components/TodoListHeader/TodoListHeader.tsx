@@ -29,7 +29,7 @@ const TodoListHeader = ({
   return (
     <ListSubheader>
       <Checkbox onChange={onListChecked} />
-      <Input value={value} disableUnderline onChange={onChange} />
+      <Input value={value} disableUnderline multiline onChange={onChange} />
     </ListSubheader>
   );
 };
