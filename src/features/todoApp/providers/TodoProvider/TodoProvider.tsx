@@ -16,14 +16,14 @@ type TodoForm = {
   todoSections: TodoSection[];
 };
 
-type TodoContextTypes = {
+type TodoContextType = {
   todoSections: TodoSections;
   focusedFieldName: string;
   onSubmit: (e?: React.BaseSyntheticEvent) => Promise<void>;
   setFocusedFieldName: (fieldName: string) => void;
 };
 
-export const TodoContext = createContext<TodoContextTypes>({});
+export const TodoContext = createContext<TodoContextType>({});
 
 const TodoProvider = ({ children }: PropsWithChildren) => {
   const { todoSections, updateTodoSections } = useTodoStore((state) => state);
