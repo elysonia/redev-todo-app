@@ -17,16 +17,18 @@ const TodoSections = () => {
     <>
       <AddTodo />
       <div className={styles.todosContainer}>
-        {fields.map((section, index) => (
-          <Controller
-            key={`${section.id}.${index}`}
-            name={`todoSections.${index}`}
-            control={control}
-            render={({ field: { value, name } }) => {
-              return <TodoList index={index} parentFieldName={name} />;
-            }}
-          />
-        ))}
+        {fields.map((field, index) => {
+          return (
+            <Controller
+              key={field.id}
+              name={`todoSections.${index}`}
+              control={control}
+              render={({ field: { name } }) => {
+                return <TodoList index={index} parentFieldName={name} />;
+              }}
+            />
+          );
+        })}
       </div>
     </>
   );

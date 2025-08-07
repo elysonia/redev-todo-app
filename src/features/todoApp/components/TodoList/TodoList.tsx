@@ -1,13 +1,11 @@
-import { Check } from "@mui/icons-material";
-import { Button, ClickAwayListener, IconButton, List } from "@mui/material";
+import { ClickAwayListener, List } from "@mui/material";
 import { useTodoContext } from "@todoApp/providers/TodoProvider/TodoProvider";
-import { TodoItem as TodoItemType } from "@todoApp/types";
+import { TodoItem as TodoItemType, TodoSection } from "@todoApp/types";
 import { isEmpty } from "lodash";
 import { useCallback, useEffect, useState } from "react";
-import { Controller, useFieldArray, useFormContext } from "react-hook-form";
+import { useFieldArray, useFormContext } from "react-hook-form";
 import TodoItem from "../TodoItem";
 import TodoListHeader from "../TodoListHeader";
-import styles from "./todoList.module.css";
 
 type TodoListProps = {
   index: number;
@@ -15,6 +13,7 @@ type TodoListProps = {
 };
 
 const TodoList = ({ index, parentFieldName }: TodoListProps) => {
+  const fieldName = `todoSections.${index}.list`;
   const [isListCompleted, setListCompleted] = useState(false);
   const {
     sectionFieldArrayName,
@@ -22,25 +21,38 @@ const TodoList = ({ index, parentFieldName }: TodoListProps) => {
     setFocusedFieldName,
     setSectionFieldArrayName,
   } = useTodoContext();
-  const { control, getValues } = useFormContext();
-  const { remove, update } = useFieldArray({ control, name: "todoSections" });
+  const { control, getValues, setValue } = useFormContext();
+  const { fields, insert, remove, update } = useFieldArray({
+    control,
+    name: fieldName,
+  });
+  const { replace: replaceTodoSections } = useFieldArray({
+    control,
+    name: "todoSections",
+  });
 
   const isActiveFieldArray = sectionFieldArrayName === parentFieldName;
 
   /* Filter out empty todo item on clicking away from the section. */
+  /* Separate from the main submit function because I want the empty inputs to persist while the section is active. */
   const handleClickAway = useCallback(() => {
     const todoSections = getValues("todoSections");
     const todoSection = todoSections[index];
-    const newTodoList = todoSection.list.filter((item: TodoItemType) => {
+    const todoList = todoSection.list;
+
+    const newTodoList = todoList.filter((item: TodoItemType) => {
       return !isEmpty(item.text);
     });
-    const newTodoSection = {
-      id: todoSection.id,
-      name: todoSection.name,
-      list: newTodoList,
-    };
 
-    update(index, newTodoSection);
+    if (newTodoList.length === 0) {
+      const newTodoSections = todoSections.filter(
+        (section: TodoSection) => section.id !== todoSection.id
+      );
+      replaceTodoSections(newTodoSections);
+    } else {
+      setValue(fieldName, newTodoList);
+    }
+
     setSectionFieldArrayName("");
     setFocusedFieldName("");
     onSubmit();
@@ -65,39 +77,35 @@ const TodoList = ({ index, parentFieldName }: TodoListProps) => {
       touchEvent={isActiveFieldArray ? "onTouchStart" : false}
       onClickAway={handleClickAway}
     >
-      <div>
+      <div onClick={handleSetSectionActive}>
         <TodoListHeader
+          isActiveFieldArray={isActiveFieldArray}
           parentFieldName={parentFieldName}
           onListChecked={(event) => setListCompleted(event.target.checked)}
           onSetSectionActive={handleSetSectionActive}
         />
-        <Controller
-          control={control}
-          name={`${parentFieldName}.list`}
-          render={({ field: { value, name } }) => {
-            return (
-              <List>
-                {value.map((item: TodoItemType, itemIndex: number) => (
-                  <TodoItem
-                    key={item.id}
-                    itemIndex={itemIndex}
-                    parentFieldName={name}
-                    onSetSectionActive={handleSetSectionActive}
-                  />
-                ))}
-              </List>
-            );
-          }}
-        />
 
-        {isActiveFieldArray && (
+        <List>
+          {fields.map((item, itemIndex: number) => (
+            <TodoItem
+              key={item.id}
+              itemIndex={itemIndex}
+              insert={insert}
+              remove={remove}
+              parentFieldName={fieldName}
+              onSetSectionActive={handleSetSectionActive}
+            />
+          ))}
+        </List>
+
+        {/* {isActiveFieldArray && (
           <div className={styles.listFooterContainer}>
             <Button>Set reminder</Button>
             <IconButton>
               <Check />
             </IconButton>
           </div>
-        )}
+        )} */}
       </div>
     </ClickAwayListener>
   );

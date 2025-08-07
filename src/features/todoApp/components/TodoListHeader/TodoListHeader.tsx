@@ -1,69 +1,63 @@
 import { Checkbox, Input, ListSubheader } from "@mui/material";
 import { useTodoContext } from "@todoApp/providers/TodoProvider/TodoProvider";
-import { debounce } from "lodash";
 import { useCallback, useEffect, useRef } from "react";
 import { Controller, useFormContext } from "react-hook-form";
 
 type TodoListHeaderProps = {
+  isActiveFieldArray: boolean;
   parentFieldName: string;
   onListChecked: (event: React.ChangeEvent<HTMLInputElement>) => void;
   onSetSectionActive: () => void;
 };
 
 const TodoListHeader = ({
+  isActiveFieldArray,
   parentFieldName,
   onListChecked,
   onSetSectionActive,
 }: TodoListHeaderProps) => {
   const fieldName = `${parentFieldName}.name`;
-  const { focusedFieldName, onSubmit, setFocusedFieldName } = useTodoContext();
-  const { control, getFieldState, formState } = useFormContext();
-  const { isDirty } = getFieldState(fieldName, formState);
+  const { focusedFieldName, setFocusedFieldName } = useTodoContext();
+  const { control, setFocus } = useFormContext();
   const inputRef = useRef<HTMLTextAreaElement>(null);
 
-  const debouncedHandleSubmit = useCallback(
-    debounce(() => {
-      onSubmit();
-    }, 2000),
-    [onSubmit]
-  );
-
   const handleFocus = useCallback(() => {
+    if (!inputRef.current) return;
+    const cursorLocation = inputRef.current.textLength;
+    inputRef.current.setSelectionRange(
+      cursorLocation,
+      cursorLocation,
+      "forward"
+    );
+
+    /* Record the field name so we can re-focus to it upon re-render on save. */
     setFocusedFieldName(fieldName);
     onSetSectionActive();
   }, [setFocusedFieldName, fieldName]);
 
   useEffect(() => {
-    if (isDirty) {
-      debouncedHandleSubmit();
-    }
-  }, [isDirty, debouncedHandleSubmit]);
-
-  useEffect(() => {
-    if (!inputRef.current) return;
-
     /* Prevent losing focus on re-render due to data updates from saving. */
     if (focusedFieldName === fieldName) {
-      const cursorLocation = inputRef.current.textLength;
-      inputRef.current.focus();
-      inputRef.current.setSelectionRange(
-        cursorLocation,
-        cursorLocation,
-        "forward"
-      );
+      setFocus(fieldName);
     }
   }, [focusedFieldName]);
 
   return (
     <ListSubheader>
-      <Checkbox onChange={onListChecked} />
+      {!isActiveFieldArray && <Checkbox onChange={onListChecked} />}
       <Controller
         control={control}
         name={fieldName}
-        render={({ field: { value, onChange } }) => {
+        render={({ field: { ref: refCallback, value, onChange } }) => {
           return (
             <Input
-              inputRef={inputRef}
+              inputRef={(ref) => {
+                /* TODO: Check if a bad idea particularly on re-render counts.*/
+                /* Allow using RHF functions that need refs. */
+                refCallback(ref);
+                /* Access the HTMLElement for more functionality. */
+                inputRef.current = ref;
+              }}
               value={value}
               disableUnderline
               multiline

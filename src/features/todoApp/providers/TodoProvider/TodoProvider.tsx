@@ -1,9 +1,11 @@
 "use client";
 
 import { TodoSection, TodoSections } from "@todoApp/types";
+import { debounce } from "lodash";
 import {
   createContext,
   PropsWithChildren,
+  useCallback,
   useContext,
   useEffect,
   useMemo,
@@ -34,7 +36,7 @@ const TodoProvider = ({ children }: PropsWithChildren) => {
   const { todoSections, updateTodoSections } = useTodoStore((state) => state);
 
   const methods = useForm<TodoForm>();
-  const { reset, handleSubmit: RHFHandleSubmit } = methods;
+  const { reset, handleSubmit: RHFHandleSubmit, formState } = methods;
 
   const todoSectionValues = useMemo(() => {
     return Object.values(todoSections);
@@ -42,8 +44,16 @@ const TodoProvider = ({ children }: PropsWithChildren) => {
 
   const handleSubmit = RHFHandleSubmit(({ todoSections }) => {
     updateTodoSections(todoSections);
+
+    reset({ todoSections });
   });
 
+  const debouncedHandleSubmit = useCallback(
+    debounce(() => {
+      handleSubmit();
+    }, 2000),
+    [handleSubmit]
+  );
   const todoValue = useMemo(() => {
     return {
       todoSections,
@@ -65,6 +75,13 @@ const TodoProvider = ({ children }: PropsWithChildren) => {
   useEffect(() => {
     reset({ todoSections: todoSectionValues });
   }, [todoSectionValues]);
+
+  /* Detect if any part of the form has been modified and save changes. */
+  useEffect(() => {
+    if (formState.isDirty) {
+      debouncedHandleSubmit();
+    }
+  }, [formState, debouncedHandleSubmit]);
 
   return (
     <TodoContext.Provider value={todoValue}>
