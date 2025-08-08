@@ -21,6 +21,7 @@ const TodoList = ({ index, parentFieldName }: TodoListProps) => {
     focusedFieldName,
     sectionFieldArrayName,
     onSubmit,
+    setSnackbar,
     setFocusedFieldName,
     setSectionFieldArrayName,
   } = useTodoContext();
@@ -48,7 +49,6 @@ const TodoList = ({ index, parentFieldName }: TodoListProps) => {
   }, [parentFieldName, focusedFieldName, isActiveFieldArray, fields]);
 
   /* Filter out empty todo item on clicking away from the section. */
-  /* Separate from the main submit function because I want the empty inputs to persist while the section is active. */
   const handleClickAway = useCallback(() => {
     const todoSections = getValues("todoSections");
     const todoSection = todoSections[index];
@@ -86,6 +86,7 @@ const TodoList = ({ index, parentFieldName }: TodoListProps) => {
     setSectionFieldArrayName("");
     setFocusedFieldName("");
     onSubmit();
+    setSnackbar({ open: true, message: `Tasks saved` });
   }, [index, setSectionFieldArrayName]);
 
   const handleSetSectionActive = useCallback(() => {
@@ -102,44 +103,45 @@ const TodoList = ({ index, parentFieldName }: TodoListProps) => {
   }, [isListCompleted, index, onSubmit]);
 
   return (
-    <ClickAwayListener
-      mouseEvent={isActiveFieldArray ? "onMouseDown" : false}
-      touchEvent={isActiveFieldArray ? "onTouchStart" : false}
-      onClickAway={handleClickAway}
-    >
-      <div onClick={handleSetSectionActive}>
-        {shouldShowHeader && (
-          <TodoListHeader
-            isActiveFieldArray={isActiveFieldArray}
-            parentFieldName={parentFieldName}
-            onListChecked={(event) => setListCompleted(event.target.checked)}
-            onSetSectionActive={handleSetSectionActive}
-          />
-        )}
-
-        <List>
-          {fields.map((item, itemIndex: number) => (
-            <TodoItem
-              key={item.id}
-              itemIndex={itemIndex}
-              insert={insert}
-              remove={remove}
-              parentFieldName={fieldName}
+    <>
+      <ClickAwayListener
+        mouseEvent={isActiveFieldArray ? "onMouseDown" : false}
+        touchEvent={isActiveFieldArray ? "onTouchStart" : false}
+        onClickAway={handleClickAway}
+      >
+        <div onClick={handleSetSectionActive}>
+          {shouldShowHeader && (
+            <TodoListHeader
+              isActiveFieldArray={isActiveFieldArray}
+              parentFieldName={parentFieldName}
+              onListChecked={(event) => setListCompleted(event.target.checked)}
               onSetSectionActive={handleSetSectionActive}
             />
-          ))}
-        </List>
+          )}
 
-        {isActiveFieldArray && (
-          <div className={styles.listFooterContainer}>
-            <Button>Set reminder</Button>
-            <IconButton>
-              <CheckCircle fontSize="large" />
-            </IconButton>
-          </div>
-        )}
-      </div>
-    </ClickAwayListener>
+          <List>
+            {fields.map((item, itemIndex: number) => (
+              <TodoItem
+                key={item.id}
+                itemIndex={itemIndex}
+                insert={insert}
+                remove={remove}
+                parentFieldName={fieldName}
+                onSetSectionActive={handleSetSectionActive}
+              />
+            ))}
+          </List>
+        </div>
+      </ClickAwayListener>
+      {isActiveFieldArray && (
+        <div className={styles.listFooterContainer}>
+          <Button>Set reminder</Button>
+          <IconButton onClick={handleClickAway}>
+            <CheckCircle fontSize="large" />
+          </IconButton>
+        </div>
+      )}
+    </>
   );
 };
 

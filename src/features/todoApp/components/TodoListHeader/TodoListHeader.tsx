@@ -53,8 +53,7 @@ const TodoListHeader = ({
           return (
             <Input
               inputRef={(ref) => {
-                /* TODO: Check if a bad idea particularly on re-render counts.*/
-                /* Allow using RHF functions that need refs. */
+                /* Allow using RHF functions that need refs on this component. */
                 refCallback(ref);
                 /* Access the HTMLElement for more functionality. */
                 inputRef.current = ref;

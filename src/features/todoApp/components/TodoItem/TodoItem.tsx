@@ -33,9 +33,9 @@ const TodoItem = ({
   const handleKeyDown = useCallback(
     (event: React.KeyboardEvent<HTMLInputElement>) => {
       if (event.key === "Enter") {
+        /* Insert new item to the list. */
         event.preventDefault();
         const nextItemIndex = itemIndex + 1;
-
         const nextFieldName = `${parentFieldName}.${nextItemIndex}.text`;
 
         setFocusedFieldName(nextFieldName);
@@ -43,11 +43,9 @@ const TodoItem = ({
           id: uniqueId(),
           text: "",
         });
-        onSubmit();
       } else if (event.key === "ArrowUp") {
         /* Go to previous todo item. */
         event.preventDefault();
-
         const prevItemIndex = itemIndex - 1;
 
         if (prevItemIndex >= 0) {
@@ -57,7 +55,6 @@ const TodoItem = ({
       } else if (event.key === "ArrowDown") {
         /* Go to next todo item. */
         event.preventDefault();
-
         const nextItemIndex = itemIndex + 1;
 
         if (nextItemIndex >= 0) {
@@ -70,7 +67,6 @@ const TodoItem = ({
         inputRef.current?.textLength === 0
       ) {
         event.preventDefault();
-
         const prevItemIndex = itemIndex - 1;
 
         if (prevItemIndex >= 0) {
@@ -79,19 +75,21 @@ const TodoItem = ({
           /* Set the next field to focus on after deleting the current one. */
           setFocusedFieldName(prevFieldName);
           remove(itemIndex);
-          onSubmit();
         }
       }
     },
     [itemIndex, setFocusedFieldName]
   );
 
-  const handleRemoveItem = (isItemCompleted: boolean) => {
-    if (isItemCompleted) {
-      remove(itemIndex);
-      onSubmit();
-    }
-  };
+  const handleRemoveItem = useCallback(
+    (isItemCompleted: boolean) => {
+      if (isItemCompleted) {
+        remove(itemIndex);
+        onSubmit();
+      }
+    },
+    [onSubmit, itemIndex]
+  );
 
   const handleFocus = useCallback(() => {
     if (!inputRef.current) return;
@@ -126,8 +124,7 @@ const TodoItem = ({
           return (
             <Input
               inputRef={(ref) => {
-                /* TODO: Check if a bad idea particularly on re-render counts.*/
-                /* Allow using RHF functions that need refs. */
+                /* Allow using RHF functions that need refs on this component. */
                 refCallback(ref);
                 /* Access the HTMLElement for more functionality. */
                 inputRef.current = ref;
