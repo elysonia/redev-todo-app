@@ -22,7 +22,7 @@ const TodoList = ({ index, parentFieldName }: TodoListProps) => {
     setSectionFieldArrayName,
   } = useTodoContext();
   const { control, getValues, setValue } = useFormContext();
-  const { fields, insert, remove, update } = useFieldArray({
+  const { fields, insert, remove } = useFieldArray({
     control,
     name: fieldName,
   });
