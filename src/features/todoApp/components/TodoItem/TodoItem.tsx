@@ -104,7 +104,7 @@ const TodoItem = ({
 
     /* Record the field name so we can re-focus to it upon re-render on save. */
     setFocusedFieldName(fieldName);
-    onSetSectionActive();
+    // onSetSectionActive();
   }, [setFocusedFieldName, fieldName]);
 
   useEffect(() => {
