@@ -1,5 +1,6 @@
 import { Checkbox, Input, ListSubheader } from "@mui/material";
 import { useTodoContext } from "@todoApp/providers/TodoProvider/TodoProvider";
+import { defaultTodoSection } from "@todoApp/types";
 import { useCallback, useEffect, useRef } from "react";
 import { Controller, useFormContext } from "react-hook-form";
 
@@ -32,7 +33,7 @@ const TodoListHeader = ({
 
     /* Record the field name so we can re-focus to it upon re-render on save. */
     setFocusedFieldName(fieldName);
-    // onSetSectionActive();
+    onSetSectionActive();
   }, [setFocusedFieldName, fieldName]);
 
   useEffect(() => {
@@ -59,6 +60,7 @@ const TodoListHeader = ({
                 inputRef.current = ref;
               }}
               value={value}
+              placeholder={defaultTodoSection.name}
               disableUnderline
               multiline
               onChange={onChange}

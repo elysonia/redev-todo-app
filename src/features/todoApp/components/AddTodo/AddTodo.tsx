@@ -1,52 +1,39 @@
-import { Button, TextField } from "@mui/material";
-import { useTodoStore } from "@todoApp/providers/TodoStoreProvider/TodoStoreProvider";
-import { defaultTodoSection, TodoItem, TodoSection } from "@todoApp/types";
+import { AddCircle } from "@mui/icons-material";
+import { IconButton } from "@mui/material";
+import { useTodoContext } from "@todoApp/providers/TodoProvider/TodoProvider";
+import { TodoItem, TodoSection } from "@todoApp/types";
 import { uniqueId } from "lodash";
-import { useState } from "react";
+import { useFieldArray, useFormContext } from "react-hook-form";
 
-type AddTodoProps = {
-  sectionId?: string;
-};
-
-const AddTodo = ({ sectionId }: AddTodoProps) => {
-  const [inputValue, setInputValue] = useState("");
-  const { addTodoItem, addTodoSection, todoSections } = useTodoStore(
-    (state) => state
-  );
-
-  const buttonName = sectionId ? `Add to list` : "Add to new list";
+const AddTodo = () => {
+  const { onSubmit, setFocusedFieldName } = useTodoContext();
+  const { control } = useFormContext();
+  const { prepend } = useFieldArray({ control, name: "todoSections" });
 
   /* TODO: Form validation */
-  const handleAddTodo = () => {
+  const handleAddTodoSection = () => {
     const todoItem: TodoItem = {
       id: uniqueId(),
-      text: inputValue,
+      text: "",
     };
 
-    if (!sectionId) {
-      const todoSection: TodoSection = {
-        id: uniqueId(),
-        name: defaultTodoSection.name,
-        list: [todoItem],
-      };
+    const todoSection: TodoSection = {
+      id: uniqueId(),
+      name: "",
+      list: [todoItem],
+    };
 
-      addTodoSection(todoSection);
-    } else {
-      addTodoItem(sectionId, todoItem);
-    }
-
-    setInputValue("");
+    /* Add section at the start of list and focus on the first item immediatelluy. */
+    const todoItemName = `todoSections.0.list.0.text`;
+    prepend(todoSection);
+    setFocusedFieldName(todoItemName);
+    onSubmit();
   };
 
   return (
-    <div>
-      <TextField
-        variant="standard"
-        value={inputValue}
-        onChange={(event) => setInputValue(event.target.value)}
-      />
-      <Button onClick={handleAddTodo}>{buttonName}</Button>
-    </div>
+    <IconButton onClick={handleAddTodoSection}>
+      <AddCircle fontSize="large" />
+    </IconButton>
   );
 };
 

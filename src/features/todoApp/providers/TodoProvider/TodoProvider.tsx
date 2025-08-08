@@ -7,7 +7,6 @@ import {
   PropsWithChildren,
   useCallback,
   useContext,
-  useEffect,
   useMemo,
   useState,
 } from "react";
@@ -44,7 +43,6 @@ const TodoProvider = ({ children }: PropsWithChildren) => {
 
   const handleSubmit = RHFHandleSubmit(({ todoSections }) => {
     updateTodoSections(todoSections);
-
     reset({ todoSections });
   });
 
@@ -72,16 +70,16 @@ const TodoProvider = ({ children }: PropsWithChildren) => {
     setSectionFieldArrayName,
   ]);
 
-  useEffect(() => {
-    reset({ todoSections: todoSectionValues });
-  }, [todoSectionValues]);
+  // useEffect(() => {
+  //   reset({ todoSections: todoSectionValues });
+  // }, [todoSectionValues]);
 
   /* Detect if any part of the form has been modified and save changes. */
-  useEffect(() => {
-    if (formState.isDirty) {
-      debouncedHandleSubmit();
-    }
-  }, [formState, debouncedHandleSubmit]);
+  // useEffect(() => {
+  //   if (formState.isDirty) {
+  //     debouncedHandleSubmit();
+  //   }
+  // }, [formState, debouncedHandleSubmit]);
 
   return (
     <TodoContext.Provider value={todoValue}>

@@ -15,8 +15,8 @@ const TodoSections = () => {
   /* TODO: Add react-window */
   return (
     <>
-      <AddTodo />
       <div className={styles.todosContainer}>
+        <AddTodo />
         {fields.map((field, index) => {
           return (
             <Controller
