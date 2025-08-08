@@ -86,7 +86,6 @@ const TodoList = ({ index, parentFieldName }: TodoListProps) => {
     setSectionFieldArrayName("");
     setFocusedFieldName("");
     onSubmit();
-    setSnackbar({ open: true, message: `Tasks saved` });
   }, [index, setSectionFieldArrayName]);
 
   const handleSetSectionActive = useCallback(() => {
