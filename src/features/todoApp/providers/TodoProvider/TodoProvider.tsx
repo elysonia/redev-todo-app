@@ -63,10 +63,10 @@ const TodoProvider = ({ children }: PropsWithChildren) => {
     getValues,
     handleSubmit: RHFHandleSubmit,
   } = methods;
-
-  const todoSectionValues = useMemo(() => {
-    return Object.values(todoSections);
-  }, [todoSections]);
+  const isDirtyRef = useRef(formState.isDirty);
+  // const todoSectionValues = useMemo(() => {
+  //   return Object.values(todoSections);
+  // }, [todoSections]);
 
   const snackbarProps = useMemo(() => {
     if (isEmpty(snackbar)) {
@@ -79,6 +79,10 @@ const TodoProvider = ({ children }: PropsWithChildren) => {
   }, [snackbar]);
 
   const handleSubmit = RHFHandleSubmit(({ todoSections }) => {
+    console.log({ todoSections });
+    /* Cancel all queued debounced function calls. */
+    handleTodoFormState.cancel();
+
     updateTodoSections(todoSections);
     updateTodoFormState(defaultTodoFormState);
     setSnackbar({ open: true, message: `Tasks saved` });
@@ -118,28 +122,34 @@ const TodoProvider = ({ children }: PropsWithChildren) => {
 
   const handleTodoFormState = useCallback(
     debounce(() => {
+      console.log("save state");
       const fields = getValues("todoSections");
       updateTodoFormState({
-        isDirty: formState.isDirty,
+        isDirty: isDirtyRef.current,
         sectionFieldArrayName,
         focusedFieldName,
         fields,
       });
     }, 2000),
-    [formState, sectionFieldArrayName, focusedFieldName]
+    [isDirtyRef, sectionFieldArrayName, focusedFieldName]
   );
 
   /* Updates form default values with saved data */
   useEffect(() => {
-    reset({ todoSections: todoSectionValues });
-  }, [todoSectionValues]);
+    reset({ todoSections });
+  }, [todoSections]);
 
   /* Saves draft to the store. */
   useEffect(() => {
-    if (formState.isDirty) {
+    if (isDirtyRef.current) {
       handleTodoFormState();
     }
-  }, [formState, sectionFieldArrayName, focusedFieldName, handleTodoFormState]);
+  }, [
+    isDirtyRef,
+    sectionFieldArrayName,
+    focusedFieldName,
+    handleTodoFormState,
+  ]);
 
   /* Saves the form data after 5 seconds of inactivity. */
   useEffect(() => {

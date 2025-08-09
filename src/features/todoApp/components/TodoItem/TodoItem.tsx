@@ -1,10 +1,12 @@
 import { Checkbox, Input, ListItem } from "@mui/material";
 import { useTodoContext } from "@todoApp/providers/TodoProvider/TodoProvider";
+import { TodoItem as TodoItemType } from "@todoApp/types";
 import { uniqueId } from "lodash";
 import { useCallback, useEffect, useRef } from "react";
 import {
   Controller,
   FieldValues,
+  useFieldArray,
   UseFieldArrayInsert,
   UseFieldArrayRemove,
   useFormContext,
@@ -14,6 +16,8 @@ type TodoItemProps = {
   itemIndex: number;
   insert: UseFieldArrayInsert<FieldValues, `todoSections.${number}.list`>;
   remove: UseFieldArrayRemove;
+  sectionIndex: number;
+  sectionFieldName: string;
   parentFieldName: string;
   onSetSectionActive: () => void;
 };
@@ -21,15 +25,25 @@ type TodoItemProps = {
 const TodoItem = ({
   itemIndex,
   parentFieldName,
+  sectionFieldName,
+  sectionIndex,
   insert,
   remove,
   onSetSectionActive,
 }: TodoItemProps) => {
   const fieldName = `${parentFieldName}.${itemIndex}.text`;
-  const { focusedFieldName, onSubmit, setFocusedFieldName } = useTodoContext();
-  const { control, setFocus } = useFormContext();
+  const {
+    focusedFieldName,
+    sectionFieldArrayName,
+    onSubmit,
+    setFocusedFieldName,
+  } = useTodoContext();
+  const { control, setFocus, setValue, getValues } = useFormContext();
   const inputRef = useRef<HTMLTextAreaElement>(null);
-
+  const { remove: removeSections } = useFieldArray({
+    control,
+    name: "todoSections",
+  });
   const handleKeyDown = useCallback(
     (event: React.KeyboardEvent<HTMLInputElement>) => {
       if (event.key === "Enter") {
@@ -78,17 +92,68 @@ const TodoItem = ({
         }
       }
     },
-    [itemIndex, setFocusedFieldName]
+    [itemIndex, setFocusedFieldName, removeSections, setFocus, insert]
   );
 
   const handleRemoveItem = useCallback(
-    (isItemCompleted: boolean) => {
-      if (isItemCompleted) {
-        remove(itemIndex);
-        onSubmit();
+    (event: React.ChangeEvent<HTMLInputElement>) => {
+      // event.stopPropagation();
+      if (event.target.checked) {
+        console.log("item remove");
+        const todoSections = getValues("todoSections");
+        const todoSection = getValues(`todoSections.${sectionIndex}`);
+        const todoList = getValues(parentFieldName);
+        const todoItem = getValues(`${parentFieldName}.${itemIndex}`);
+        const newTodoList = todoList.filter(
+          (item: TodoItemType) => item.id !== todoItem.id
+        );
+        // remove(itemIndex);
+        // onSubmit();
+        const hasNoSubtask = newTodoList.length === 0;
+
+        // if (!todoSection) {
+        //   console.log("no section");
+        //   removeSections(sectionIndex);
+
+        //   // setValue(parentFieldName, newTodoList);
+        // } else
+        if (hasNoSubtask) {
+          const todoSectionName = todoSection.name;
+          if (todoSectionName) {
+            const newTodoSection = {
+              id: todoSection.id,
+              name: "",
+              list: [
+                {
+                  id: uniqueId(),
+                  text: todoSectionName,
+                },
+              ],
+            };
+            setValue(sectionFieldArrayName, newTodoSection);
+          } else {
+            // const newTodoSections = todoSections.filter(
+            //   (section: TodoSection) => section.id !== todoSection.id
+            // );
+            // // setValue("todoSections", newTodoSections);
+            removeSections(sectionIndex);
+          }
+        } else {
+          // setValue(parentFieldName, newTodoList);
+          remove(itemIndex);
+        }
       }
+      onSubmit();
     },
-    [onSubmit, itemIndex]
+    [
+      onSubmit,
+      itemIndex,
+      getValues,
+      removeSections,
+      setValue,
+      sectionIndex,
+      sectionFieldName,
+    ]
   );
 
   const handleFocus = useCallback(() => {
@@ -114,7 +179,7 @@ const TodoItem = ({
 
   return (
     <ListItem>
-      <Checkbox onChange={(event) => handleRemoveItem(event.target.checked)} />
+      <Checkbox onChange={handleRemoveItem} />
       {/* TODO: Strikethrough when deleted */}
 
       <Controller
