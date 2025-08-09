@@ -1,5 +1,4 @@
 .listHeaderContainer li {
-  /* From https://css.glass */
   background-color: rgb(from var(--background) r g b/ 0.3);
   border-radius: 14px 14px 0px 0px;
   box-shadow: 0 4px 30px rgb(from var(--foreground) r g b / 0.5);
@@ -9,7 +8,3 @@
   padding: "4px 10px";
   color: var(--foreground);
 }
-
-/* .listHeaderContainer .MuiInputBase-root {
-  padding: "4px 10px 5px";
-} */
