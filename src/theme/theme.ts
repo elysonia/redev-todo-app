@@ -15,8 +15,6 @@ const theme = createTheme({
       defaultProps: {
         disableGutters: true,
         sx: {
-          backgroundColor: "var(--background)",
-          border: "1px solid var(--foreground)",
           padding: "4px 10px",
           MuiInputBase: {
             padding: "4px 10px 5px",

@@ -1,5 +1,30 @@
+.todosBackground {
+  display: flex;
+  flex-direction: column;
+  flex-wrap: nowrap;
+  align-items: center;
+  background-size: cover;
+  background-repeat: no-repeat;
+  background-position: center;
+  width: 100vw;
+  height: 100vh;
+  gap: 5px;
+}
+
+.todosBackgroundFilter {
+  display: flex;
+  flex: 1;
+  justify-content: center;
+  align-items: center;
+  background-size: cover;
+  background-repeat: no-repeat;
+  background-position: center;
+  width: 100%;
+  height: 100%;
+}
+
 .todosContainer {
-  height: 450px;
-  border: 2px solid white;
+  min-height: 450px;
+  min-width: 350px;
   overflow-y: scroll;
 }
