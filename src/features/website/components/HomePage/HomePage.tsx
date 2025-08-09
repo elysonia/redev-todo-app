@@ -15,6 +15,7 @@ const HomePage = () => {
           <li>Games</li>
         </ol>
       </hgroup>
+      <h1> BELOW IS A WIP, WILL BE IN ANOTHER PAGE WHEN DONE</h1>
       <TodoPage />
     </div>
   );
