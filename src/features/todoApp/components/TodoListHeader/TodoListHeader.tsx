@@ -2,28 +2,23 @@ import { Checkbox, Input, ListSubheader } from "@mui/material";
 import { useTodoContext } from "@todoApp/providers/TodoProvider/TodoProvider";
 import { defaultTodoSection, TodoSection } from "@todoApp/types";
 import { useCallback, useEffect, useRef } from "react";
-import { Controller, useFieldArray, useFormContext } from "react-hook-form";
+import { Controller, useFormContext } from "react-hook-form";
 import styles from "./todoListHeader.module.css";
 
 type TodoListHeaderProps = {
   isActiveFieldArray: boolean;
-  parentFieldName: string;
-  sectionIndex: number;
-  onListChecked: (event: React.ChangeEvent<HTMLInputElement>) => void;
+  sectionFieldName: string;
   onSetSectionActive: () => void;
 };
 
 const TodoListHeader = ({
   isActiveFieldArray,
-  parentFieldName,
-  sectionIndex,
-  onListChecked,
+  sectionFieldName,
   onSetSectionActive,
 }: TodoListHeaderProps) => {
-  const fieldName = `${parentFieldName}.name`;
+  const fieldName = `${sectionFieldName}.name`;
   const { focusedFieldName, setFocusedFieldName, onSubmit } = useTodoContext();
   const { control, setFocus, setValue, getValues } = useFormContext();
-  const { remove, update } = useFieldArray({ control, name: "todoSections" });
   const inputRef = useRef<HTMLTextAreaElement>(null);
 
   const handleFocus = useCallback(() => {
@@ -40,22 +35,17 @@ const TodoListHeader = ({
     onSetSectionActive();
   }, [setFocusedFieldName, fieldName]);
 
-  const handleRemove = (event: React.ChangeEvent<HTMLInputElement>) => {
-    // event.stopPropagation();
-    // remove();
-    const todoSection = getValues(parentFieldName);
-    const todoSections = getValues("todoSections");
-
-    const newTodoSections = todoSections.filter(
-      (section: TodoSection) => section.id !== todoSection.id
-    );
-
-    setValue("todoSections", newTodoSections);
-    console.log({ parentFieldName, newTodoSections });
-
-    // remove(sectionIndex);
-    onSubmit();
-  };
+  const handleRemove = useCallback(
+    (event: React.ChangeEvent<HTMLInputElement>) => {
+      const todoSection = getValues(sectionFieldName);
+      const todoSections = getValues("todoSections");
+      const newTodoSections = todoSections.filter(
+        (section: TodoSection) => section.id !== todoSection.id
+      );
+      setValue("todoSections", newTodoSections);
+    },
+    [sectionFieldName, onSubmit]
+  );
 
   useEffect(() => {
     /* Prevent losing focus on re-render due to data updates from saving. */
@@ -66,9 +56,7 @@ const TodoListHeader = ({
 
   return (
     <div className={styles.listHeaderContainer}>
-      <ListSubheader
-      // classes={{ root: styles.listHeaderContainer }}
-      >
+      <ListSubheader>
         {!isActiveFieldArray && <Checkbox onChange={handleRemove} />}
         <Controller
           control={control}

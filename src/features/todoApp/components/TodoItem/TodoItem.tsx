@@ -1,12 +1,11 @@
 import { Checkbox, Input, ListItem } from "@mui/material";
 import { useTodoContext } from "@todoApp/providers/TodoProvider/TodoProvider";
-import { TodoItem as TodoItemType } from "@todoApp/types";
+import { TodoItem as TodoItemType, TodoSection } from "@todoApp/types";
 import { uniqueId } from "lodash";
 import { useCallback, useEffect, useRef } from "react";
 import {
   Controller,
   FieldValues,
-  useFieldArray,
   UseFieldArrayInsert,
   UseFieldArrayRemove,
   useFormContext,
@@ -14,145 +13,140 @@ import {
 
 type TodoItemProps = {
   itemIndex: number;
-  insert: UseFieldArrayInsert<FieldValues, `todoSections.${number}.list`>;
-  remove: UseFieldArrayRemove;
+  insertListItem: UseFieldArrayInsert<
+    FieldValues,
+    `todoSections.${number}.list`
+  >;
+  removeListItems: UseFieldArrayRemove;
   sectionIndex: number;
   sectionFieldName: string;
-  parentFieldName: string;
+  listFieldName: string;
   onSetSectionActive: () => void;
 };
 
 const TodoItem = ({
   itemIndex,
-  parentFieldName,
-  sectionFieldName,
   sectionIndex,
-  insert,
-  remove,
+  listFieldName,
+  sectionFieldName,
+  insertListItem,
+  removeListItems,
   onSetSectionActive,
 }: TodoItemProps) => {
-  const fieldName = `${parentFieldName}.${itemIndex}.text`;
+  const fieldName = `${listFieldName}.${itemIndex}.text`;
   const {
     focusedFieldName,
     sectionFieldArrayName,
-    onSubmit,
     setFocusedFieldName,
+    onSubmit,
   } = useTodoContext();
   const { control, setFocus, setValue, getValues } = useFormContext();
   const inputRef = useRef<HTMLTextAreaElement>(null);
-  const { remove: removeSections } = useFieldArray({
-    control,
-    name: "todoSections",
-  });
+
   const handleKeyDown = useCallback(
     (event: React.KeyboardEvent<HTMLInputElement>) => {
-      if (event.key === "Enter") {
-        /* Insert new item to the list. */
-        event.preventDefault();
-        const nextItemIndex = itemIndex + 1;
-        const nextFieldName = `${parentFieldName}.${nextItemIndex}.text`;
+      const nextItemIndex = itemIndex + 1;
+      const prevItemIndex = itemIndex - 1;
+      const isPrevItemIndexValid = prevItemIndex >= 0;
+      const todoList = getValues(listFieldName);
 
-        setFocusedFieldName(nextFieldName);
-        insert(nextItemIndex, {
+      const isNextItemIndexValid =
+        nextItemIndex >= 0 && nextItemIndex < todoList.length;
+
+      const isTextEmpty = inputRef.current?.textLength === 0;
+
+      const shouldAddNewItem = event.key === "Enter";
+      if (shouldAddNewItem) {
+        /* Prevent key press from adding an extra newline. */
+        event.preventDefault();
+
+        insertListItem(nextItemIndex, {
           id: uniqueId(),
           text: "",
         });
-      } else if (event.key === "ArrowUp") {
-        /* Go to previous todo item. */
-        event.preventDefault();
-        const prevItemIndex = itemIndex - 1;
+      }
 
+      const shouldFocusOnPrevItem =
+        event.key === "ArrowUp" && isPrevItemIndexValid;
+      if (shouldFocusOnPrevItem) {
+        event.preventDefault();
+        const prevFieldName = `${listFieldName}.${prevItemIndex}.text`;
+        setFocus(prevFieldName);
+      }
+
+      const shouldFocusOnNextItem =
+        event.key === "ArrowDown" && isNextItemIndexValid;
+      if (shouldFocusOnNextItem) {
+        event.preventDefault();
+        const nextFieldName = `${listFieldName}.${nextItemIndex}.text`;
+        setFocus(nextFieldName);
+      }
+
+      const shouldRemoveItem = event.key === "Backspace" && isTextEmpty;
+      if (shouldRemoveItem) {
+        event.preventDefault();
         if (prevItemIndex >= 0) {
-          const prevFieldName = `${parentFieldName}.${prevItemIndex}.text`;
-          setFocus(prevFieldName);
-        }
-      } else if (event.key === "ArrowDown") {
-        /* Go to next todo item. */
-        event.preventDefault();
-        const nextItemIndex = itemIndex + 1;
-
-        if (nextItemIndex >= 0) {
-          const nextFieldName = `${parentFieldName}.${nextItemIndex}.text`;
-          setFocus(nextFieldName);
-        }
-      } else if (
-        /* Remove item when hitting Backspace but text is already empty. */
-        event.key === "Backspace" &&
-        inputRef.current?.textLength === 0
-      ) {
-        event.preventDefault();
-        const prevItemIndex = itemIndex - 1;
-
-        if (prevItemIndex >= 0) {
-          const prevFieldName = `${parentFieldName}.${prevItemIndex}.text`;
+          const prevFieldName = `${listFieldName}.${prevItemIndex}.text`;
 
           /* Set the next field to focus on after deleting the current one. */
-          setFocusedFieldName(prevFieldName);
-          remove(itemIndex);
+          setFocus(prevFieldName);
+          removeListItems(itemIndex);
         }
       }
     },
-    [itemIndex, setFocusedFieldName, removeSections, setFocus, insert]
+    [itemIndex, setFocus, getValues, removeListItems, insertListItem]
   );
 
   const handleRemoveItem = useCallback(
     (event: React.ChangeEvent<HTMLInputElement>) => {
-      // event.stopPropagation();
-      if (event.target.checked) {
-        console.log("item remove");
-        const todoSections = getValues("todoSections");
-        const todoSection = getValues(`todoSections.${sectionIndex}`);
-        const todoList = getValues(parentFieldName);
-        const todoItem = getValues(`${parentFieldName}.${itemIndex}`);
-        const newTodoList = todoList.filter(
-          (item: TodoItemType) => item.id !== todoItem.id
-        );
-        // remove(itemIndex);
-        // onSubmit();
-        const hasNoSubtask = newTodoList.length === 0;
+      if (!event.target.checked) return;
+      const todoSections = getValues("todoSections");
+      const todoSection = todoSections[sectionIndex];
+      const todoList = todoSection.list;
+      const todoItem = todoList[itemIndex];
 
-        // if (!todoSection) {
-        //   console.log("no section");
-        //   removeSections(sectionIndex);
+      const newTodoList = todoList.filter(
+        (item: TodoItemType) => item.id !== todoItem.id
+      );
 
-        //   // setValue(parentFieldName, newTodoList);
-        // } else
-        if (hasNoSubtask) {
-          const todoSectionName = todoSection.name;
-          if (todoSectionName) {
-            const newTodoSection = {
-              id: todoSection.id,
-              name: "",
-              list: [
-                {
-                  id: uniqueId(),
-                  text: todoSectionName,
-                },
-              ],
-            };
-            setValue(sectionFieldArrayName, newTodoSection);
-          } else {
-            // const newTodoSections = todoSections.filter(
-            //   (section: TodoSection) => section.id !== todoSection.id
-            // );
-            // // setValue("todoSections", newTodoSections);
-            removeSections(sectionIndex);
-          }
-        } else {
-          // setValue(parentFieldName, newTodoList);
-          remove(itemIndex);
-        }
+      const hasNoSubtask = newTodoList.length === 0;
+      const shouldCreateListItemFromSectionName =
+        hasNoSubtask && todoSection.name;
+      const shouldRemoveSection = hasNoSubtask && !todoSection.name;
+
+      if (shouldCreateListItemFromSectionName) {
+        const newTodoSection = {
+          id: todoSection.id,
+          name: "",
+          list: [
+            {
+              id: uniqueId(),
+              text: todoSection.name,
+            },
+          ],
+        };
+        setValue(sectionFieldArrayName, newTodoSection);
+        return;
       }
-      onSubmit();
+
+      if (shouldRemoveSection) {
+        const newTodoSections = todoSections.filter(
+          (section: TodoSection) => section.id !== todoSection.id
+        );
+        setValue("todoSections", newTodoSections);
+        return;
+      }
+
+      removeListItems(itemIndex);
     },
     [
-      onSubmit,
       itemIndex,
-      getValues,
-      removeSections,
-      setValue,
       sectionIndex,
       sectionFieldName,
+      setValue,
+      getValues,
+      removeListItems,
+      onSubmit,
     ]
   );
 

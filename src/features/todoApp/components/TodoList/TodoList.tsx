@@ -2,25 +2,23 @@ import { ClickAwayListener, List } from "@mui/material";
 import { useTodoContext } from "@todoApp/providers/TodoProvider/TodoProvider";
 import { TodoItem as TodoItemType, TodoSection } from "@todoApp/types";
 import { isEmpty, uniqueId } from "lodash";
-import { useCallback, useMemo, useState } from "react";
+import { useCallback, useMemo } from "react";
 import { useFieldArray, useFormContext } from "react-hook-form";
 import TodoItem from "../TodoItem";
 import TodoListHeader from "../TodoListHeader";
 import styles from "./todoList.module.css";
 
 type TodoListProps = {
-  index: number;
-  parentFieldName: string;
+  sectionIndex: number;
+  sectionFieldName: string;
 };
 
-const TodoList = ({ index, parentFieldName }: TodoListProps) => {
-  const fieldName = `todoSections.${index}.list`;
-  const [isListCompleted, setListCompleted] = useState(false);
+const TodoList = ({ sectionIndex, sectionFieldName }: TodoListProps) => {
+  const fieldName = `todoSections.${sectionIndex}.list`;
   const {
     focusedFieldName,
     sectionFieldArrayName,
     onSubmit,
-    setSnackbar,
     setFocusedFieldName,
     setSectionFieldArrayName,
   } = useTodoContext();
@@ -29,14 +27,10 @@ const TodoList = ({ index, parentFieldName }: TodoListProps) => {
     control,
     name: fieldName,
   });
-  const { replace: replaceTodoSections } = useFieldArray({
-    control,
-    name: "todoSections",
-  });
 
-  const isActiveFieldArray = sectionFieldArrayName === parentFieldName;
+  const isActiveFieldArray = sectionFieldArrayName === sectionFieldName;
   const shouldShowHeader = useMemo(() => {
-    const headerFieldName = `${parentFieldName}.name`;
+    const headerFieldName = `${sectionFieldName}.name`;
     const headerFieldValue = getValues(headerFieldName);
 
     const hasNoHeaderName = isEmpty(headerFieldValue);
@@ -45,40 +39,40 @@ const TodoList = ({ index, parentFieldName }: TodoListProps) => {
     if (hasNoSubtasks && hasNoHeaderName) return false;
     if (!isActiveFieldArray) return true;
     return true;
-  }, [parentFieldName, focusedFieldName, isActiveFieldArray, fields]);
+  }, [sectionFieldName, focusedFieldName, isActiveFieldArray, fields]);
 
   /* Filter out empty todo item on clicking away from the section. */
   const handleClickAway = useCallback(() => {
     const todoSections = getValues("todoSections");
-    const todoSection = todoSections[index];
+    const todoSection = todoSections[sectionIndex];
     const todoList = todoSection.list;
 
-    const todoSectionName = todoSection.name;
     const newTodoList = todoList.filter((item: TodoItemType) => {
       return !isEmpty(item.text);
     });
 
     const hasNoSubtask = newTodoList.length === 0;
+    const shouldCreateListItemFromSectionName =
+      hasNoSubtask && todoSection.name;
+    const shouldRemoveSection = hasNoSubtask && !todoSection.name;
 
-    if (hasNoSubtask) {
-      if (todoSectionName) {
-        const newTodoSection = {
-          id: todoSection.id,
-          name: "",
-          list: [
-            {
-              id: uniqueId(),
-              text: todoSectionName,
-            },
-          ],
-        };
-        setValue(parentFieldName, newTodoSection);
-      } else {
-        const newTodoSections = todoSections.filter(
-          (section: TodoSection) => section.id !== todoSection.id
-        );
-        setValue("todoSections", newTodoSections);
-      }
+    if (shouldCreateListItemFromSectionName) {
+      const newTodoSection = {
+        id: todoSection.id,
+        name: "",
+        list: [
+          {
+            id: uniqueId(),
+            text: todoSection.name,
+          },
+        ],
+      };
+      setValue(sectionFieldName, newTodoSection);
+    } else if (shouldRemoveSection) {
+      const newTodoSections = todoSections.filter(
+        (section: TodoSection) => section.id !== todoSection.id
+      );
+      setValue("todoSections", newTodoSections);
     } else {
       setValue(fieldName, newTodoList);
     }
@@ -86,38 +80,24 @@ const TodoList = ({ index, parentFieldName }: TodoListProps) => {
     setSectionFieldArrayName("");
     setFocusedFieldName("");
     onSubmit();
-  }, [index, setSectionFieldArrayName]);
+  }, [sectionIndex, setSectionFieldArrayName]);
 
   const handleSetSectionActive = useCallback(() => {
-    setSectionFieldArrayName(parentFieldName);
-  }, [parentFieldName]);
-
-  // useEffect(() => {
-  //   /* TODO: Do this with animations(?). */
-  //   /* Slightly delay deletion on list completion so the UI feedback doesn't feel too sudden. */
-  //   if (isListCompleted) {
-  //     remove(index);
-  //     onSubmit();
-  //   }
-  // }, [isListCompleted, index, onSubmit]);
+    setSectionFieldArrayName(sectionFieldName);
+  }, [sectionFieldName]);
 
   return (
     <ClickAwayListener
-      key={index}
+      key={sectionIndex}
       mouseEvent={isActiveFieldArray ? "onMouseDown" : false}
       touchEvent={isActiveFieldArray ? "onTouchStart" : false}
       onClickAway={handleClickAway}
     >
-      <div
-        className={styles.listContainer}
-        // style={{ background: `rgba(var(--background) 0.21)` }}
-      >
+      <div className={styles.listContainer} onClick={handleSetSectionActive}>
         {shouldShowHeader && (
           <TodoListHeader
             isActiveFieldArray={isActiveFieldArray}
-            sectionIndex={index}
-            parentFieldName={parentFieldName}
-            onListChecked={(event) => setListCompleted(event.target.checked)}
+            sectionFieldName={sectionFieldName}
             onSetSectionActive={handleSetSectionActive}
           />
         )}
@@ -127,11 +107,11 @@ const TodoList = ({ index, parentFieldName }: TodoListProps) => {
             <TodoItem
               key={item.id}
               itemIndex={itemIndex}
-              insert={insert}
-              remove={remove}
-              sectionIndex={index}
-              sectionFieldName={`todoSections.${index}`}
-              parentFieldName={fieldName}
+              insertListItem={insert}
+              removeListItems={remove}
+              sectionIndex={sectionIndex}
+              sectionFieldName={`todoSections.${sectionIndex}`}
+              listFieldName={fieldName}
               onSetSectionActive={handleSetSectionActive}
             />
           ))}

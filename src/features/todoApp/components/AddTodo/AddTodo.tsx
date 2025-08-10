@@ -6,24 +6,19 @@ import { uniqueId } from "lodash";
 import { useCallback } from "react";
 import {
   FieldValues,
-  UseFieldArrayAppend,
-  UseFieldArrayInsert,
   UseFieldArrayPrepend,
   UseFieldArrayRemove,
   useFormContext,
 } from "react-hook-form";
 
 type AddTodoProps = {
-  prepend: UseFieldArrayPrepend<FieldValues>;
-  append: UseFieldArrayAppend<FieldValues>;
-  insert: UseFieldArrayInsert<FieldValues, `todoSections`>;
-  remove: UseFieldArrayRemove;
+  prependSection: UseFieldArrayPrepend<FieldValues>;
+  removeSections: UseFieldArrayRemove;
 };
 
-const AddTodo = ({ prepend, append, insert, remove }: AddTodoProps) => {
-  const { sectionFieldArrayName, onSubmit, setFocusedFieldName } =
-    useTodoContext();
-  const { control, getValues, reset, setValue } = useFormContext();
+const AddTodo = ({ prependSection, removeSections }: AddTodoProps) => {
+  const { onSubmit, setFocusedFieldName } = useTodoContext();
+  const { getValues, reset } = useFormContext();
 
   /* TODO: Form validation */
   const handleAddTodoSection = useCallback(() => {
@@ -38,27 +33,21 @@ const AddTodo = ({ prepend, append, insert, remove }: AddTodoProps) => {
       list: [todoItem],
     };
 
-    const todoSections = getValues("todoSections");
     /* Add section at the start of list and focus on the first item immediatelluy. */
-    const todoItemName = `todoSections.0.list.0.text`;
-    console.log({ "todoSections.0": getValues("todoSections.0"), todoSection });
-    setFocusedFieldName(todoItemName);
+    const todoSections = getValues("todoSections");
+    const nextTodoItemFieldName = `todoSections.0.list.0.text`;
+    setFocusedFieldName(nextTodoItemFieldName);
     if (todoSections.length === 0) {
       reset({ todoSections: [todoSection] });
-      onSubmit();
     } else {
-      // onSubmit();
-
-      prepend(todoSection);
+      prependSection(todoSection);
     }
-    // onSubmit();
-  }, [onSubmit, setFocusedFieldName, prepend, append, insert, reset]);
+  }, [onSubmit, setFocusedFieldName, prependSection, reset]);
 
   const handleReset = useCallback(() => {
-    // reset({ todoSections: [] });
-    remove();
+    removeSections();
     onSubmit();
-  }, [onSubmit, remove]);
+  }, [onSubmit, removeSections]);
 
   return (
     <>

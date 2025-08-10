@@ -1,6 +1,5 @@
 "use client";
 
-import { useTodoContext } from "@todoApp/providers/TodoProvider/TodoProvider";
 import { Controller, useFieldArray, useFormContext } from "react-hook-form";
 import AddTodo from "../AddTodo";
 import TodoList from "../TodoList";
@@ -8,13 +7,11 @@ import styles from "./todoSections.module.css";
 
 const TodoSections = () => {
   const methods = useFormContext();
-  const { sectionFieldArrayName } = useTodoContext();
   const { control } = methods;
   const backgroundImageUrl =
     "https://images.unsplash.com/photo-1686579809662-829e8374d0a8?q=80&w=2072&auto=format&fit=crop&ixlib=rb-4.1.0&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D";
 
-  /* Using field arrays because I want to implement ordering todo sections */
-  const { fields, prepend, append, remove, replace, insert } = useFieldArray({
+  const { fields, prepend, remove } = useFieldArray({
     control,
     name: "todoSections",
   });
@@ -25,18 +22,9 @@ const TodoSections = () => {
       className={styles.todosBackground}
       style={{
         backgroundImage: `url(${backgroundImageUrl})`,
-        // backdropFilter: `url(${backgroundImageUrl}) blur(10px) saturate(40%)`,
-        // "-webkit-backdrop-filter": `url(${backgroundImageUrl}) blur(10px) saturate(40%)`,
       }}
     >
-      {/* <div className={styles.todosBackgroundFilter}> */}
-      {/* <div className={styles.todosContainer}> */}
-      <AddTodo
-        prepend={prepend}
-        append={append}
-        insert={insert}
-        remove={remove}
-      />
+      <AddTodo prependSection={prepend} removeSections={remove} />
       {fields.map((field, index) => {
         return (
           <Controller
@@ -45,14 +33,16 @@ const TodoSections = () => {
             control={control}
             render={({ field: { name } }) => {
               return (
-                <TodoList key={field.id} index={index} parentFieldName={name} />
+                <TodoList
+                  key={field.id}
+                  sectionIndex={index}
+                  sectionFieldName={name}
+                />
               );
             }}
           />
         );
       })}
-      {/* </div> */}
-      {/* </div> */}
     </div>
   );
 };
