@@ -2,30 +2,30 @@ import { TodoSection } from "types";
 import { createStore } from "zustand";
 import { devtools, persist } from "zustand/middleware";
 
-export type TodoFormState = {
+export type TodoDraft = {
   isDirty: boolean;
   focusedFieldName: string;
   sectionFieldArrayName: string;
-  fields: TodoSection[];
+  values: TodoSection[];
 };
 
 export type TodoState = {
   todoSections: TodoSection[];
-  todoFormState: TodoFormState;
+  todoDraft: TodoDraft;
   isHydrated: boolean;
 };
 
-export const defaultTodoFormState: TodoFormState = {
+export const defaultTodoDraft: TodoDraft = {
   isDirty: false,
   focusedFieldName: "",
   sectionFieldArrayName: "",
-  fields: [],
+  values: [],
 };
 
 export type TodoActions = {
   setIsHydrated: (isHydrated: boolean) => void;
   updateTodoSections: (sections: TodoSection[]) => void;
-  updateTodoFormState: (newTodoFormState: TodoFormState) => void;
+  updateTodoDraft: (newTodoFormState: TodoDraft) => void;
 };
 
 export type TodoStore = TodoState & TodoActions;
@@ -34,7 +34,7 @@ const defaultState: TodoState = {
   /* Data to persist. */
   todoSections: [],
   /* Saves current form state. */
-  todoFormState: defaultTodoFormState,
+  todoDraft: defaultTodoDraft,
 
   isHydrated: false,
 };
@@ -53,22 +53,22 @@ const createTodoStore = (initState: TodoState = defaultState) => {
               };
             }),
 
-          updateTodoSections: (sections: TodoSection[]) =>
+          updateTodoSections: (data: TodoSection[]) =>
             set(
               (state: TodoStore) => {
-                return { ...state, todoSections: sections };
+                return { ...state, todoSections: data };
               },
               undefined,
               "todo/updateTodoSections"
             ),
 
-          updateTodoFormState: (newTodoFormState: TodoFormState) =>
+          updateTodoDraft: (newTodoDraft: TodoDraft) =>
             set(
               (state: TodoStore) => {
-                return { ...state, todoFormState: newTodoFormState };
+                return { ...state, todoDraft: newTodoDraft };
               },
               undefined,
-              "todo/updateTodoFormState"
+              "todo/updateTodoDraft"
             ),
         }),
         {

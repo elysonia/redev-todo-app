@@ -22,7 +22,7 @@ import {
 import { useShallow } from "zustand/react/shallow";
 
 import { useTodoStore } from "@providers/TodoStoreProvider";
-import { defaultTodoFormState } from "store";
+import { defaultTodoDraft } from "store";
 import { TodoSection } from "types";
 
 type TodoForm = {
@@ -63,10 +63,10 @@ const TodoProvider = ({ children }: PropsWithChildren) => {
 
   const {
     todoSections,
-    todoFormState,
+    todoDraft,
     isHydrated,
     updateTodoSections,
-    updateTodoFormState,
+    updateTodoDraft,
   } = useTodoStore(useShallow((state) => state));
 
   const methods = useForm<TodoForm>();
@@ -91,7 +91,7 @@ const TodoProvider = ({ children }: PropsWithChildren) => {
 
   const handleSubmit = RHFHandleSubmit(({ todoSections }) => {
     handleSaveDraft.cancel();
-    updateTodoFormState(defaultTodoFormState);
+    updateTodoDraft(defaultTodoDraft);
     updateTodoSections(todoSections);
   });
 
@@ -109,14 +109,16 @@ const TodoProvider = ({ children }: PropsWithChildren) => {
   const handleSaveDraft = useCallback(
     debounce((props: RHFSubscribeProps) => {
       const { values, isDirty } = props;
-      updateTodoFormState({
+
+      if (!isDirty) return;
+      updateTodoDraft({
         isDirty: Boolean(isDirty),
         sectionFieldArrayName,
         focusedFieldName,
-        fields: values.todoSections,
+        values: values.todoSections,
       });
     }, 500),
-    [sectionFieldArrayName, focusedFieldName, updateTodoFormState, getValues]
+    [sectionFieldArrayName, focusedFieldName, updateTodoDraft, getValues]
   );
 
   const todoValue: TodoContextType = useMemo(() => {
@@ -183,15 +185,15 @@ const TodoProvider = ({ children }: PropsWithChildren) => {
   useEffect(() => {
     if (!isHydrated) return;
     if (!shouldRestoreStateFromStore) return;
-    if (!todoFormState.isDirty) {
+    if (!todoDraft.isDirty) {
       setShouldRestoreStateFromStore(false);
       return;
     }
 
-    if (shouldRestoreStateFromStore && todoFormState.isDirty) {
-      setFocusedFieldName(todoFormState.focusedFieldName);
-      setSectionFieldArrayName(todoFormState.sectionFieldArrayName);
-      setValue("todoSections", todoFormState.fields);
+    if (shouldRestoreStateFromStore && todoDraft.isDirty) {
+      setFocusedFieldName(todoDraft.focusedFieldName);
+      setSectionFieldArrayName(todoDraft.sectionFieldArrayName);
+      setValue("todoSections", todoDraft.values);
       setSnackbar({
         open: true,
         message: `Unsaved changes detected, draft restored`,
@@ -201,7 +203,7 @@ const TodoProvider = ({ children }: PropsWithChildren) => {
   }, [
     isHydrated,
     shouldRestoreStateFromStore,
-    todoFormState,
+    todoDraft,
     setValue,
     setSnackbar,
     setFocusedFieldName,
