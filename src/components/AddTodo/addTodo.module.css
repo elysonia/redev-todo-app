@@ -1,0 +1,55 @@
+.actionButtonContainer {
+  display: flex;
+  flex-direction: row;
+  justify-content: center;
+  gap: 5px;
+  z-index: 5;
+  position: absolute;
+  align-items: center;
+  width: 100%;
+  height: 60px;
+  -webkit-backdrop-filter: blur(30px);
+  backdrop-filter: blur(30px);
+  box-shadow: 0px -15px 51px 10px rgba(255, 255, 255, 0.6);
+
+  background: rgba(from var(--background) r g b / 0.2);
+}
+.actionButtonContainer::before {
+  content: "";
+  position: absolute;
+  inset: 0px;
+  background: conic-gradient(
+    from 90deg at 40% -25%,
+    #ffffff0a 20%,
+    #ffffff1a,
+    #ffffff25,
+    #ffffff3d,
+    #ffffff49,
+    #ffffff59,
+    #ffffff70,
+    #ffffff77,
+    #ffffff8c,
+    #ffffff9c,
+    #ffffffa4,
+    #ffffffaf,
+    #ffffffb2,
+    #ffffffe7
+  );
+  /* -webkit-backdrop-filter: blur(62px); */
+  filter: blur(62px);
+  transform: translate3d(-2px, 37px, -1px);
+  border-radius: inherit;
+  pointer-events: none;
+  /* z-index: 3; */
+  /* 
+  background: linear-gradient(
+    0deg,
+    rgba(255, 255, 255, 0.1) 20%,
+    rgba(255, 255, 255, 0.38) 33%,
+    rgba(190, 190, 190, 0.6) 58%,
+    rgba(69, 69, 69, 0.65) 97%,
+    rgba(69, 69, 69, 0.83) 100%
+  ); */
+  /* -webkit-backdrop-filter: blur(30px); */
+  /* filter: blur(30px); */
+}

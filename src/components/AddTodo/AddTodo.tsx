@@ -1,5 +1,5 @@
 import { AddCircle, DeleteForever } from "@mui/icons-material";
-import { IconButton } from "@mui/material";
+import { IconButton, Tooltip } from "@mui/material";
 import { uniqueId } from "lodash";
 import { useCallback } from "react";
 import {
@@ -11,6 +11,7 @@ import {
 
 import { useTodoContext } from "@providers/TodoProvider/TodoProvider";
 import { TodoItem, TodoSection } from "types";
+import styles from "./addTodo.module.css";
 
 type AddTodoProps = {
   prependSection: UseFieldArrayPrepend<FieldValues>;
@@ -46,20 +47,34 @@ const AddTodo = ({ prependSection, removeSections }: AddTodoProps) => {
   }, [setFocusedFieldName, prependSection, setValue, onSubmit]);
 
   const handleReset = useCallback(() => {
-    removeSections();
-    onSubmit();
-    setSnackbar({ open: true, message: `Tasks reset` });
+    const isResetConfirmed = confirm(
+      "This will remove all tasks. Are you sure?"
+    );
+
+    if (isResetConfirmed) {
+      removeSections();
+      onSubmit();
+      setSnackbar({ open: true, message: `Tasks reset` });
+    } else {
+      setSnackbar({ open: true, message: `Tasks not reset` });
+    }
   }, [onSubmit, removeSections, setSnackbar]);
 
   return (
     <>
-      <IconButton onClick={handleAddTodoSection}>
-        <AddCircle fontSize="large" />
-      </IconButton>
+      <div className={styles.actionButtonContainer}>
+        <Tooltip describeChild title="Add new task">
+          <IconButton onClick={handleAddTodoSection}>
+            <AddCircle fontSize="large" />
+          </IconButton>
+        </Tooltip>
 
-      <IconButton onClick={handleReset}>
-        <DeleteForever fontSize="large" />
-      </IconButton>
+        <Tooltip describeChild title="Reset all tasks">
+          <IconButton onClick={handleReset}>
+            <DeleteForever fontSize="large" />
+          </IconButton>
+        </Tooltip>
+      </div>
     </>
   );
 };

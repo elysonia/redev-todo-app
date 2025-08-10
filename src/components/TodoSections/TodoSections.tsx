@@ -26,24 +26,26 @@ const TodoSections = () => {
       }}
     >
       <AddTodo prependSection={prepend} removeSections={remove} />
-      {fields.map((field, index) => {
-        return (
-          <Controller
-            key={`${field.id}.${index}`}
-            name={`todoSections.${index}`}
-            control={control}
-            render={({ field: { name } }) => {
-              return (
-                <TodoList
-                  key={field.id}
-                  sectionIndex={index}
-                  sectionFieldName={name}
-                />
-              );
-            }}
-          />
-        );
-      })}
+      <div className={styles.sectionsContainer}>
+        {fields.map((field, index) => {
+          return (
+            <Controller
+              key={`${field.id}.${index}`}
+              name={`todoSections.${index}`}
+              control={control}
+              render={({ field: { name } }) => {
+                return (
+                  <TodoList
+                    key={field.id}
+                    sectionIndex={index}
+                    sectionFieldName={name}
+                  />
+                );
+              }}
+            />
+          );
+        })}
+      </div>
     </div>
   );
 };
