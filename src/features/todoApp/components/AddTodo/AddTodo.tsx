@@ -18,7 +18,7 @@ type AddTodoProps = {
 
 const AddTodo = ({ prependSection, removeSections }: AddTodoProps) => {
   const { onSubmit, setFocusedFieldName } = useTodoContext();
-  const { getValues, reset } = useFormContext();
+  const { getValues, setValue } = useFormContext();
 
   /* TODO: Form validation */
   const handleAddTodoSection = useCallback(() => {
@@ -33,16 +33,16 @@ const AddTodo = ({ prependSection, removeSections }: AddTodoProps) => {
       list: [todoItem],
     };
 
-    /* Add section at the start of list and focus on the first item immediatelluy. */
+    /* Add section at the start of list and focus on the first item immediatelly. */
     const todoSections = getValues("todoSections");
     const nextTodoItemFieldName = `todoSections.0.list.0.text`;
     setFocusedFieldName(nextTodoItemFieldName);
     if (todoSections.length === 0) {
-      reset({ todoSections: [todoSection] });
+      setValue("todoSections", [todoSection]);
     } else {
       prependSection(todoSection);
     }
-  }, [onSubmit, setFocusedFieldName, prependSection, reset]);
+  }, [setFocusedFieldName, prependSection, setValue, onSubmit]);
 
   const handleReset = useCallback(() => {
     removeSections();

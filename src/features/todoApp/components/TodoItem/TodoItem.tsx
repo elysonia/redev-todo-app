@@ -34,13 +34,18 @@ const TodoItem = ({
   onSetSectionActive,
 }: TodoItemProps) => {
   const fieldName = `${listFieldName}.${itemIndex}.text`;
+  const { focusedFieldName, sectionFieldArrayName, setFocusedFieldName } =
+    useTodoContext();
   const {
-    focusedFieldName,
-    sectionFieldArrayName,
-    setFocusedFieldName,
-    onSubmit,
-  } = useTodoContext();
-  const { control, setFocus, setValue, getValues } = useFormContext();
+    control,
+    formState,
+
+    setFocus,
+    setValue,
+    getValues,
+    getFieldState,
+  } = useFormContext();
+
   const inputRef = useRef<HTMLTextAreaElement>(null);
 
   const handleKeyDown = useCallback(
@@ -88,8 +93,9 @@ const TodoItem = ({
         if (prevItemIndex >= 0) {
           const prevFieldName = `${listFieldName}.${prevItemIndex}.text`;
 
-          /* Set the next field to focus on after deleting the current one. */
+          /* Set the next field to focus on after removing the current one. */
           setFocus(prevFieldName);
+
           removeListItems(itemIndex);
         }
       }
@@ -102,10 +108,9 @@ const TodoItem = ({
       if (!event.target.checked) return;
       const todoSections = getValues("todoSections");
       const todoSection = todoSections[sectionIndex];
-      const todoList = todoSection.list;
-      const todoItem = todoList[itemIndex];
+      const todoItem = todoSection.list[itemIndex];
 
-      const newTodoList = todoList.filter(
+      const newTodoList = todoSection.list.filter(
         (item: TodoItemType) => item.id !== todoItem.id
       );
 
@@ -146,7 +151,6 @@ const TodoItem = ({
       setValue,
       getValues,
       removeListItems,
-      onSubmit,
     ]
   );
 
