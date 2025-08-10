@@ -1,6 +1,5 @@
 import { Checkbox, Input, ListItem } from "@mui/material";
-import { useTodoContext } from "@todoApp/providers/TodoProvider/TodoProvider";
-import { TodoItem as TodoItemType, TodoSection } from "@todoApp/types";
+
 import { uniqueId } from "lodash";
 import { useCallback, useEffect, useRef } from "react";
 import {
@@ -10,6 +9,9 @@ import {
   UseFieldArrayRemove,
   useFormContext,
 } from "react-hook-form";
+
+import { useTodoContext } from "@providers/TodoProvider/TodoProvider";
+import { TodoItem as TodoItemType, TodoSection } from "types";
 
 type TodoItemProps = {
   itemIndex: number;

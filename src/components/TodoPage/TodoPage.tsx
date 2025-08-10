@@ -1,5 +1,5 @@
-import TodoProvider from "@todoApp/providers/TodoProvider";
-import TodoSections from "../TodoSections";
+import TodoSections from "@components/TodoSections";
+import TodoProvider from "@providers/TodoProvider";
 
 const TodoPage = () => {
   return (

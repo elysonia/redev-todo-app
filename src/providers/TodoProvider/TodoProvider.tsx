@@ -1,10 +1,8 @@
 "use client";
 
 import { Snackbar, SnackbarProps } from "@mui/material";
-import { defaultTodoFormState } from "@todoApp/store/store";
-import { TodoSection } from "@todoApp/types";
 import { useIdle } from "@uidotdev/usehooks";
-import { debounce, DebouncedFunc, isEmpty } from "lodash";
+import { debounce, isEmpty } from "lodash";
 import {
   createContext,
   PropsWithChildren,
@@ -22,7 +20,10 @@ import {
   useForm,
 } from "react-hook-form";
 import { useShallow } from "zustand/react/shallow";
-import { useTodoStore } from "../TodoStoreProvider/TodoStoreProvider";
+
+import { useTodoStore } from "@providers/TodoStoreProvider";
+import { defaultTodoFormState } from "store";
+import { TodoSection } from "types";
 
 type TodoForm = {
   todoSections: TodoSection[];
@@ -43,12 +44,12 @@ type TodoContextType = {
   setFocusedFieldName: (fieldName: string) => void;
   setSectionFieldArrayName: (sectionId: string) => void;
   onSubmit: (e?: React.BaseSyntheticEvent) => Promise<void>;
-  onSaveDraft: DebouncedFunc<(data: RHFSubscribeProps) => void>;
 };
 
 export const TodoContext = createContext<TodoContextType>({});
 
 const TodoProvider = ({ children }: PropsWithChildren) => {
+  /* TODO: Replace with local hook because I'm not using the library much */
   const isIdle = useIdle(5000);
   /* Path to the current section in the form. */
   const [sectionFieldArrayName, setSectionFieldArrayName] = useState("");
@@ -71,7 +72,7 @@ const TodoProvider = ({ children }: PropsWithChildren) => {
   const methods = useForm<TodoForm>();
   const {
     reset,
-    formState,
+    formState: { isDirty },
     subscribe,
     setValue,
     getValues,
@@ -90,9 +91,8 @@ const TodoProvider = ({ children }: PropsWithChildren) => {
 
   const handleSubmit = RHFHandleSubmit(({ todoSections }) => {
     handleSaveDraft.cancel();
-    updateTodoSections(todoSections);
     updateTodoFormState(defaultTodoFormState);
-    setSnackbar({ open: true, message: `Tasks saved` });
+    updateTodoSections(todoSections);
   });
 
   const handleCloseSnackbar = useCallback(
@@ -107,10 +107,10 @@ const TodoProvider = ({ children }: PropsWithChildren) => {
 
   /* Saves the draft automatically every half a second.  */
   const handleSaveDraft = useCallback(
-    debounce(({ values }: RHFSubscribeProps) => {
-      console.log({ values: values.todoSections });
+    debounce((props: RHFSubscribeProps) => {
+      const { values, isDirty } = props;
       updateTodoFormState({
-        isDirty: true,
+        isDirty: Boolean(isDirty),
         sectionFieldArrayName,
         focusedFieldName,
         fields: values.todoSections,
@@ -129,7 +129,6 @@ const TodoProvider = ({ children }: PropsWithChildren) => {
       setFocusedFieldName: setFocusedFieldName,
       setSectionFieldArrayName,
       onSubmit: handleSubmit,
-      onSaveDraft: handleSaveDraft,
     };
   }, [
     snackbar,
@@ -140,7 +139,6 @@ const TodoProvider = ({ children }: PropsWithChildren) => {
     setFocusedFieldName,
     setSectionFieldArrayName,
     handleSubmit,
-    handleSaveDraft,
   ]);
 
   /* Detects data change from the store and updates form default values. */
@@ -148,11 +146,12 @@ const TodoProvider = ({ children }: PropsWithChildren) => {
     reset({ todoSections });
   }, [todoSections]);
 
-  /* Subscribe to value updates without re-rendering the entire form. */
+  /* Subscribe to value updates without re-rendering the entire form for draft autosave. */
   useEffect(() => {
     const handleSubscribe = subscribe({
       formState: {
         values: true,
+        isDirty: true,
       },
       callback: handleSaveDraft,
     });
@@ -166,13 +165,21 @@ const TodoProvider = ({ children }: PropsWithChildren) => {
       /* Prevent endless API call */
       setShouldSaveOnIdle(false);
       handleSubmit();
+      setSnackbar({ open: true, message: `Tasks saved` });
     } else {
-      setShouldSaveOnIdle(formState.isDirty);
+      setShouldSaveOnIdle(isDirty);
     }
-  }, [isIdle, shouldSaveOnIdle, formState, handleSubmit, setShouldSaveOnIdle]);
+  }, [
+    isIdle,
+    shouldSaveOnIdle,
+    isDirty,
+    handleSubmit,
+    setShouldSaveOnIdle,
+    setSnackbar,
+  ]);
 
   /* https://zustand.docs.pmnd.rs/integrations/persisting-store-data#usage-in-next.js  */
-  /* If the form somehow did not save before exiting, restore the draft.*/
+  /* If the form somehow did not save before exiting, restore the draft. */
   useEffect(() => {
     if (!isHydrated) return;
     if (!shouldRestoreStateFromStore) return;
@@ -185,7 +192,10 @@ const TodoProvider = ({ children }: PropsWithChildren) => {
       setFocusedFieldName(todoFormState.focusedFieldName);
       setSectionFieldArrayName(todoFormState.sectionFieldArrayName);
       setValue("todoSections", todoFormState.fields);
-      handleSubmit();
+      setSnackbar({
+        open: true,
+        message: `Unsaved changes detected, draft restored`,
+      });
       setShouldRestoreStateFromStore(false);
     }
   }, [
@@ -193,10 +203,10 @@ const TodoProvider = ({ children }: PropsWithChildren) => {
     shouldRestoreStateFromStore,
     todoFormState,
     setValue,
+    setSnackbar,
     setFocusedFieldName,
     setSectionFieldArrayName,
     setShouldRestoreStateFromStore,
-    handleSubmit,
   ]);
 
   return (

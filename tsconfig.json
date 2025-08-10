@@ -18,10 +18,11 @@
         "name": "next"
       }
     ],
+    "baseUrl": "./src",
     "paths": {
-      "@website/*": ["./src/features/website/*"],
-      "@todoApp/*": ["./src/features/todoApp/*"],
-      "@shared/utils*": ["./src/shared/utils/*"]
+      "@components/*": ["./components/*"],
+      "@providers/*": ["./providers/*"],
+      "@utils/*": ["./utils/*"]
     }
   },
   "include": ["next-env.d.ts", "**/*.ts", "**/*.tsx", ".next/types/**/*.ts"],

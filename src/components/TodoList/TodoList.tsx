@@ -1,9 +1,10 @@
 import { ClickAwayListener, List } from "@mui/material";
-import { useTodoContext } from "@todoApp/providers/TodoProvider/TodoProvider";
-import { TodoItem as TodoItemType, TodoSection } from "@todoApp/types";
 import { isEmpty, uniqueId } from "lodash";
 import { useCallback, useMemo } from "react";
 import { useFieldArray, useFormContext } from "react-hook-form";
+
+import { useTodoContext } from "@providers/TodoProvider/TodoProvider";
+import { TodoItem as TodoItemType, TodoSection } from "types";
 import TodoItem from "../TodoItem";
 import TodoListHeader from "../TodoListHeader";
 import styles from "./todoList.module.css";
@@ -19,6 +20,7 @@ const TodoList = ({ sectionIndex, sectionFieldName }: TodoListProps) => {
     focusedFieldName,
     sectionFieldArrayName,
     onSubmit,
+    setSnackbar,
     setFocusedFieldName,
     setSectionFieldArrayName,
   } = useTodoContext();
@@ -80,7 +82,8 @@ const TodoList = ({ sectionIndex, sectionFieldName }: TodoListProps) => {
     setSectionFieldArrayName("");
     setFocusedFieldName("");
     onSubmit();
-  }, [sectionIndex, setSectionFieldArrayName]);
+    setSnackbar({ open: true, message: `Tasks saved` });
+  }, [sectionIndex, setSnackbar, setSectionFieldArrayName]);
 
   const handleSetSectionActive = useCallback(() => {
     setSectionFieldArrayName(sectionFieldName);

@@ -1,8 +1,7 @@
-import HomePage from "@website/components/HomePage";
-import { PropsWithChildren } from "react";
+import TodoPage from "@components/TodoPage";
 
-const App = ({ children }: PropsWithChildren) => {
-  return <HomePage />;
+const App = () => {
+  return <TodoPage />;
 };
 
 export default App;

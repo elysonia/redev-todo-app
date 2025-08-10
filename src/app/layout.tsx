@@ -1,6 +1,7 @@
 import { AppRouterCacheProvider } from "@mui/material-nextjs/v13-appRouter";
 import { ThemeProvider } from "@mui/material/styles";
-import TodoStoreProvider from "@todoApp/providers/TodoStoreProvider";
+
+import TodoStoreProvider from "@providers/TodoStoreProvider";
 import type { Metadata } from "next";
 import { Geist, Geist_Mono } from "next/font/google";
 import theme from "../theme";

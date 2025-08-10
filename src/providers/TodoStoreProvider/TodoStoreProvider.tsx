@@ -1,7 +1,8 @@
 "use client";
-import createTodoStore, { TodoStore } from "@todoApp/store/store";
 import { createContext, PropsWithChildren, useContext, useRef } from "react";
 import { useStore } from "zustand";
+
+import createTodoStore, { TodoStore } from "store";
 
 export type TodoStoreApi = ReturnType<typeof createTodoStore>;
 const TodoStoreContext = createContext<TodoStoreApi | undefined>(undefined);

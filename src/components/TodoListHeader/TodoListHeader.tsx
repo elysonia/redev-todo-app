@@ -1,8 +1,10 @@
 import { Checkbox, Input, ListSubheader } from "@mui/material";
-import { useTodoContext } from "@todoApp/providers/TodoProvider/TodoProvider";
-import { defaultTodoSection, TodoSection } from "@todoApp/types";
 import { useCallback, useEffect, useRef } from "react";
 import { Controller, useFormContext } from "react-hook-form";
+
+import { useTodoContext } from "@providers/TodoProvider/TodoProvider";
+import { defaultTodoSection } from "@utils/todoUtils";
+import { TodoSection } from "types";
 import styles from "./todoListHeader.module.css";
 
 type TodoListHeaderProps = {
@@ -17,7 +19,7 @@ const TodoListHeader = ({
   onSetSectionActive,
 }: TodoListHeaderProps) => {
   const fieldName = `${sectionFieldName}.name`;
-  const { focusedFieldName, setFocusedFieldName, onSubmit } = useTodoContext();
+  const { focusedFieldName, setFocusedFieldName } = useTodoContext();
   const { control, setFocus, setValue, getValues } = useFormContext();
   const inputRef = useRef<HTMLTextAreaElement>(null);
 
@@ -44,7 +46,7 @@ const TodoListHeader = ({
       );
       setValue("todoSections", newTodoSections);
     },
-    [sectionFieldName, onSubmit]
+    [sectionFieldName]
   );
 
   useEffect(() => {

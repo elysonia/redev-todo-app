@@ -1,1 +1,1 @@
-export { default } from "./TodoStoreProvider";
+export { default, useTodoStore } from "./TodoStoreProvider";

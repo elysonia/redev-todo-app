@@ -1,7 +1,5 @@
 import { AddCircle, DeleteForever } from "@mui/icons-material";
 import { IconButton } from "@mui/material";
-import { useTodoContext } from "@todoApp/providers/TodoProvider/TodoProvider";
-import { TodoItem, TodoSection } from "@todoApp/types";
 import { uniqueId } from "lodash";
 import { useCallback } from "react";
 import {
@@ -11,13 +9,16 @@ import {
   useFormContext,
 } from "react-hook-form";
 
+import { useTodoContext } from "@providers/TodoProvider/TodoProvider";
+import { TodoItem, TodoSection } from "types";
+
 type AddTodoProps = {
   prependSection: UseFieldArrayPrepend<FieldValues>;
   removeSections: UseFieldArrayRemove;
 };
 
 const AddTodo = ({ prependSection, removeSections }: AddTodoProps) => {
-  const { onSubmit, setFocusedFieldName } = useTodoContext();
+  const { onSubmit, setSnackbar, setFocusedFieldName } = useTodoContext();
   const { getValues, setValue } = useFormContext();
 
   /* TODO: Form validation */
@@ -47,7 +48,8 @@ const AddTodo = ({ prependSection, removeSections }: AddTodoProps) => {
   const handleReset = useCallback(() => {
     removeSections();
     onSubmit();
-  }, [onSubmit, removeSections]);
+    setSnackbar({ open: true, message: `Tasks reset` });
+  }, [onSubmit, removeSections, setSnackbar]);
 
   return (
     <>

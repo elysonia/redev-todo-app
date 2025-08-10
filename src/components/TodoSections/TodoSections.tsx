@@ -1,8 +1,9 @@
 "use client";
 
 import { Controller, useFieldArray, useFormContext } from "react-hook-form";
-import AddTodo from "../AddTodo";
-import TodoList from "../TodoList";
+
+import AddTodo from "@components/AddTodo";
+import TodoList from "@components/TodoList";
 import styles from "./todoSections.module.css";
 
 const TodoSections = () => {
