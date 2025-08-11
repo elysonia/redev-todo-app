@@ -19,7 +19,12 @@ type AddTodoProps = {
 };
 
 const AddTodo = ({ prependSection, removeSections }: AddTodoProps) => {
-  const { onSubmit, setSnackbar, setFocusedFieldName } = useTodoContext();
+  const {
+    onSubmit,
+    setSnackbar,
+    setFocusedFieldName,
+    setSectionFieldArrayName,
+  } = useTodoContext();
   const { getValues, setValue } = useFormContext();
 
   /* TODO: Form validation */
@@ -39,6 +44,7 @@ const AddTodo = ({ prependSection, removeSections }: AddTodoProps) => {
     const todoSections = getValues("todoSections");
     const nextTodoItemFieldName = `todoSections.0.list.0.text`;
     setFocusedFieldName(nextTodoItemFieldName);
+    setSectionFieldArrayName(`todoSections.0`);
     if (todoSections.length === 0) {
       setValue("todoSections", [todoSection]);
     } else {
