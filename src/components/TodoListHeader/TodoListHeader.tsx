@@ -1,5 +1,5 @@
 import { Checkbox, Input, ListSubheader } from "@mui/material";
-import { useCallback, useEffect, useRef } from "react";
+import { useCallback, useEffect, useRef, useState } from "react";
 import { Controller, useFormContext } from "react-hook-form";
 
 import { useTodoContext } from "@providers/TodoProvider/TodoProvider";
@@ -19,6 +19,7 @@ const TodoListHeader = ({
   onSetSectionActive,
 }: TodoListHeaderProps) => {
   const fieldName = `${sectionFieldName}.name`;
+  const [isChecked, setIsChecked] = useState(false);
   const { focusedFieldName, setFocusedFieldName } = useTodoContext();
   const { control, setFocus, setValue, getValues } = useFormContext();
   const inputRef = useRef<HTMLTextAreaElement>(null);
@@ -39,14 +40,20 @@ const TodoListHeader = ({
 
   const handleRemove = useCallback(
     (event: React.ChangeEvent<HTMLInputElement>) => {
-      const todoSection = getValues(sectionFieldName);
-      const todoSections = getValues("todoSections");
-      const newTodoSections = todoSections.filter(
-        (section: TodoSection) => section.id !== todoSection.id
-      );
-      setValue("todoSections", newTodoSections);
+      event.stopPropagation();
+      setIsChecked(event.target.checked);
+      if (event.target.checked) {
+        setTimeout(() => {
+          const todoSection = getValues(sectionFieldName);
+          const todoSections = getValues("todoSections");
+          const newTodoSections = todoSections.filter(
+            (section: TodoSection) => section.id !== todoSection.id
+          );
+          setValue("todoSections", newTodoSections);
+        }, 500);
+      }
     },
-    [sectionFieldName]
+    [sectionFieldName, setIsChecked]
   );
 
   useEffect(() => {
@@ -59,7 +66,9 @@ const TodoListHeader = ({
   return (
     <div className={styles.listHeaderContainer}>
       <ListSubheader>
-        {!isActiveFieldArray && <Checkbox onChange={handleRemove} />}
+        {(!isActiveFieldArray || isChecked) && (
+          <Checkbox onChange={handleRemove} />
+        )}
         <Controller
           control={control}
           name={fieldName}

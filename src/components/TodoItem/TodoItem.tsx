@@ -175,7 +175,7 @@ const TodoItem = ({
     if (focusedFieldName === fieldName) {
       setFocus(fieldName);
     }
-  }, [focusedFieldName]);
+  }, [focusedFieldName, setFocus]);
 
   return (
     <ListItem>

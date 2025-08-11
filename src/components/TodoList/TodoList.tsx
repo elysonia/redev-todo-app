@@ -1,8 +1,15 @@
-import { ClickAwayListener, List } from "@mui/material";
+import {
+  Button,
+  ClickAwayListener,
+  IconButton,
+  List,
+  Tooltip,
+} from "@mui/material";
 import { isEmpty, uniqueId } from "lodash";
-import { useCallback, useMemo } from "react";
+import { useCallback, useEffect, useMemo } from "react";
 import { useFieldArray, useFormContext } from "react-hook-form";
 
+import { CheckCircle } from "@mui/icons-material";
 import { useTodoContext } from "@providers/TodoProvider/TodoProvider";
 import { TodoItem as TodoItemType, TodoSection } from "types";
 import TodoItem from "../TodoItem";
@@ -24,7 +31,7 @@ const TodoList = ({ sectionIndex, sectionFieldName }: TodoListProps) => {
     setFocusedFieldName,
     setSectionFieldArrayName,
   } = useTodoContext();
-  const { control, getValues, setValue } = useFormContext();
+  const { control, getValues, setFocus, setValue } = useFormContext();
   const { fields, insert, remove } = useFieldArray({
     control,
     name: fieldName,
@@ -83,11 +90,34 @@ const TodoList = ({ sectionIndex, sectionFieldName }: TodoListProps) => {
     setFocusedFieldName("");
     onSubmit();
     setSnackbar({ open: true, message: `Tasks saved` });
-  }, [sectionIndex, setSnackbar, setSectionFieldArrayName]);
+  }, [sectionIndex, fieldName, setSnackbar, setSectionFieldArrayName]);
 
   const handleSetSectionActive = useCallback(() => {
+    if (isActiveFieldArray) return;
+    if (focusedFieldName) return;
+
+    const lastItemFieldName = `${fieldName}.${
+      getValues(fieldName).length - 1
+    }.text`;
+
+    setFocus(lastItemFieldName);
     setSectionFieldArrayName(sectionFieldName);
-  }, [sectionFieldName]);
+  }, [
+    isActiveFieldArray,
+    sectionFieldName,
+    focusedFieldName,
+    fieldName,
+    setFocus,
+    setSectionFieldArrayName,
+    getValues,
+  ]);
+
+  useEffect(() => {
+    if (!isActiveFieldArray) return;
+    if (focusedFieldName) return;
+    const lastItemFieldName = `${fieldName}.${getValues(fieldName).length - 1}`;
+    setFocus(lastItemFieldName);
+  }, [isActiveFieldArray, focusedFieldName, fieldName, setFocus, getValues]);
 
   return (
     <ClickAwayListener
@@ -119,16 +149,19 @@ const TodoList = ({ sectionIndex, sectionFieldName }: TodoListProps) => {
             />
           ))}
         </List>
+        {isActiveFieldArray && (
+          <div className={styles.listFooterContainer}>
+            {/* TODO: Complete alarm function */}
+            <Button>Set reminder</Button>
+            <Tooltip describeChild title="Done">
+              <IconButton onClick={handleClickAway}>
+                <CheckCircle fontSize="large" />
+              </IconButton>
+            </Tooltip>
+          </div>
+        )}
       </div>
     </ClickAwayListener>
-    // {isActiveFieldArray && (
-    //   <div className={styles.listFooterContainer}>
-    //     <Button>Set reminder</Button>
-    //     <IconButton onClick={handleClickAway}>
-    //       <CheckCircle fontSize="large" />
-    //     </IconButton>
-    //   </div>
-    // )}
   );
 };
 
