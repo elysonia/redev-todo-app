@@ -66,12 +66,14 @@ const TodoList = ({ sectionIndex, sectionFieldName }: TodoListProps) => {
     const shouldRemoveSection = hasNoSubtask && !todoSection.name;
 
     if (shouldCreateListItemFromSectionName) {
-      const newTodoSection = {
+      const newTodoSection: TodoSection = {
         id: todoSection.id,
         name: "",
+        isCompleted: false,
         list: [
           {
             id: uniqueId(),
+            isCompleted: false,
             text: todoSection.name,
           },
         ],
@@ -126,7 +128,7 @@ const TodoList = ({ sectionIndex, sectionFieldName }: TodoListProps) => {
       touchEvent={isActiveFieldArray ? "onTouchStart" : false}
       onClickAway={handleClickAway}
     >
-      <div className={styles.listContainer} onClick={handleSetSectionActive}>
+      <div className={styles.listContainer}>
         {shouldShowHeader && (
           <TodoListHeader
             isActiveFieldArray={isActiveFieldArray}

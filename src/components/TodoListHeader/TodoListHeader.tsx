@@ -42,6 +42,7 @@ const TodoListHeader = ({
     (event: React.ChangeEvent<HTMLInputElement>) => {
       event.stopPropagation();
       setIsChecked(event.target.checked);
+
       if (event.target.checked) {
         setTimeout(() => {
           const todoSection = getValues(sectionFieldName);

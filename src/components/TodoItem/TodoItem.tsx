@@ -1,7 +1,7 @@
 import { Checkbox, Input, ListItem } from "@mui/material";
 
 import { uniqueId } from "lodash";
-import { useCallback, useEffect, useRef } from "react";
+import { useCallback, useEffect, useRef, useState } from "react";
 import {
   Controller,
   FieldValues,
@@ -11,7 +11,9 @@ import {
 } from "react-hook-form";
 
 import { useTodoContext } from "@providers/TodoProvider/TodoProvider";
+import clsx from "clsx";
 import { TodoItem as TodoItemType, TodoSection } from "types";
+import styles from "./todoItem.module.css";
 
 type TodoItemProps = {
   itemIndex: number;
@@ -36,17 +38,11 @@ const TodoItem = ({
   onSetSectionActive,
 }: TodoItemProps) => {
   const fieldName = `${listFieldName}.${itemIndex}.text`;
+  const checkBoxFieldName = `${listFieldName}.${itemIndex}.isCompleted`;
   const { focusedFieldName, sectionFieldArrayName, setFocusedFieldName } =
     useTodoContext();
-  const {
-    control,
-    formState,
-
-    setFocus,
-    setValue,
-    getValues,
-    getFieldState,
-  } = useFormContext();
+  const { control, setFocus, setValue, getValues } = useFormContext();
+  const [isChecked, setIsChecked] = useState(false);
 
   const inputRef = useRef<HTMLTextAreaElement>(null);
 
@@ -107,44 +103,52 @@ const TodoItem = ({
 
   const handleRemoveItem = useCallback(
     (event: React.ChangeEvent<HTMLInputElement>) => {
+      event.stopPropagation();
+      setIsChecked(event.target.checked);
+
       if (!event.target.checked) return;
-      const todoSections = getValues("todoSections");
-      const todoSection = todoSections[sectionIndex];
-      const todoItem = todoSection.list[itemIndex];
 
-      const newTodoList = todoSection.list.filter(
-        (item: TodoItemType) => item.id !== todoItem.id
-      );
+      setTimeout(() => {
+        const todoSections = getValues("todoSections");
+        const todoSection = todoSections[sectionIndex];
+        const todoItem = todoSection.list[itemIndex];
 
-      const hasNoSubtask = newTodoList.length === 0;
-      const shouldCreateListItemFromSectionName =
-        hasNoSubtask && todoSection.name;
-      const shouldRemoveSection = hasNoSubtask && !todoSection.name;
-
-      if (shouldCreateListItemFromSectionName) {
-        const newTodoSection = {
-          id: todoSection.id,
-          name: "",
-          list: [
-            {
-              id: uniqueId(),
-              text: todoSection.name,
-            },
-          ],
-        };
-        setValue(sectionFieldArrayName, newTodoSection);
-        return;
-      }
-
-      if (shouldRemoveSection) {
-        const newTodoSections = todoSections.filter(
-          (section: TodoSection) => section.id !== todoSection.id
+        const newTodoList = todoSection.list.filter(
+          (item: TodoItemType) => item.id !== todoItem.id
         );
-        setValue("todoSections", newTodoSections);
-        return;
-      }
 
-      removeListItems(itemIndex);
+        const hasNoSubtask = newTodoList.length === 0;
+        const shouldCreateListItemFromSectionName =
+          hasNoSubtask && todoSection.name;
+        const shouldRemoveSection = hasNoSubtask && !todoSection.name;
+
+        if (shouldCreateListItemFromSectionName) {
+          const newTodoSection: TodoSection = {
+            id: todoSection.id,
+            name: "",
+            isCompleted: false,
+            list: [
+              {
+                id: uniqueId(),
+                isCompleted: false,
+                text: todoSection.name,
+              },
+            ],
+          };
+          setValue(sectionFieldArrayName, newTodoSection);
+          return;
+        }
+
+        if (shouldRemoveSection) {
+          const newTodoSections = todoSections.filter(
+            (section: TodoSection) => section.id !== todoSection.id
+          );
+          setValue("todoSections", newTodoSections);
+          return;
+        }
+
+        removeListItems(itemIndex);
+      }, 500);
     },
     [
       itemIndex,
@@ -179,7 +183,11 @@ const TodoItem = ({
 
   return (
     <ListItem>
-      <Checkbox onChange={handleRemoveItem} />
+      <Checkbox
+        onChange={(event) => {
+          handleRemoveItem(event);
+        }}
+      />
       {/* TODO: Strikethrough when deleted */}
 
       <Controller
@@ -194,6 +202,9 @@ const TodoItem = ({
                 /* Access the HTMLElement for more functionality. */
                 inputRef.current = ref;
               }}
+              className={clsx(styles.item, {
+                [styles.completed]: isChecked,
+              })}
               value={value}
               disableUnderline
               multiline

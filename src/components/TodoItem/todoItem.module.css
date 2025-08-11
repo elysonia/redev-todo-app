@@ -1,5 +1,24 @@
 .item {
-  &.completed {
-    text-decoration: line-through;
-  }
+  position: relative; /* Needed for positioning the pseudo-element */
+  display: inline-block; /* Ensures the element wraps the text */
+  text-decoration: none; /* Remove default text-decoration */
+
+  line-height: 20px;
+  min-height: 20px;
+  word-wrap: break-word;
+  /*     white-space: pre-wrap; */
+  position: relative;
+}
+.item textarea::before {
+  content: "";
+  position: relative;
+  width: calc(100%);
+  background-image: linear-gradient(black, black);
+  background-repeat: no-repeat;
+  background-size: 0% 2px;
+  transition: background-size 3s;
+  background-position: 0% 50%;
+}
+.item.strikethrough textarea::before {
+  background-size: 100% 2px;
 }

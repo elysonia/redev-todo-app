@@ -31,12 +31,14 @@ const AddTodo = ({ prependSection, removeSections }: AddTodoProps) => {
   const handleAddTodoSection = useCallback(() => {
     const todoItem: TodoItem = {
       id: uniqueId(),
+      isCompleted: false,
       text: "",
     };
 
     const todoSection: TodoSection = {
       id: uniqueId(),
       name: "",
+      isCompleted: false,
       list: [todoItem],
     };
 
