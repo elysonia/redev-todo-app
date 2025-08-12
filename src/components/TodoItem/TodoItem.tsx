@@ -1,13 +1,14 @@
 import { Checkbox, Input, ListItem } from "@mui/material";
 
 import { uniqueId } from "lodash";
-import { useCallback, useEffect, useRef, useState } from "react";
+import { useCallback, useEffect, useRef } from "react";
 import {
   Controller,
   FieldValues,
   UseFieldArrayInsert,
   UseFieldArrayRemove,
   useFormContext,
+  useWatch,
 } from "react-hook-form";
 
 import { useTodoContext } from "@providers/TodoProvider/TodoProvider";
@@ -42,11 +43,11 @@ const TodoItem = ({
   const { focusedFieldName, sectionFieldArrayName, setFocusedFieldName } =
     useTodoContext();
   const { control, setFocus, setValue, getValues } = useFormContext();
-  const [isChecked, setIsChecked] = useState(false);
+  // const [isChecked, setIsChecked] = useState(false);
 
   const inputRef = useRef<HTMLTextAreaElement>(null);
   const isActiveFieldArray = sectionFieldArrayName === sectionFieldName;
-
+  const isCompleted = useWatch({ control, name: checkBoxFieldName });
   const handleKeyDown = useCallback(
     (event: React.KeyboardEvent<HTMLInputElement>) => {
       const nextItemIndex = itemIndex + 1;
@@ -102,12 +103,13 @@ const TodoItem = ({
     [itemIndex, setFocus, getValues, removeListItems, insertListItem]
   );
 
+  /* TODO: Modify to push completed tasks to the bottom */
   const handleRemoveItem = useCallback(
     (event: React.ChangeEvent<HTMLInputElement>) => {
       if (isActiveFieldArray) return;
 
       event.stopPropagation();
-      setIsChecked(event.target.checked);
+      // setIsChecked(event.target.checked);
       if (!event.target.checked) return;
 
       setTimeout(() => {
@@ -129,6 +131,7 @@ const TodoItem = ({
             id: todoSection.id,
             name: "",
             isCompleted: false,
+            isReminderExpired: false,
             list: [
               {
                 id: uniqueId(),
@@ -184,14 +187,28 @@ const TodoItem = ({
     }
   }, [focusedFieldName, setFocus]);
 
+  console.log({ isCompleted });
   return (
     <ListItem>
-      <Checkbox
-        disabled={isActiveFieldArray}
-        onChange={(event) => {
-          handleRemoveItem(event);
+      <Controller
+        control={control}
+        name={checkBoxFieldName}
+        render={({ field: { value, onChange } }) => {
+          return (
+            <Checkbox
+              disabled={isActiveFieldArray}
+              checked={value}
+              value={value}
+              onChange={(event) => {
+                onChange(event.target.checked);
+                // setIsChecked(event.target.checked);
+                // handleRemoveItem(event);
+              }}
+            />
+          );
         }}
       />
+
       {/* TODO: Strikethrough when deleted */}
 
       <Controller
@@ -207,7 +224,7 @@ const TodoItem = ({
                 inputRef.current = ref;
               }}
               className={clsx(styles.item, {
-                [styles.completed]: isChecked,
+                [styles.completed]: isCompleted,
               })}
               value={value}
               disableUnderline

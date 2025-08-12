@@ -577,6 +577,29 @@
     prop-types "^15.8.1"
     react-is "^19.1.0"
 
+"@mui/x-date-pickers@^8.10.0":
+  version "8.10.0"
+  resolved "https://registry.yarnpkg.com/@mui/x-date-pickers/-/x-date-pickers-8.10.0.tgz#f9cc3020a3d3785751e8a0b5162c37ab75ae37d2"
+  integrity sha512-3nY+SS2/JtqcptQodECIyWKsTvPBDAcXKkyW65R4rQUCrnV6tuzriSrzy/FEYqTK0hyXYPIGJhQ6A0FbtQ9AkQ==
+  dependencies:
+    "@babel/runtime" "^7.28.2"
+    "@mui/utils" "^7.2.0"
+    "@mui/x-internals" "8.10.0"
+    "@types/react-transition-group" "^4.4.12"
+    clsx "^2.1.1"
+    prop-types "^15.8.1"
+    react-transition-group "^4.4.5"
+
+"@mui/x-internals@8.10.0":
+  version "8.10.0"
+  resolved "https://registry.yarnpkg.com/@mui/x-internals/-/x-internals-8.10.0.tgz#ecc9d2367ad1125c78d1505ed959b7f5db25713b"
+  integrity sha512-stYhWBeCKfV2/ltAWShZ3ZJ51otbqpMpC+krWWoIsxM8TuvGzwXw5YMU9L2fTb8hRstsiOCQfEzIn12Ii7+N0Q==
+  dependencies:
+    "@babel/runtime" "^7.28.2"
+    "@mui/utils" "^7.2.0"
+    reselect "^5.1.1"
+    use-sync-external-store "^1.5.0"
+
 "@napi-rs/wasm-runtime@^0.2.11":
   version "0.2.12"
   resolved "https://registry.yarnpkg.com/@napi-rs/wasm-runtime/-/wasm-runtime-0.2.12.tgz#3e78a8b96e6c33a6c517e1894efbd5385a7cb6f2"
@@ -1410,6 +1433,11 @@ data-view-byte-offset@^1.0.1:
     call-bound "^1.0.2"
     es-errors "^1.3.0"
     is-data-view "^1.0.1"
+
+dayjs@^1.11.13:
+  version "1.11.13"
+  resolved "https://registry.yarnpkg.com/dayjs/-/dayjs-1.11.13.tgz#92430b0139055c3ebb60150aa13e860a4b5a366c"
+  integrity sha512-oaMBel6gjolK862uaPQOVTA7q3TZhuSvuMQAAglQDOWYO9A91IrAOUJEyKVlqJlHE0vq5p5UXxzdPfMH/x6xNg==
 
 debug@^3.2.7:
   version "3.2.7"
@@ -2903,6 +2931,11 @@ regexp.prototype.flags@^1.5.3, regexp.prototype.flags@^1.5.4:
     gopd "^1.2.0"
     set-function-name "^2.0.2"
 
+reselect@^5.1.1:
+  version "5.1.1"
+  resolved "https://registry.yarnpkg.com/reselect/-/reselect-5.1.1.tgz#c766b1eb5d558291e5e550298adb0becc24bb72e"
+  integrity sha512-K/BG6eIky/SBpzfHZv/dd+9JBFiS4SWV7FIujVyJRux6e45+73RaUHXLmIR1f7WOMaQ0U1km6qwklRQxpJJY0w==
+
 resolve-from@^4.0.0:
   version "4.0.0"
   resolved "https://registry.yarnpkg.com/resolve-from/-/resolve-from-4.0.0.tgz#4abcd852ad32dd7baabfe9b40e00a36db5f392e6"
@@ -3395,6 +3428,11 @@ uri-js@^4.2.2:
   integrity sha512-7rKUyy33Q1yc98pQ1DAmLtwX109F7TIfWlW1Ydo8Wl1ii1SeHieeh0HHfPeL2fMXK6z0s8ecKs9frCuLJvndBg==
   dependencies:
     punycode "^2.1.0"
+
+use-sync-external-store@^1.5.0:
+  version "1.5.0"
+  resolved "https://registry.yarnpkg.com/use-sync-external-store/-/use-sync-external-store-1.5.0.tgz#55122e2a3edd2a6c106174c27485e0fd59bcfca0"
+  integrity sha512-Rb46I4cGGVBmjamjphe8L/UnvJD+uPPtTkNvX5mZgqdbavhI4EbgIWJiIHXJ8bc/i9EQGPRh4DwEURJ552Do0A==
 
 which-boxed-primitive@^1.1.0, which-boxed-primitive@^1.1.1:
   version "1.1.1"

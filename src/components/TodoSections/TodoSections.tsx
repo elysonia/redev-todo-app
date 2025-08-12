@@ -17,7 +17,6 @@ const TodoSections = () => {
     name: "todoSections",
   });
 
-  /* TODO: Add react-window */
   return (
     <div
       className={styles.todosBackground}

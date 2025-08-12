@@ -10,5 +10,7 @@ export type TodoSection = {
   id: string;
   name: string;
   isCompleted: boolean;
+  isReminderExpired: boolean;
+  reminderDateTime?: Date | string | null;
   list: TodoList;
 };

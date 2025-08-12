@@ -1,16 +1,29 @@
+import { Alarm, CheckCircle, Clear } from "@mui/icons-material";
 import {
   Button,
   ClickAwayListener,
   IconButton,
   List,
   Tooltip,
+  useForkRef,
 } from "@mui/material";
+import {
+  DateTimePickerFieldProps,
+  MobileDateTimePicker,
+  MobileDateTimePickerProps,
+} from "@mui/x-date-pickers";
+import {
+  usePickerContext,
+  useSplitFieldProps,
+} from "@mui/x-date-pickers/hooks";
+import { useValidation, validateDate } from "@mui/x-date-pickers/validation";
 import { isEmpty, uniqueId } from "lodash";
 import { useCallback, useEffect, useMemo } from "react";
-import { useFieldArray, useFormContext } from "react-hook-form";
+import { Controller, useFieldArray, useFormContext } from "react-hook-form";
 
-import { CheckCircle } from "@mui/icons-material";
 import { useTodoContext } from "@providers/TodoProvider/TodoProvider";
+import { dayjsformatter } from "@utils/dayjsUtils";
+import dayjs from "dayjs";
 import { TodoItem as TodoItemType, TodoSection } from "types";
 import TodoItem from "../TodoItem";
 import TodoListHeader from "../TodoListHeader";
@@ -21,8 +34,70 @@ type TodoListProps = {
   sectionFieldName: string;
 };
 
+const ButtonDateTimeField = (props: DateTimePickerFieldProps) => {
+  const { internalProps, forwardedProps } = useSplitFieldProps(props, "date");
+
+  const pickerContext = usePickerContext();
+  const handleRef = useForkRef(pickerContext.triggerRef, pickerContext.rootRef);
+  const { hasValidationError } = useValidation({
+    validator: validateDate,
+    value: pickerContext.value,
+    timezone: pickerContext.timezone,
+    props: internalProps,
+  });
+
+  const hasNoData = isEmpty(pickerContext.value);
+  const isAlarmExpired = dayjs(pickerContext.value).isBefore(dayjs());
+  const valueStr =
+    pickerContext.value == null
+      ? "Set reminder"
+      : dayjsformatter(pickerContext.value);
+
+  const handleClick = () => {
+    if (Notification.permission === "granted") {
+      pickerContext.setOpen((prev) => !prev);
+      return;
+    }
+
+    if ("Notification" in window) {
+      Notification.requestPermission().then((permission) => {
+        if (permission === "granted") {
+          pickerContext.setOpen((prev) => !prev);
+        } else {
+          console.log("Notification permission denied.");
+        }
+      });
+    }
+  };
+
+  return (
+    <Button
+      {...forwardedProps}
+      variant="text"
+      color={hasValidationError || isAlarmExpired ? "error" : "primary"}
+      ref={handleRef}
+      className={pickerContext.rootClassName}
+      sx={pickerContext.rootSx}
+      onClick={handleClick}
+    >
+      {valueStr}&nbsp;
+      <Alarm fontSize="small" />
+    </Button>
+  );
+};
+
+const ButtonFieldDateTimePicker = (props: MobileDateTimePickerProps) => {
+  return (
+    <MobileDateTimePicker
+      {...props}
+      slots={{ ...props.slots, clearIcon: Clear, field: ButtonDateTimeField }}
+    />
+  );
+};
+
 const TodoList = ({ sectionIndex, sectionFieldName }: TodoListProps) => {
   const fieldName = `todoSections.${sectionIndex}.list`;
+  const reminderDateFieldName = `todoSections.${sectionIndex}.reminderDateTime`;
   const {
     focusedFieldName,
     sectionFieldArrayName,
@@ -70,6 +145,7 @@ const TodoList = ({ sectionIndex, sectionFieldName }: TodoListProps) => {
         id: todoSection.id,
         name: "",
         isCompleted: false,
+        isReminderExpired: false,
         list: [
           {
             id: uniqueId(),
@@ -161,13 +237,30 @@ const TodoList = ({ sectionIndex, sectionFieldName }: TodoListProps) => {
         </List>
         {isActiveFieldArray && (
           <div className={styles.listFooterContainer}>
-            {/* TODO: Complete alarm function */}
-            <Button>Set reminder</Button>
+            <Controller
+              control={control}
+              name={reminderDateFieldName}
+              render={({ field: { value, onChange } }) => {
+                console.log({ value });
+                return (
+                  <ButtonFieldDateTimePicker
+                    disablePast
+                    value={value ? dayjs(value) : value}
+                    sx={{
+                      textTransform: "capitalize",
+                    }}
+                    slotProps={{
+                      actionBar: {
+                        actions: ["clear", "cancel", "nextOrAccept"],
+                      },
+                    }}
+                    onChange={onChange}
+                  />
+                );
+              }}
+            />
             <Tooltip describeChild title="Done">
-              <IconButton
-                className={styles.checkCirclIcon}
-                onClick={handleClickAway}
-              >
+              <IconButton onClick={handleClickAway}>
                 <CheckCircle fontSize="large" />
               </IconButton>
             </Tooltip>

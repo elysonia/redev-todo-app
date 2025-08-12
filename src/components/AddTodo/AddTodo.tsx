@@ -39,6 +39,8 @@ const AddTodo = ({ prependSection, removeSections }: AddTodoProps) => {
       id: uniqueId(),
       name: "",
       isCompleted: false,
+      isReminderExpired: false,
+      reminderDateTime: null,
       list: [todoItem],
     };
 
