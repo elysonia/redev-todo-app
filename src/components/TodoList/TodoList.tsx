@@ -1,106 +1,21 @@
-import { Alarm, CheckCircle, Clear } from "@mui/icons-material";
-import {
-  Button,
-  ClickAwayListener,
-  IconButton,
-  List,
-  Tooltip,
-  useForkRef,
-} from "@mui/material";
-import {
-  DateTimePickerFieldProps,
-  MobileDateTimePicker,
-  MobileDateTimePickerProps,
-} from "@mui/x-date-pickers";
-import {
-  usePickerContext,
-  useSplitFieldProps,
-} from "@mui/x-date-pickers/hooks";
-import { useValidation, validateDate } from "@mui/x-date-pickers/validation";
+import { CheckCircle } from "@mui/icons-material";
+import { ClickAwayListener, IconButton, List, Tooltip } from "@mui/material";
+import dayjs from "dayjs";
 import { isEmpty, uniqueId } from "lodash";
-import React, { useCallback, useEffect, useMemo } from "react";
+import { useCallback, useEffect, useMemo } from "react";
 import { Controller, useFieldArray, useFormContext } from "react-hook-form";
 
+import ButtonFieldDateTimePicker from "@components/ButtonDateTimePicker";
+import TodoItem from "@components/TodoItem";
+import TodoListHeader from "@components/TodoListHeader";
 import { useTodoContext } from "@providers/TodoProvider/TodoProvider";
-import { dayjsformatter } from "@utils/dayjsUtils";
-import dayjs from "dayjs";
 import { TodoItem as TodoItemType, TodoSection } from "types";
-import TodoItem from "../TodoItem";
-import TodoListHeader from "../TodoListHeader";
 import styles from "./todoList.module.css";
 
 type TodoListProps = {
   sectionIndex: number;
   sectionFieldName: string;
 };
-
-const ButtonDateTimeField = React.memo((props: DateTimePickerFieldProps) => {
-  const { internalProps, forwardedProps } = useSplitFieldProps(
-    props,
-    "date-time"
-  );
-
-  const pickerContext = usePickerContext();
-  const handleRef = useForkRef(pickerContext.triggerRef, pickerContext.rootRef);
-  const { hasValidationError } = useValidation({
-    validator: validateDate,
-    value: pickerContext.value,
-    timezone: pickerContext.timezone,
-    props: internalProps,
-  });
-
-  const isAlarmExpired = useMemo(() => {
-    return dayjs(pickerContext.value).isBefore(dayjs());
-  }, [pickerContext]);
-
-  const valueStr = useMemo(() => {
-    return pickerContext.value == null
-      ? "Set reminder"
-      : dayjsformatter(pickerContext.value);
-  }, [pickerContext]);
-
-  const handleClick = useCallback(() => {
-    if (Notification.permission === "granted") {
-      pickerContext.setOpen((prev) => !prev);
-      return;
-    }
-
-    if ("Notification" in window) {
-      Notification.requestPermission().then((permission) => {
-        if (permission === "granted") {
-          pickerContext.setOpen((prev) => !prev);
-        }
-      });
-    }
-  }, [pickerContext]);
-
-  return (
-    <Button
-      {...forwardedProps}
-      variant="text"
-      color={hasValidationError || isAlarmExpired ? "error" : "primary"}
-      ref={handleRef}
-      className={pickerContext.rootClassName}
-      style={{ padding: "4px 18px", borderRadius: "15px" }}
-      sx={pickerContext.rootSx}
-      onClick={handleClick}
-    >
-      {valueStr}&nbsp;
-      <Alarm fontSize="small" />
-    </Button>
-  );
-});
-
-const ButtonFieldDateTimePicker = React.memo(
-  (props: MobileDateTimePickerProps) => {
-    return (
-      <MobileDateTimePicker
-        {...props}
-        slots={{ ...props.slots, clearIcon: Clear, field: ButtonDateTimeField }}
-      />
-    );
-  }
-);
 
 const TodoList = ({ sectionIndex, sectionFieldName }: TodoListProps) => {
   const fieldName = `todoSections.${sectionIndex}.list`;
