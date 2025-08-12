@@ -58,8 +58,7 @@ const TodoProvider = ({ children }: PropsWithChildren) => {
 
   const [snackbar, setSnackbar] = useState<SnackbarProps>({});
   const [shouldSaveOnIdle, setShouldSaveOnIdle] = useState(false);
-  const [shouldRestoreStateFromStore, setShouldRestoreStateFromStore] =
-    useState(true);
+  const [shouldRestoreDraft, setShouldRestoreDraft] = useState(true);
 
   const {
     todoSections,
@@ -120,6 +119,18 @@ const TodoProvider = ({ children }: PropsWithChildren) => {
     }, 500),
     [sectionFieldArrayName, focusedFieldName, updateTodoDraft, getValues]
   );
+
+  const showNotification = (sectionName: string, date: Date | string) => {
+    if (Notification.permission === "granted") {
+      new Notification(`Alarm`, {
+        body: sectionName,
+      });
+      /* TODO: Play sound */
+    } else {
+      console.log("Cannot show notification: permission not granted.");
+      /* TODO: In-app notif + sound*/
+    }
+  };
 
   const todoValue: TodoContextType = useMemo(() => {
     return {
@@ -184,13 +195,13 @@ const TodoProvider = ({ children }: PropsWithChildren) => {
   /* If the form somehow did not save before exiting, restore the draft. */
   useEffect(() => {
     if (!isHydrated) return;
-    if (!shouldRestoreStateFromStore) return;
+    if (!shouldRestoreDraft) return;
     if (!todoDraft.isDirty) {
-      setShouldRestoreStateFromStore(false);
+      setShouldRestoreDraft(false);
       return;
     }
 
-    if (shouldRestoreStateFromStore && todoDraft.isDirty) {
+    if (shouldRestoreDraft && todoDraft.isDirty) {
       setFocusedFieldName(todoDraft.focusedFieldName);
       setSectionFieldArrayName(todoDraft.sectionFieldArrayName);
       setValue("todoSections", todoDraft.values);
@@ -198,17 +209,17 @@ const TodoProvider = ({ children }: PropsWithChildren) => {
         open: true,
         message: `Unsaved changes detected, draft restored`,
       });
-      setShouldRestoreStateFromStore(false);
+      setShouldRestoreDraft(false);
     }
   }, [
     isHydrated,
-    shouldRestoreStateFromStore,
+    shouldRestoreDraft,
     todoDraft,
     setValue,
     setSnackbar,
     setFocusedFieldName,
     setSectionFieldArrayName,
-    setShouldRestoreStateFromStore,
+    setShouldRestoreDraft,
   ]);
 
   return (
