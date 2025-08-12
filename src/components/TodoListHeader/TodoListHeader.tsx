@@ -10,7 +10,7 @@ import styles from "./todoListHeader.module.css";
 type TodoListHeaderProps = {
   isActiveFieldArray: boolean;
   sectionFieldName: string;
-  onSetSectionActive: () => void;
+  onSetSectionActive: (nextFocusedFieldName?: string) => void;
 };
 
 const TodoListHeader = ({
@@ -35,7 +35,7 @@ const TodoListHeader = ({
 
     /* Record the field name so we can re-focus to it upon re-render on save. */
     setFocusedFieldName(fieldName);
-    onSetSectionActive();
+    onSetSectionActive(fieldName);
   }, [setFocusedFieldName, fieldName]);
 
   const handleRemove = useCallback(

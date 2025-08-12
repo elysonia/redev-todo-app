@@ -94,25 +94,33 @@ const TodoList = ({ sectionIndex, sectionFieldName }: TodoListProps) => {
     setSnackbar({ open: true, message: `Tasks saved` });
   }, [sectionIndex, fieldName, setSnackbar, setSectionFieldArrayName]);
 
-  const handleSetSectionActive = useCallback(() => {
-    if (isActiveFieldArray) return;
-    if (focusedFieldName) return;
+  const handleSetSectionActive = useCallback(
+    (nextFocusedFieldName?: string) => {
+      if (isActiveFieldArray) return;
+      if (focusedFieldName) return;
 
-    const lastItemFieldName = `${fieldName}.${
-      getValues(fieldName).length - 1
-    }.text`;
+      if (nextFocusedFieldName) {
+        setFocus(nextFocusedFieldName);
+      } else {
+        const lastItemFieldName = `${fieldName}.${
+          getValues(fieldName).length - 1
+        }.text`;
 
-    setFocus(lastItemFieldName);
-    setSectionFieldArrayName(sectionFieldName);
-  }, [
-    isActiveFieldArray,
-    sectionFieldName,
-    focusedFieldName,
-    fieldName,
-    setFocus,
-    setSectionFieldArrayName,
-    getValues,
-  ]);
+        setFocus(lastItemFieldName);
+      }
+
+      setSectionFieldArrayName(sectionFieldName);
+    },
+    [
+      isActiveFieldArray,
+      sectionFieldName,
+      focusedFieldName,
+      fieldName,
+      setFocus,
+      setSectionFieldArrayName,
+      getValues,
+    ]
+  );
 
   useEffect(() => {
     if (!isActiveFieldArray) return;
@@ -156,7 +164,10 @@ const TodoList = ({ sectionIndex, sectionFieldName }: TodoListProps) => {
             {/* TODO: Complete alarm function */}
             <Button>Set reminder</Button>
             <Tooltip describeChild title="Done">
-              <IconButton onClick={handleClickAway}>
+              <IconButton
+                className={styles.checkCirclIcon}
+                onClick={handleClickAway}
+              >
                 <CheckCircle fontSize="large" />
               </IconButton>
             </Tooltip>

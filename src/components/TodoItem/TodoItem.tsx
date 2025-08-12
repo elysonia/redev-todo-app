@@ -17,15 +17,15 @@ import styles from "./todoItem.module.css";
 
 type TodoItemProps = {
   itemIndex: number;
+  sectionIndex: number;
+  sectionFieldName: string;
+  listFieldName: string;
   insertListItem: UseFieldArrayInsert<
     FieldValues,
     `todoSections.${number}.list`
   >;
   removeListItems: UseFieldArrayRemove;
-  sectionIndex: number;
-  sectionFieldName: string;
-  listFieldName: string;
-  onSetSectionActive: () => void;
+  onSetSectionActive: (nextFocusedFieldName?: string) => void;
 };
 
 const TodoItem = ({
@@ -45,6 +45,7 @@ const TodoItem = ({
   const [isChecked, setIsChecked] = useState(false);
 
   const inputRef = useRef<HTMLTextAreaElement>(null);
+  const isActiveFieldArray = sectionFieldArrayName === sectionFieldName;
 
   const handleKeyDown = useCallback(
     (event: React.KeyboardEvent<HTMLInputElement>) => {
@@ -103,9 +104,10 @@ const TodoItem = ({
 
   const handleRemoveItem = useCallback(
     (event: React.ChangeEvent<HTMLInputElement>) => {
+      if (isActiveFieldArray) return;
+
       event.stopPropagation();
       setIsChecked(event.target.checked);
-
       if (!event.target.checked) return;
 
       setTimeout(() => {
@@ -154,6 +156,7 @@ const TodoItem = ({
       itemIndex,
       sectionIndex,
       sectionFieldName,
+      isActiveFieldArray,
       setValue,
       getValues,
       removeListItems,
@@ -171,7 +174,7 @@ const TodoItem = ({
 
     /* Record the field name so we can re-focus to it upon re-render on save. */
     setFocusedFieldName(fieldName);
-    onSetSectionActive();
+    onSetSectionActive(fieldName);
   }, [setFocusedFieldName, onSetSectionActive, fieldName]);
 
   useEffect(() => {
@@ -184,6 +187,7 @@ const TodoItem = ({
   return (
     <ListItem>
       <Checkbox
+        disabled={isActiveFieldArray}
         onChange={(event) => {
           handleRemoveItem(event);
         }}
