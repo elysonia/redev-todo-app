@@ -33,6 +33,9 @@ const theme = createTheme({
     MuiCheckbox: {
       defaultProps: {
         sx: {
+          "&.Mui-disabled": {
+            svg: { fill: "rgb(from var(--foreground) r g b / 0.4 )" },
+          },
           svg: {
             fill: "var(--foreground)",
           },
