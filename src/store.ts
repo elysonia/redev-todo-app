@@ -12,6 +12,7 @@ export type TodoDraft = {
 export type TodoState = {
   todoSections: TodoSection[];
   todoDraft: TodoDraft;
+  todoHistory: TodoSection[];
   isHydrated: boolean;
 };
 
@@ -25,16 +26,19 @@ export const defaultTodoDraft: TodoDraft = {
 export type TodoActions = {
   setIsHydrated: (isHydrated: boolean) => void;
   updateTodoSections: (sections: TodoSection[]) => void;
-  updateTodoDraft: (newTodoFormState: TodoDraft) => void;
+  updateTodoDraft: (newTodoDraft: TodoDraft) => void;
+  updateTodoHistory: (newTodoHistory: TodoSection[]) => void;
 };
 
 export type TodoStore = TodoState & TodoActions;
 
 const defaultState: TodoState = {
-  /* Data to persist. */
+  /* List of incomplete todos. */
   todoSections: [],
-  /* Saves current form state. */
+  /* Saves todo editing progress. */
   todoDraft: defaultTodoDraft,
+  /* List of completed todos. */
+  todoHistory: [],
 
   isHydrated: false,
 };
@@ -69,6 +73,17 @@ const createTodoStore = (initState: TodoState = defaultState) => {
               },
               undefined,
               "todo/updateTodoDraft"
+            ),
+          updateTodoHistory: (newTodoHistory: TodoSection[]) =>
+            set(
+              (state: TodoStore) => {
+                return {
+                  ...state,
+                  todoHistory: newTodoHistory,
+                };
+              },
+              undefined,
+              "todo/updateTodoHistory"
             ),
         }),
         {
