@@ -18,8 +18,7 @@ import {
 } from "@mui/x-date-pickers/hooks";
 import { useValidation, validateDate } from "@mui/x-date-pickers/validation";
 import { isEmpty, uniqueId } from "lodash";
-import { useCallback, useEffect, useMemo } from "react";
-import { isBrowser } from "react-device-detect";
+import React, { useCallback, useEffect, useMemo } from "react";
 import { Controller, useFieldArray, useFormContext } from "react-hook-form";
 
 import { useTodoContext } from "@providers/TodoProvider/TodoProvider";
@@ -35,8 +34,11 @@ type TodoListProps = {
   sectionFieldName: string;
 };
 
-const ButtonDateTimeField = (props: DateTimePickerFieldProps) => {
-  const { internalProps, forwardedProps } = useSplitFieldProps(props, "date");
+const ButtonDateTimeField = React.memo((props: DateTimePickerFieldProps) => {
+  const { internalProps, forwardedProps } = useSplitFieldProps(
+    props,
+    "date-time"
+  );
 
   const pickerContext = usePickerContext();
   const handleRef = useForkRef(pickerContext.triggerRef, pickerContext.rootRef);
@@ -47,18 +49,17 @@ const ButtonDateTimeField = (props: DateTimePickerFieldProps) => {
     props: internalProps,
   });
 
-  const hasNoData = isEmpty(pickerContext.value);
-  const isAlarmExpired = dayjs(pickerContext.value).isBefore(dayjs());
+  const isAlarmExpired = useMemo(() => {
+    return dayjs(pickerContext.value).isBefore(dayjs());
+  }, [pickerContext]);
 
-  const valueStr = isBrowser
-    ? pickerContext.value == null
+  const valueStr = useMemo(() => {
+    return pickerContext.value == null
       ? "Set reminder"
-      : dayjsformatter(pickerContext.value)
-    : "Not available on mobile";
+      : dayjsformatter(pickerContext.value);
+  }, [pickerContext]);
 
-  const handleClick = () => {
-    if (!isBrowser) return;
-
+  const handleClick = useCallback(() => {
     if (Notification.permission === "granted") {
       pickerContext.setOpen((prev) => !prev);
       return;
@@ -68,22 +69,19 @@ const ButtonDateTimeField = (props: DateTimePickerFieldProps) => {
       Notification.requestPermission().then((permission) => {
         if (permission === "granted") {
           pickerContext.setOpen((prev) => !prev);
-        } else {
-          console.log("Notification permission denied.");
         }
       });
     }
-  };
+  }, [pickerContext]);
 
   return (
     <Button
       {...forwardedProps}
-      disabled={!isBrowser}
       variant="text"
       color={hasValidationError || isAlarmExpired ? "error" : "primary"}
       ref={handleRef}
       className={pickerContext.rootClassName}
-      style={{ padding: "4px 18px" }}
+      style={{ padding: "4px 18px", borderRadius: "15px" }}
       sx={pickerContext.rootSx}
       onClick={handleClick}
     >
@@ -91,16 +89,18 @@ const ButtonDateTimeField = (props: DateTimePickerFieldProps) => {
       <Alarm fontSize="small" />
     </Button>
   );
-};
+});
 
-const ButtonFieldDateTimePicker = (props: MobileDateTimePickerProps) => {
-  return (
-    <MobileDateTimePicker
-      {...props}
-      slots={{ ...props.slots, clearIcon: Clear, field: ButtonDateTimeField }}
-    />
-  );
-};
+const ButtonFieldDateTimePicker = React.memo(
+  (props: MobileDateTimePickerProps) => {
+    return (
+      <MobileDateTimePicker
+        {...props}
+        slots={{ ...props.slots, clearIcon: Clear, field: ButtonDateTimeField }}
+      />
+    );
+  }
+);
 
 const TodoList = ({ sectionIndex, sectionFieldName }: TodoListProps) => {
   const fieldName = `todoSections.${sectionIndex}.list`;
