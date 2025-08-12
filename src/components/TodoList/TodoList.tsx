@@ -19,6 +19,7 @@ import {
 import { useValidation, validateDate } from "@mui/x-date-pickers/validation";
 import { isEmpty, uniqueId } from "lodash";
 import { useCallback, useEffect, useMemo } from "react";
+import { isBrowser } from "react-device-detect";
 import { Controller, useFieldArray, useFormContext } from "react-hook-form";
 
 import { useTodoContext } from "@providers/TodoProvider/TodoProvider";
@@ -48,12 +49,16 @@ const ButtonDateTimeField = (props: DateTimePickerFieldProps) => {
 
   const hasNoData = isEmpty(pickerContext.value);
   const isAlarmExpired = dayjs(pickerContext.value).isBefore(dayjs());
-  const valueStr =
-    pickerContext.value == null
+
+  const valueStr = isBrowser
+    ? pickerContext.value == null
       ? "Set reminder"
-      : dayjsformatter(pickerContext.value);
+      : dayjsformatter(pickerContext.value)
+    : "Not available on mobile";
 
   const handleClick = () => {
+    if (!isBrowser) return;
+
     if (Notification.permission === "granted") {
       pickerContext.setOpen((prev) => !prev);
       return;
@@ -73,10 +78,12 @@ const ButtonDateTimeField = (props: DateTimePickerFieldProps) => {
   return (
     <Button
       {...forwardedProps}
+      disabled={!isBrowser}
       variant="text"
       color={hasValidationError || isAlarmExpired ? "error" : "primary"}
       ref={handleRef}
       className={pickerContext.rootClassName}
+      style={{ padding: "4px 18px" }}
       sx={pickerContext.rootSx}
       onClick={handleClick}
     >

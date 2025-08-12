@@ -1,4 +1,4 @@
-.listHeaderContainer li {
+.listHeaderContainer {
   background-color: rgb(from var(--background) r g b/ 0.3);
   border-radius: 14px 14px 0px 0px;
   box-shadow: 0 2px 16px rgb(from var(--foreground) r g b / 0.3);
@@ -6,4 +6,26 @@
   backdrop-filter: blur(3px);
   padding: "4px 10px";
   color: var(--foreground);
+  padding: 10px 10px;
+  display: inline-flex;
+  justify-content: space-between;
+  flex-wrap: wrap;
+  align-items: center;
+  width: 100%;
+}
+
+.listHeaderContainer.isSectionActive textarea {
+  padding: 5px 10px;
+}
+
+.alarmText {
+  display: inline-flex;
+  align-items: center;
+  font-size: 0.8rem;
+  padding: 0px 12px;
+  text-transform: capitalize;
+  color: rgb(
+    from var(--foreground) abs(calc(r - 100)) abs(calc(g - 10))
+      abs(calc(b - 100)) / 0.8
+  );
 }

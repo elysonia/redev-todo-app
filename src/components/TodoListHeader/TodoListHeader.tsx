@@ -1,9 +1,12 @@
-import { Checkbox, Input, ListSubheader } from "@mui/material";
-import { useCallback, useEffect, useRef, useState } from "react";
-import { Controller, useFormContext } from "react-hook-form";
+import { Checkbox, Input } from "@mui/material";
+import { useCallback, useEffect, useMemo, useRef, useState } from "react";
+import { Controller, useFormContext, useWatch } from "react-hook-form";
 
+import { Alarm } from "@mui/icons-material";
 import { useTodoContext } from "@providers/TodoProvider/TodoProvider";
+import { dayjsformatter } from "@utils/dayjsUtils";
 import { defaultTodoSection } from "@utils/todoUtils";
+import clsx from "clsx";
 import { TodoSection } from "types";
 import styles from "./todoListHeader.module.css";
 
@@ -23,7 +26,10 @@ const TodoListHeader = ({
   const { focusedFieldName, setFocusedFieldName } = useTodoContext();
   const { control, setFocus, setValue, getValues } = useFormContext();
   const inputRef = useRef<HTMLTextAreaElement>(null);
-
+  const reminderDateTime = useWatch({
+    control,
+    name: `${sectionFieldName}.reminderDateTime`,
+  });
   const handleFocus = useCallback(() => {
     if (!inputRef.current) return;
     const cursorLocation = inputRef.current.textLength;
@@ -37,6 +43,11 @@ const TodoListHeader = ({
     setFocusedFieldName(fieldName);
     onSetSectionActive(fieldName);
   }, [setFocusedFieldName, fieldName]);
+
+  const reminderText = useMemo(() => {
+    if (!reminderDateTime) return "";
+    return dayjsformatter(reminderDateTime);
+  }, [reminderDateTime]);
 
   const handleRemove = useCallback(
     (event: React.ChangeEvent<HTMLInputElement>) => {
@@ -65,8 +76,12 @@ const TodoListHeader = ({
   }, [focusedFieldName]);
 
   return (
-    <div className={styles.listHeaderContainer}>
-      <ListSubheader>
+    <div
+      className={clsx(styles.listHeaderContainer, {
+        [styles.isSectionActive]: isActiveFieldArray,
+      })}
+    >
+      <div>
         {(!isActiveFieldArray || isChecked) && (
           <Checkbox onChange={handleRemove} />
         )}
@@ -92,7 +107,13 @@ const TodoListHeader = ({
             );
           }}
         />
-      </ListSubheader>
+      </div>
+      {reminderText && !isActiveFieldArray && (
+        <span className={styles.alarmText}>
+          {reminderText}&nbsp;
+          <Alarm fontSize="0.8rem" />
+        </span>
+      )}
     </div>
   );
 };
