@@ -36,6 +36,11 @@ const theme = createTheme({
           "&.Mui-disabled": {
             svg: { fill: "rgb(from var(--foreground) r g b / 0.4 )" },
           },
+          "&.Mui-checked": {
+            svg: {
+              fill: "rgb(from var(--foreground) abs(calc(r - 150)) abs(calc(g - 100)) abs(calc(b - 100)) / 0.8 )",
+            },
+          },
           svg: {
             fill: "var(--foreground)",
           },

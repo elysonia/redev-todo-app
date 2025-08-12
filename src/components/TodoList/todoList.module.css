@@ -5,7 +5,7 @@
   -webkit-backdrop-filter: blur(10px);
   backdrop-filter: blur(10px);
   border: 1px solid rgb(from var(--background) r g b / 0.3);
-  min-width: 300px;
+  width: clamp(30%, 450px, 300px);
 }
 
 .listFooterContainer {

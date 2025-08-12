@@ -1,24 +1,18 @@
 .item {
-  position: relative; /* Needed for positioning the pseudo-element */
-  display: inline-block; /* Ensures the element wraps the text */
-  text-decoration: none; /* Remove default text-decoration */
-
-  line-height: 20px;
-  min-height: 20px;
+  position: relative;
+  display: inline-block;
+  text-decoration: none;
   word-wrap: break-word;
-  /*     white-space: pre-wrap; */
-  position: relative;
 }
-.item textarea::before {
-  content: "";
-  position: relative;
-  width: calc(100%);
-  background-image: linear-gradient(black, black);
-  background-repeat: no-repeat;
-  background-size: 0% 2px;
-  transition: background-size 3s;
-  background-position: 0% 50%;
+
+.item.completed svg {
+  fill: rgb(from var(--foreground) r g b / 0.6);
 }
-.item.strikethrough textarea::before {
-  background-size: 100% 2px;
+
+.item.completed textarea {
+  text-decoration: line-through;
+  color: rgb(
+    from var(--foreground) abs(calc(r - 150)) abs(calc(g - 100))
+      abs(calc(b - 100)) / 0.8
+  );
 }
