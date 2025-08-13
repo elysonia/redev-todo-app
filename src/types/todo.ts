@@ -1,3 +1,5 @@
+import { Dayjs } from "dayjs";
+
 export type TodoItem = {
   id: string;
   isCompleted: boolean;
@@ -11,6 +13,6 @@ export type TodoSection = {
   name: string;
   isCompleted: boolean;
   isReminderExpired: boolean;
-  reminderDateTime?: Date | string | null;
+  reminderDateTime?: Date | Dayjs | string | null;
   list: TodoList;
 };

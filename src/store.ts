@@ -1,3 +1,4 @@
+import { AlarmTypeEnum } from "enums/alarmEnum";
 import { TodoSection } from "types";
 import { createStore } from "zustand";
 import { devtools, persist } from "zustand/middleware";
@@ -13,6 +14,8 @@ export type TodoState = {
   todoSections: TodoSection[];
   todoDraft: TodoDraft;
   todoHistory: TodoSection[];
+  alarmType: AlarmTypeEnum;
+  alarmVolume: number;
   isHydrated: boolean;
 };
 
@@ -28,6 +31,8 @@ export type TodoActions = {
   updateTodoSections: (sections: TodoSection[]) => void;
   updateTodoDraft: (newTodoDraft: TodoDraft) => void;
   updateTodoHistory: (newTodoHistory: TodoSection[]) => void;
+  updateAlarmType: (alarmType: AlarmTypeEnum) => void;
+  updateAlarmVolume: (alarmVolume: number) => void;
 };
 
 export type TodoStore = TodoState & TodoActions;
@@ -37,9 +42,12 @@ const defaultState: TodoState = {
   todoSections: [],
   /* Saves todo editing progress. */
   todoDraft: defaultTodoDraft,
+
+  /* TODO: Implement history */
   /* List of completed todos. */
   todoHistory: [],
-
+  alarmType: AlarmTypeEnum.dreamscape,
+  alarmVolume: 50,
   isHydrated: false,
 };
 
@@ -84,6 +92,25 @@ const createTodoStore = (initState: TodoState = defaultState) => {
               },
               undefined,
               "todo/updateTodoHistory"
+            ),
+          updateAlarmType: (alarmType: AlarmTypeEnum) =>
+            set(
+              (state: TodoStore) => {
+                return {
+                  ...state,
+                  alarmType,
+                };
+              },
+              undefined,
+              "todo/updateAlarmType"
+            ),
+          updateAlarmVolume: (alarmVolume: number) =>
+            set(
+              (state: TodoStore) => {
+                return { ...state, alarmVolume };
+              },
+              undefined,
+              "todo/updateAlarmVolume"
             ),
         }),
         {

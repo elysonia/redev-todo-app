@@ -2,6 +2,7 @@
 
 import { Snackbar, SnackbarProps } from "@mui/material";
 import { useIdle } from "@uidotdev/usehooks";
+import dayjs from "dayjs";
 import { debounce, isEmpty } from "lodash";
 import {
   createContext,
@@ -35,7 +36,7 @@ type RHFSubscribeProps = Partial<FormState<TodoForm>> & {
   type?: EventType;
 };
 
-type TodoContextType = {
+type TodoContextProps = {
   snackbar: SnackbarProps;
   todoSections: TodoSection[];
   focusedFieldName: string;
@@ -46,7 +47,7 @@ type TodoContextType = {
   onSubmit: (e?: React.BaseSyntheticEvent) => Promise<void>;
 };
 
-export const TodoContext = createContext<TodoContextType>({});
+export const TodoContext = createContext<TodoContextProps>({});
 
 const TodoProvider = ({ children }: PropsWithChildren) => {
   /* TODO: Replace with local hook because I'm not using the library much */
@@ -120,10 +121,44 @@ const TodoProvider = ({ children }: PropsWithChildren) => {
     [sectionFieldArrayName, focusedFieldName, updateTodoDraft, getValues]
   );
 
-  const showNotification = (sectionName: string, date: Date | string) => {
+  const activeRemindersArray = useMemo(() => {
+    return todoSections
+      .filter(
+        (section) =>
+          !section.isCompleted &&
+          section.reminderDateTime &&
+          !section.isReminderExpired
+      )
+      .map((section) => {
+        return {
+          ...section,
+          reminderDateTime: dayjs(section.reminderDateTime),
+        };
+      })
+      .sort((a, b) => {
+        const reminderA = a.reminderDateTime;
+        const reminderB = b.reminderDateTime;
+
+        if (reminderA.isBefore(reminderB)) return -1;
+        if (reminderA.isAfter(reminderB)) return 1;
+
+        /* Time is considered equal */
+        return 0;
+      });
+  }, [todoSections]);
+
+  const showNotification = (reminder: TodoSection) => {
     if (Notification.permission === "granted") {
-      new Notification(`Alarm`, {
-        body: sectionName,
+      const incompleteTasks = reminder.list.filter((item) => !item.isCompleted);
+
+      const incompleteTaskPreviewString = incompleteTasks
+        .slice(0, 5)
+        .map((task) => task.text)
+        .join(", ");
+
+      const body = `${incompleteTasks.length} out of ${reminder.list.length} left to do.\nIncludes: ${incompleteTaskPreviewString}`;
+      new Notification(`Reminder for ${reminder.name}`, {
+        body,
       });
       /* TODO: Play sound */
     } else {
@@ -132,7 +167,7 @@ const TodoProvider = ({ children }: PropsWithChildren) => {
     }
   };
 
-  const todoValue: TodoContextType = useMemo(() => {
+  const todoValue: TodoContextProps = useMemo(() => {
     return {
       snackbar,
       todoSections,
@@ -221,6 +256,30 @@ const TodoProvider = ({ children }: PropsWithChildren) => {
     setSectionFieldArrayName,
     setShouldRestoreDraft,
   ]);
+
+  /* Send desktop notification when the reminder date times match current time. */
+  useEffect(() => {
+    const timer = setInterval(() => {
+      const currentTime = dayjs().format("YYYY:M:D:hh:mm");
+      const formValues = getValues("todoSections");
+
+      activeRemindersArray.forEach((reminder) => {
+        const reminderTime = reminder.reminderDateTime.format("YYYY:M:D:hh:mm");
+        if (currentTime === reminderTime) {
+          const sectionIndex = formValues.findIndex(
+            (section) => section.id === reminder.id
+          );
+          showNotification(reminder);
+          setValue(`todoSections.${sectionIndex}`, {
+            ...reminder,
+            isReminderExpired: true,
+          });
+        }
+      });
+    }, 10000);
+
+    return () => clearInterval(timer);
+  }, [activeRemindersArray, setValue, getValues]);
 
   return (
     <TodoContext.Provider value={todoValue}>
