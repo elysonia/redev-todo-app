@@ -100,8 +100,11 @@ const NotificationStatusText = ({
         <NotificationsOff fontSize="small" />
       )}
       <span>
-        Notifications {isNotificationEnabled ? "enabled" : "disabled"}.
-        <br />
+        Alarms will{" "}
+        {isNotificationEnabled
+          ? "have desktop notifications"
+          : "not have desktop notifications"}
+        .
         {browserSettingsTutorialUrl ? (
           <a target="_blank" href={browserSettingsTutorialUrl}>
             Learn how to change this setting.
@@ -131,6 +134,11 @@ const AlarmPlayer = () => {
   const handleChangeAlarmClick = (
     event: React.MouseEvent<HTMLButtonElement>
   ) => {
+    if (anchorEl) {
+      handleClose();
+      return;
+    }
+
     setAnchorEl(event.currentTarget);
   };
 
@@ -159,6 +167,7 @@ const AlarmPlayer = () => {
           <span>Alarm Settings</span>
         </div>
       </Tooltip>
+
       <ClickAwayListener
         mouseEvent={anchorEl ? "onMouseDown" : false}
         touchEvent={anchorEl ? "onTouchStart" : false}
