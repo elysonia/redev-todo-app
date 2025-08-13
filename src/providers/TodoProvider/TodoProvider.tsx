@@ -22,6 +22,7 @@ import {
 } from "react-hook-form";
 import { useShallow } from "zustand/react/shallow";
 
+import { useAudioPlayerContext } from "@providers/AudioPlayerProvider/AudioPlayerProvider";
 import { useTodoStore } from "@providers/TodoStoreProvider";
 import { defaultTodoDraft } from "store";
 import { TodoSection } from "types";
@@ -40,20 +41,32 @@ type TodoContextProps = {
   snackbar: SnackbarProps;
   todoSections: TodoSection[];
   focusedFieldName: string;
-  sectionFieldArrayName: string;
+  sectionFieldArrayName: `todoSections.${number}` | "";
   setSnackbar: (props: SnackbarProps) => void;
   setFocusedFieldName: (fieldName: string) => void;
-  setSectionFieldArrayName: (sectionId: string) => void;
+  setSectionFieldArrayName: (sectionId: `todoSections.${number}` | "") => void;
   onSubmit: (e?: React.BaseSyntheticEvent) => Promise<void>;
 };
 
-export const TodoContext = createContext<TodoContextProps>({});
+const defaultTodoContext: TodoContextProps = {
+  snackbar: {},
+  todoSections: [],
+  focusedFieldName: "",
+  sectionFieldArrayName: "",
+  setSnackbar: () => {},
+  setFocusedFieldName: () => {},
+  setSectionFieldArrayName: () => {},
+  onSubmit: async () => {},
+};
+export const TodoContext = createContext<TodoContextProps>(defaultTodoContext);
 
 const TodoProvider = ({ children }: PropsWithChildren) => {
   /* TODO: Replace with local hook because I'm not using the library much */
   const isIdle = useIdle(5000);
   /* Path to the current section in the form. */
-  const [sectionFieldArrayName, setSectionFieldArrayName] = useState("");
+  const [sectionFieldArrayName, setSectionFieldArrayName] = useState<
+    `todoSections.${number}` | ""
+  >("");
   /* Path to the current field in focus in the form. */
   const [focusedFieldName, setFocusedFieldName] = useState("");
 
@@ -65,9 +78,11 @@ const TodoProvider = ({ children }: PropsWithChildren) => {
     todoSections,
     todoDraft,
     isHydrated,
+    updateTodoSection,
     updateTodoSections,
     updateTodoDraft,
   } = useTodoStore(useShallow((state) => state));
+  const { isPlaying, onPlayAudio } = useAudioPlayerContext();
 
   const methods = useForm<TodoForm>();
   const {
@@ -123,49 +138,66 @@ const TodoProvider = ({ children }: PropsWithChildren) => {
 
   const activeRemindersArray = useMemo(() => {
     return todoSections
-      .filter(
-        (section) =>
+      .reduce((accum, section, index) => {
+        const activeSection = sectionFieldArrayName
+          ? getValues(sectionFieldArrayName)
+          : null;
+
+        if (
           !section.isCompleted &&
           section.reminderDateTime &&
-          !section.isReminderExpired
-      )
-      .map((section) => {
-        return {
-          ...section,
-          reminderDateTime: dayjs(section.reminderDateTime),
-        };
-      })
+          !section.isReminderExpired &&
+          section.id !== activeSection?.id
+        ) {
+          accum.push([
+            index,
+            { ...section, reminderDateTime: dayjs(section.reminderDateTime) },
+          ]);
+        }
+        return accum;
+      }, [] as Array<[number, TodoSection]>)
       .sort((a, b) => {
-        const reminderA = a.reminderDateTime;
-        const reminderB = b.reminderDateTime;
+        const reminderA = a[1].reminderDateTime;
+        const reminderB = b[1].reminderDateTime;
 
-        if (reminderA.isBefore(reminderB)) return -1;
-        if (reminderA.isAfter(reminderB)) return 1;
-
-        /* Time is considered equal */
+        if (reminderA?.isBefore(reminderB)) return -1;
+        if (reminderA?.isAfter(reminderB)) return 1;
         return 0;
       });
-  }, [todoSections]);
+  }, [todoSections, getValues, sectionFieldArrayName]);
 
-  const showNotification = (reminder: TodoSection) => {
-    if (Notification.permission === "granted") {
-      const incompleteTasks = reminder.list.filter((item) => !item.isCompleted);
+  const showNotification = useCallback(
+    (reminder: TodoSection) => {
+      if (Notification.permission === "granted") {
+        const incompleteTasks = reminder.list.filter(
+          (item) => !item.isCompleted
+        );
 
-      const incompleteTaskPreviewString = incompleteTasks
-        .slice(0, 5)
-        .map((task) => task.text)
-        .join(", ");
+        const overflowText = incompleteTasks.length > 5 ? "..." : "";
+        const incompleteTaskPreviewString = incompleteTasks
+          .slice(0, 5)
+          .map((task) => task.text)
+          .join(", ")
+          .concat(overflowText);
 
-      const body = `${incompleteTasks.length} out of ${reminder.list.length} left to do.\nIncludes: ${incompleteTaskPreviewString}`;
-      new Notification(`Reminder for ${reminder.name}`, {
-        body,
-      });
-      /* TODO: Play sound */
-    } else {
-      console.log("Cannot show notification: permission not granted.");
-      /* TODO: In-app notif + sound*/
-    }
-  };
+        const time = reminder.reminderDateTime
+          ? reminder.reminderDateTime.format("h:mm A")
+          : "";
+
+        const body = `${incompleteTasks.length} out of ${reminder.list.length} left to do.\nRemaining: ${incompleteTaskPreviewString}`;
+        new Notification(
+          `Reminder for ${reminder.name || "Subtasks"} at ${time}`,
+          {
+            body,
+          }
+        );
+
+        if (isPlaying) return;
+        onPlayAudio();
+      }
+    },
+    [onPlayAudio, isPlaying]
+  );
 
   const todoValue: TodoContextProps = useMemo(() => {
     return {
@@ -261,16 +293,15 @@ const TodoProvider = ({ children }: PropsWithChildren) => {
   useEffect(() => {
     const timer = setInterval(() => {
       const currentTime = dayjs().format("YYYY:M:D:hh:mm");
-      const formValues = getValues("todoSections");
 
-      activeRemindersArray.forEach((reminder) => {
-        const reminderTime = reminder.reminderDateTime.format("YYYY:M:D:hh:mm");
+      activeRemindersArray.forEach((reminderEntry) => {
+        const [sectionIndex, reminder] = reminderEntry;
+        const reminderTime =
+          reminder.reminderDateTime?.format("YYYY:M:D:hh:mm");
+
         if (currentTime === reminderTime) {
-          const sectionIndex = formValues.findIndex(
-            (section) => section.id === reminder.id
-          );
           showNotification(reminder);
-          setValue(`todoSections.${sectionIndex}`, {
+          updateTodoSection({
             ...reminder,
             isReminderExpired: true,
           });
@@ -279,7 +310,7 @@ const TodoProvider = ({ children }: PropsWithChildren) => {
     }, 10000);
 
     return () => clearInterval(timer);
-  }, [activeRemindersArray, setValue, getValues]);
+  }, [activeRemindersArray, updateTodoSection, showNotification]);
 
   return (
     <TodoContext.Provider value={todoValue}>

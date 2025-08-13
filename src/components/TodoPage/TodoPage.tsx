@@ -9,11 +9,11 @@ import TodoProvider from "@providers/TodoProvider";
 const TodoPage = () => {
   return (
     <LocalizationProvider dateAdapter={AdapterDayjs}>
-      <TodoProvider>
-        <AudioPlayerProvider>
+      <AudioPlayerProvider>
+        <TodoProvider>
           <TodoSections />
-        </AudioPlayerProvider>
-      </TodoProvider>
+        </TodoProvider>
+      </AudioPlayerProvider>
     </LocalizationProvider>
   );
 };
