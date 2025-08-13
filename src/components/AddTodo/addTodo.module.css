@@ -29,10 +29,18 @@
     padding: unset;
   }
 
+  &.disabled,
+  &.disabled:hover {
+    cursor: not-allowed;
+    & svg {
+      fill: rgb(from var(--foreground) r g b / 0.5);
+    }
+  }
+
   &:hover {
     & svg {
       fill: rgb(
-        from var(--foreground) abs(calc(r - 120)) abs(calc(g - 139))
+        from var(--foreground) abs(calc(r - 10)) abs(calc(g - 19))
           abs(calc(b - 200)) / 1
       );
     }
