@@ -17,6 +17,8 @@ const TodoSections = () => {
     name: "todoSections",
   });
 
+  const thisYear = new Date().getFullYear();
+
   return (
     <div
       className={styles.todosBackground}
@@ -44,6 +46,19 @@ const TodoSections = () => {
             />
           );
         })}
+      </div>
+      <div className={styles.footer}>
+        <p>
+          &copy; {thisYear} Elysonia. All rights reserved. <br /> Background
+          image by
+          <a
+            href="https://unsplash.com/photos/a-small-lake-surrounded-by-green-hills-and-yellow-flowers-rpryWTMTcSc"
+            target="_blank"
+            rel="noopener noreferrer"
+          >
+            Livia @ Unsplash
+          </a>
+        </p>
       </div>
     </div>
   );

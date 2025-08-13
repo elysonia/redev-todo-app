@@ -22,3 +22,19 @@
   overflow-y: scroll;
   padding: 80px 40px;
 }
+
+.footer {
+  position: fixed;
+  bottom: 0;
+  width: fit-content;
+  z-index: 0;
+  height: 50px;
+  color: var(--foreground);
+  padding: 0px 40px;
+  text-shadow: 1px 1px 2px rgb(from var(--background) r g b / 0.7);
+  align-self: flex-start;
+
+  & a {
+    text-decoration: underline;
+  }
+}
