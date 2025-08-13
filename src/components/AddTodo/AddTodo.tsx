@@ -1,5 +1,6 @@
-import { AddCircle, DeleteForever } from "@mui/icons-material";
+import { AddCircle, AlarmOff, DeleteForever } from "@mui/icons-material";
 import { IconButton, Tooltip } from "@mui/material";
+import clsx from "clsx";
 import { uniqueId } from "lodash";
 import { useCallback } from "react";
 import {
@@ -10,6 +11,7 @@ import {
 } from "react-hook-form";
 
 import AlarmPlayer from "@components/AlarmPlayer";
+import { useAudioPlayerContext } from "@providers/AudioPlayerProvider/AudioPlayerProvider";
 import { useTodoContext } from "@providers/TodoProvider/TodoProvider";
 import { TodoItem, TodoSection } from "types";
 import styles from "./addTodo.module.css";
@@ -27,6 +29,7 @@ const AddTodo = ({ prependSection, removeSections }: AddTodoProps) => {
     setSectionFieldArrayName,
   } = useTodoContext();
   const { getValues, setValue } = useFormContext();
+  const { isPlaying, onPauseAudio } = useAudioPlayerContext();
 
   /* TODO: Form validation */
   const handleAddTodoSection = useCallback(() => {
@@ -92,6 +95,19 @@ const AddTodo = ({ prependSection, removeSections }: AddTodoProps) => {
       </Tooltip>
 
       <AlarmPlayer />
+
+      <Tooltip title={isPlaying ? "Silence alarm" : "No alarm playing"}>
+        <div
+          className={clsx(styles.actionButton, {
+            [styles.disabled]: !isPlaying,
+          })}
+        >
+          <IconButton disabled={!isPlaying} onClick={onPauseAudio}>
+            <AlarmOff fontSize="large" />
+          </IconButton>
+          <span>Silence alarm</span>
+        </div>
+      </Tooltip>
     </div>
   );
 };
