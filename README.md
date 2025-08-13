@@ -22,7 +22,7 @@ Based on my Redmi Note 10 Pro default Tasks App that I use frequently. The aim i
 ## TODO
 
 1. I got a little lazy with separating components, so the next main thing is to clean them up.
-2. Improve performance with virtualization. It is not a big deal when the tasks and subtasks are small in number and the use cases for the app are narrow but I want to try this anyway. I had attempted this for a couple of days but wasn't able to get a good result because of the way I structured nested fields. I decided to just implement the features I want as fast I can and then another look at it.
+2. Improve performance. I have some unmemoized components and the list could potentially grow bigger so might be good to implement virtualization.
 3. Make the theme customizable. I want color sliders.
 
 ## Assets
