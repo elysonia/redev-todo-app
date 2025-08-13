@@ -6,6 +6,10 @@
   backdrop-filter: blur(10px);
   border: 1px solid rgb(from var(--background) r g b / 0.3);
   width: clamp(30%, 450px, 300px);
+
+  &.isOverdue {
+    border: 1px solid rgb(241, 82, 82);
+  }
 }
 
 .listFooterContainer {
@@ -14,4 +18,9 @@
   justify-content: space-between;
   align-items: center;
   padding: 4px 10px;
+  font-weight: bold;
+  color: rgb(
+    from var(--foreground) abs(calc(r - 10)) abs(calc(g - 19))
+      abs(calc(b - 200)) / 1
+  );
 }

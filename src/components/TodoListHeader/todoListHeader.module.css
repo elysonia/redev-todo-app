@@ -25,9 +25,12 @@
   padding: 0px 12px;
   text-transform: capitalize;
   color: rgb(
-    from var(--foreground) abs(calc(r - 100)) abs(calc(g - 10))
-      abs(calc(b - 100)) / 0.8
+    from var(--foreground) abs(calc(r - 10)) abs(calc(g - 19))
+      abs(calc(b - 200)) / 1
   );
+  &.isOverdue {
+    color: rgb(241, 82, 82);
+  }
 }
 
 .listHeader.completed textarea {

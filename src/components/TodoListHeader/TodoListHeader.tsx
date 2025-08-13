@@ -38,6 +38,10 @@ const TodoListHeader = ({
     control,
     name: checkboxFieldName,
   });
+  const isReminderExpired = useWatch({
+    control,
+    name: `${sectionFieldName}.isReminderExpired`,
+  });
 
   const handleFocus = useCallback(() => {
     if (!inputRef.current) return;
@@ -137,7 +141,11 @@ const TodoListHeader = ({
         />
       </div>
       {reminderText && !isActiveFieldArray && (
-        <span className={styles.alarmText}>
+        <span
+          className={clsx(styles.alarmText, {
+            [styles.isOverdue]: isReminderExpired,
+          })}
+        >
           {reminderText}&nbsp;
           <Alarm style={{ fontSize: "0.8rem" }} />
         </span>

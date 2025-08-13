@@ -1,9 +1,15 @@
 import { CheckCircle } from "@mui/icons-material";
 import { ClickAwayListener, IconButton, List, Tooltip } from "@mui/material";
+import clsx from "clsx";
 import dayjs from "dayjs";
 import { isEmpty, uniqueId } from "lodash";
 import { useCallback, useEffect, useMemo } from "react";
-import { Controller, useFieldArray, useFormContext } from "react-hook-form";
+import {
+  Controller,
+  useFieldArray,
+  useFormContext,
+  useWatch,
+} from "react-hook-form";
 
 import ButtonFieldDateTimePicker from "@components/ButtonDateTimePicker";
 import TodoItem from "@components/TodoItem";
@@ -14,7 +20,7 @@ import styles from "./todoList.module.css";
 
 type TodoListProps = {
   sectionIndex: number;
-  sectionFieldName: string;
+  sectionFieldName: `todoSections.${number}`;
 };
 
 const TodoList = ({ sectionIndex, sectionFieldName }: TodoListProps) => {
@@ -32,6 +38,10 @@ const TodoList = ({ sectionIndex, sectionFieldName }: TodoListProps) => {
   const { fields, insert, remove, move } = useFieldArray({
     control,
     name: fieldName,
+  });
+  const isReminderExpired = useWatch({
+    control,
+    name: `${sectionFieldName}.isReminderExpired`,
   });
 
   const isActiveFieldArray = sectionFieldArrayName === sectionFieldName;
@@ -120,6 +130,16 @@ const TodoList = ({ sectionIndex, sectionFieldName }: TodoListProps) => {
     ]
   );
 
+  /* If the user sets a new reminder, reset isReminderExpired. */
+  const handleReminderChange = useCallback(() => {
+    const todoSection = getValues(sectionFieldName);
+    const newTodoSection = {
+      ...todoSection,
+      isReminderExpired: false,
+    };
+    setValue(sectionFieldName, newTodoSection);
+  }, [getValues, setValue, sectionFieldName]);
+
   useEffect(() => {
     if (!isActiveFieldArray) return;
     if (focusedFieldName) return;
@@ -134,7 +154,11 @@ const TodoList = ({ sectionIndex, sectionFieldName }: TodoListProps) => {
       touchEvent={isActiveFieldArray ? "onTouchStart" : false}
       onClickAway={handleClickAway}
     >
-      <div className={styles.listContainer}>
+      <div
+        className={clsx(styles.listContainer, {
+          [styles.isOverdue]: isReminderExpired,
+        })}
+      >
         {shouldShowHeader && (
           <TodoListHeader
             isActiveFieldArray={isActiveFieldArray}
@@ -164,7 +188,6 @@ const TodoList = ({ sectionIndex, sectionFieldName }: TodoListProps) => {
               control={control}
               name={reminderDateFieldName}
               render={({ field: { value, onChange } }) => {
-                console.log({ value });
                 return (
                   <ButtonFieldDateTimePicker
                     disablePast
@@ -177,7 +200,10 @@ const TodoList = ({ sectionIndex, sectionFieldName }: TodoListProps) => {
                         actions: ["clear", "cancel", "nextOrAccept"],
                       },
                     }}
-                    onChange={onChange}
+                    onChange={(event) => {
+                      handleReminderChange();
+                      onChange(event);
+                    }}
                   />
                 );
               }}
