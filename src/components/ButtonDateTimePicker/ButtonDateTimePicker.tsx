@@ -41,17 +41,9 @@ const ButtonDateTimeField = React.memo((props: DateTimePickerFieldProps) => {
   }, [pickerContext]);
 
   const handleClick = useCallback(() => {
-    if (Notification.permission === "granted") {
-      pickerContext.setOpen((prev) => !prev);
-      return;
-    }
-
     if ("Notification" in window) {
-      Notification.requestPermission().then((permission) => {
-        if (permission === "granted") {
-          pickerContext.setOpen((prev) => !prev);
-        }
-      });
+      Notification.requestPermission();
+      pickerContext.setOpen((prev) => !prev);
     }
   }, [pickerContext]);
 
@@ -59,7 +51,7 @@ const ButtonDateTimeField = React.memo((props: DateTimePickerFieldProps) => {
     <Button
       {...forwardedProps}
       variant="text"
-      color={hasValidationError || isAlarmExpired ? "error" : "primary"}
+      color={hasValidationError || isAlarmExpired ? "error" : "inherit"}
       ref={handleRef}
       className={pickerContext.rootClassName}
       style={{ padding: "4px 18px", borderRadius: "15px" }}
