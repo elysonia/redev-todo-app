@@ -6,7 +6,7 @@ import { devtools, persist } from "zustand/middleware";
 export type TodoDraft = {
   isDirty: boolean;
   focusedFieldName: string;
-  sectionFieldArrayName: string;
+  sectionFieldArrayName: `todoSections.${number}` | "";
   values: TodoSection[];
 };
 
@@ -29,6 +29,7 @@ export const defaultTodoDraft: TodoDraft = {
 export type TodoActions = {
   setIsHydrated: (isHydrated: boolean) => void;
   updateTodoSections: (sections: TodoSection[]) => void;
+  updateTodoSection: (section: TodoSection) => void;
   updateTodoDraft: (newTodoDraft: TodoDraft) => void;
   updateTodoHistory: (newTodoHistory: TodoSection[]) => void;
   updateAlarmType: (alarmType: AlarmTypeEnum) => void;
@@ -47,7 +48,7 @@ const defaultState: TodoState = {
   /* List of completed todos. */
   todoHistory: [],
   alarmType: AlarmTypeEnum.dreamscape,
-  alarmVolume: 50,
+  alarmVolume: 5,
   isHydrated: false,
 };
 
@@ -72,6 +73,19 @@ const createTodoStore = (initState: TodoState = defaultState) => {
               },
               undefined,
               "todo/updateTodoSections"
+            ),
+          updateTodoSection: (data: TodoSection) =>
+            set(
+              (state: TodoStore) => {
+                const newTodoSections = state.todoSections.map((section) => {
+                  if (section.id === data.id) return data;
+                  return section;
+                });
+
+                return { ...state, todoSections: newTodoSections };
+              },
+              undefined,
+              "todo/updateTodoSection"
             ),
 
           updateTodoDraft: (newTodoDraft: TodoDraft) =>
