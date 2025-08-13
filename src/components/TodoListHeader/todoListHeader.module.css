@@ -29,3 +29,11 @@
       abs(calc(b - 100)) / 0.8
   );
 }
+
+.listHeader.completed textarea {
+  text-decoration: line-through;
+  color: rgb(
+    from var(--foreground) abs(calc(r - 150)) abs(calc(g - 100))
+      abs(calc(b - 100)) / 0.8
+  );
+}

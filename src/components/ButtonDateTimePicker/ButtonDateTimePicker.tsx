@@ -1,4 +1,4 @@
-import { Alarm, Clear } from "@mui/icons-material";
+import { Alarm } from "@mui/icons-material";
 import { Button, useForkRef } from "@mui/material";
 import {
   DateTimePickerFieldProps,
@@ -77,7 +77,7 @@ const ButtonFieldDateTimePicker = React.memo(
     return (
       <MobileDateTimePicker
         {...props}
-        slots={{ ...props.slots, clearIcon: Clear, field: ButtonDateTimeField }}
+        slots={{ ...props.slots, field: ButtonDateTimeField }}
       />
     );
   }

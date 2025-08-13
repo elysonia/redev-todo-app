@@ -29,7 +29,7 @@ const TodoList = ({ sectionIndex, sectionFieldName }: TodoListProps) => {
     setSectionFieldArrayName,
   } = useTodoContext();
   const { control, getValues, setFocus, setValue } = useFormContext();
-  const { fields, insert, remove } = useFieldArray({
+  const { fields, insert, remove, move } = useFieldArray({
     control,
     name: fieldName,
   });
@@ -149,6 +149,7 @@ const TodoList = ({ sectionIndex, sectionFieldName }: TodoListProps) => {
               key={item.id}
               itemIndex={itemIndex}
               insertListItem={insert}
+              moveListItem={move}
               removeListItems={remove}
               sectionIndex={sectionIndex}
               sectionFieldName={`todoSections.${sectionIndex}`}

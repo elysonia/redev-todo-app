@@ -1,18 +1,18 @@
 import { Checkbox, Input, ListItem } from "@mui/material";
-
+import clsx from "clsx";
 import { uniqueId } from "lodash";
 import { useCallback, useEffect, useRef } from "react";
 import {
   Controller,
   FieldValues,
   UseFieldArrayInsert,
+  UseFieldArrayMove,
   UseFieldArrayRemove,
   useFormContext,
   useWatch,
 } from "react-hook-form";
 
 import { useTodoContext } from "@providers/TodoProvider/TodoProvider";
-import clsx from "clsx";
 import { TodoItem as TodoItemType, TodoSection } from "types";
 import styles from "./todoItem.module.css";
 
@@ -21,6 +21,7 @@ type TodoItemProps = {
   sectionIndex: number;
   sectionFieldName: string;
   listFieldName: string;
+  moveListItem: UseFieldArrayMove;
   insertListItem: UseFieldArrayInsert<
     FieldValues,
     `todoSections.${number}.list`
@@ -34,6 +35,7 @@ const TodoItem = ({
   sectionIndex,
   listFieldName,
   sectionFieldName,
+  moveListItem,
   insertListItem,
   removeListItems,
   onSetSectionActive,
@@ -43,11 +45,11 @@ const TodoItem = ({
   const { focusedFieldName, sectionFieldArrayName, setFocusedFieldName } =
     useTodoContext();
   const { control, setFocus, setValue, getValues } = useFormContext();
-  // const [isChecked, setIsChecked] = useState(false);
 
   const inputRef = useRef<HTMLTextAreaElement>(null);
   const isActiveFieldArray = sectionFieldArrayName === sectionFieldName;
   const isCompleted = useWatch({ control, name: checkBoxFieldName });
+
   const handleKeyDown = useCallback(
     (event: React.KeyboardEvent<HTMLInputElement>) => {
       const nextItemIndex = itemIndex + 1;
@@ -67,6 +69,7 @@ const TodoItem = ({
 
         insertListItem(nextItemIndex, {
           id: uniqueId(),
+          isCompleted: false,
           text: "",
         });
       }
@@ -103,56 +106,51 @@ const TodoItem = ({
     [itemIndex, setFocus, getValues, removeListItems, insertListItem]
   );
 
-  /* TODO: Modify to push completed tasks to the bottom */
-  const handleRemoveItem = useCallback(
-    (event: React.ChangeEvent<HTMLInputElement>) => {
+  const handleChecked = useCallback(
+    (isChecked: boolean) => {
       if (isActiveFieldArray) return;
-
-      event.stopPropagation();
-      // setIsChecked(event.target.checked);
-      if (!event.target.checked) return;
-
       setTimeout(() => {
+        if (!isChecked) {
+          moveListItem(itemIndex, 0);
+          return;
+        }
+
         const todoSections = getValues("todoSections");
         const todoSection = todoSections[sectionIndex];
         const todoItem = todoSection.list[itemIndex];
 
-        const newTodoList = todoSection.list.filter(
-          (item: TodoItemType) => item.id !== todoItem.id
+        const newIncompleteTodoList = todoSection.list.filter(
+          (item: TodoItemType) => {
+            return !item.isCompleted;
+          }
         );
 
-        const hasNoSubtask = newTodoList.length === 0;
-        const shouldCreateListItemFromSectionName =
-          hasNoSubtask && todoSection.name;
-        const shouldRemoveSection = hasNoSubtask && !todoSection.name;
+        const hasNoSubtask = newIncompleteTodoList.length === 0;
 
-        if (shouldCreateListItemFromSectionName) {
-          const newTodoSection: TodoSection = {
-            id: todoSection.id,
-            name: "",
-            isCompleted: false,
-            isReminderExpired: false,
-            list: [
-              {
-                id: uniqueId(),
-                isCompleted: false,
-                text: todoSection.name,
-              },
-            ],
-          };
-          setValue(sectionFieldArrayName, newTodoSection);
-          return;
-        }
-
-        if (shouldRemoveSection) {
-          const newTodoSections = todoSections.filter(
-            (section: TodoSection) => section.id !== todoSection.id
-          );
+        if (hasNoSubtask) {
+          const newTodoSections = todoSections.map((section: TodoSection) => {
+            if (section.id === todoSection.id) {
+              return {
+                ...section,
+                isCompleted: true,
+              };
+            }
+            return section;
+          });
           setValue("todoSections", newTodoSections);
           return;
         }
 
-        removeListItems(itemIndex);
+        const latestCompletedListItemIndex = todoSection.list.findIndex(
+          (item: TodoItemType) => item.isCompleted && item.id !== todoItem.id
+        );
+
+        if (latestCompletedListItemIndex < 0) {
+          moveListItem(itemIndex, todoSection.list.length);
+          return;
+        }
+
+        moveListItem(itemIndex, latestCompletedListItemIndex - 1);
       }, 500);
     },
     [
@@ -162,7 +160,7 @@ const TodoItem = ({
       isActiveFieldArray,
       setValue,
       getValues,
-      removeListItems,
+      moveListItem,
     ]
   );
 
@@ -198,11 +196,9 @@ const TodoItem = ({
             <Checkbox
               disabled={isActiveFieldArray}
               checked={value}
-              value={value}
               onChange={(event) => {
                 onChange(event.target.checked);
-                // setIsChecked(event.target.checked);
-                // handleRemoveItem(event);
+                handleChecked(event.target.checked);
               }}
             />
           );

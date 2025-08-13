@@ -1,12 +1,12 @@
+import { Alarm } from "@mui/icons-material";
 import { Checkbox, Input } from "@mui/material";
-import { useCallback, useEffect, useMemo, useRef, useState } from "react";
+import clsx from "clsx";
+import { useCallback, useEffect, useMemo, useRef } from "react";
 import { Controller, useFormContext, useWatch } from "react-hook-form";
 
-import { Alarm } from "@mui/icons-material";
 import { useTodoContext } from "@providers/TodoProvider/TodoProvider";
 import { dayjsformatter } from "@utils/dayjsUtils";
 import { defaultTodoSection } from "@utils/todoUtils";
-import clsx from "clsx";
 import { TodoSection } from "types";
 import styles from "./todoListHeader.module.css";
 
@@ -22,14 +22,21 @@ const TodoListHeader = ({
   onSetSectionActive,
 }: TodoListHeaderProps) => {
   const fieldName = `${sectionFieldName}.name`;
-  const [isChecked, setIsChecked] = useState(false);
+  const checkboxFieldName = `${sectionFieldName}.isCompleted`;
   const { focusedFieldName, setFocusedFieldName } = useTodoContext();
   const { control, setFocus, setValue, getValues } = useFormContext();
   const inputRef = useRef<HTMLTextAreaElement>(null);
+
+  /* TODO: Make tiny components */
   const reminderDateTime = useWatch({
     control,
     name: `${sectionFieldName}.reminderDateTime`,
   });
+  const isCompleted = useWatch({
+    control,
+    name: checkboxFieldName,
+  });
+
   const handleFocus = useCallback(() => {
     if (!inputRef.current) return;
     const cursorLocation = inputRef.current.textLength;
@@ -49,12 +56,9 @@ const TodoListHeader = ({
     return dayjsformatter(reminderDateTime);
   }, [reminderDateTime]);
 
-  const handleRemove = useCallback(
-    (event: React.ChangeEvent<HTMLInputElement>) => {
-      event.stopPropagation();
-      setIsChecked(event.target.checked);
-
-      if (event.target.checked) {
+  const handleChecked = useCallback(
+    (isChecked: boolean) => {
+      if (isChecked) {
         setTimeout(() => {
           const todoSection = getValues(sectionFieldName);
           const todoSections = getValues("todoSections");
@@ -65,8 +69,12 @@ const TodoListHeader = ({
         }, 500);
       }
     },
-    [sectionFieldName, setIsChecked]
+    [sectionFieldName]
   );
+
+  useEffect(() => {
+    handleChecked(isCompleted);
+  }, [isCompleted, handleChecked]);
 
   useEffect(() => {
     /* Prevent losing focus on re-render due to data updates from saving. */
@@ -82,8 +90,14 @@ const TodoListHeader = ({
       })}
     >
       <div>
-        {(!isActiveFieldArray || isChecked) && (
-          <Checkbox onChange={handleRemove} />
+        {(!isActiveFieldArray || isCompleted) && (
+          <Controller
+            control={control}
+            name={checkboxFieldName}
+            render={({ field: { value, onChange } }) => {
+              return <Checkbox checked={value} onChange={onChange} />;
+            }}
+          />
         )}
         <Controller
           control={control}
@@ -99,6 +113,9 @@ const TodoListHeader = ({
                 }}
                 value={value}
                 placeholder={defaultTodoSection.name}
+                className={clsx(styles.listHeader, {
+                  [styles.completed]: isCompleted,
+                })}
                 disableUnderline
                 multiline
                 onChange={onChange}
@@ -111,7 +128,7 @@ const TodoListHeader = ({
       {reminderText && !isActiveFieldArray && (
         <span className={styles.alarmText}>
           {reminderText}&nbsp;
-          <Alarm fontSize="0.8rem" />
+          <Alarm style={{ fontSize: "0.8rem" }} />
         </span>
       )}
     </div>
