@@ -166,7 +166,7 @@ const TodoProvider = ({ children }: PropsWithChildren) => {
       });
   }, [todoSections, getValues, sectionFieldArrayName]);
 
-  const showNotification = useCallback(
+  const showDesktopNotification = useCallback(
     (reminder: TodoSection) => {
       if (Notification.permission === "granted") {
         const incompleteTasks = reminder.list.filter(
@@ -189,6 +189,8 @@ const TodoProvider = ({ children }: PropsWithChildren) => {
           `Reminder for ${reminder.name || "Subtasks"} at ${time}`,
           {
             body,
+            icon: "/favicon.ico",
+            tag: reminder.id,
           }
         );
 
@@ -300,7 +302,7 @@ const TodoProvider = ({ children }: PropsWithChildren) => {
           reminder.reminderDateTime?.format("YYYY:M:D:hh:mm");
 
         if (currentTime === reminderTime) {
-          showNotification(reminder);
+          showDesktopNotification(reminder);
           updateTodoSection({
             ...reminder,
             isReminderExpired: true,
@@ -310,7 +312,7 @@ const TodoProvider = ({ children }: PropsWithChildren) => {
     }, 10000);
 
     return () => clearInterval(timer);
-  }, [activeRemindersArray, updateTodoSection, showNotification]);
+  }, [activeRemindersArray, updateTodoSection, showDesktopNotification]);
 
   return (
     <TodoContext.Provider value={todoValue}>
