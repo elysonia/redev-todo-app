@@ -56,6 +56,19 @@ const theme = createTheme({
         },
       },
     },
+
+    MuiButton: {
+      defaultProps: {
+        sx: {
+          color: "var(--foreground)",
+          textTransform: "capitalize",
+          fontSize: "1rem",
+          svg: {
+            fill: "var(--foreground)",
+          },
+        },
+      },
+    },
   },
 });
 

@@ -1,12 +1,13 @@
 import { Alarm } from "@mui/icons-material";
 import { Checkbox, Input } from "@mui/material";
 import clsx from "clsx";
-import { useCallback, useEffect, useMemo, useRef } from "react";
+import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import { Controller, useFormContext, useWatch } from "react-hook-form";
 
 import { useTodoContext } from "@providers/TodoProvider/TodoProvider";
 import { dayjsformatter } from "@utils/dayjsUtils";
 import { defaultTodoSection } from "@utils/todoUtils";
+import dayjs, { Dayjs } from "dayjs";
 import { TodoSection } from "types";
 import styles from "./todoListHeader.module.css";
 
@@ -25,6 +26,7 @@ const TodoListHeader = ({
   const checkboxFieldName = `${sectionFieldName}.isCompleted`;
   const { focusedFieldName, setFocusedFieldName } = useTodoContext();
   const { control, setFocus, setValue, getValues } = useFormContext();
+  const [currentTime, setCurrentTime] = useState<Dayjs | null>(null);
   const inputRef = useRef<HTMLTextAreaElement>(null);
 
   /* TODO: Make tiny components */
@@ -54,7 +56,7 @@ const TodoListHeader = ({
   const reminderText = useMemo(() => {
     if (!reminderDateTime) return "";
     return dayjsformatter(reminderDateTime);
-  }, [reminderDateTime]);
+  }, [reminderDateTime, currentTime]);
 
   const handleChecked = useCallback(
     (isChecked: boolean) => {
@@ -82,6 +84,15 @@ const TodoListHeader = ({
       setFocus(fieldName);
     }
   }, [focusedFieldName]);
+
+  /* Update reminder text every minute. */
+  useEffect(() => {
+    const timer = setInterval(() => {
+      setCurrentTime(dayjs());
+    }, 60000);
+
+    return () => clearInterval(timer);
+  }, [setCurrentTime]);
 
   return (
     <div

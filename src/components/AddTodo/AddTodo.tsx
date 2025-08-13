@@ -9,6 +9,7 @@ import {
   useFormContext,
 } from "react-hook-form";
 
+import AlarmPlayer from "@components/AlarmPlayer";
 import { useTodoContext } from "@providers/TodoProvider/TodoProvider";
 import { TodoItem, TodoSection } from "types";
 import styles from "./addTodo.module.css";
@@ -71,21 +72,27 @@ const AddTodo = ({ prependSection, removeSections }: AddTodoProps) => {
   }, [onSubmit, removeSections, setSnackbar]);
 
   return (
-    <>
-      <div className={styles.actionButtonContainer}>
-        <Tooltip describeChild title="Add new task">
+    <div className={styles.actionButtonContainer}>
+      <Tooltip describeChild title="Add new task">
+        <div className={styles.actionButton}>
           <IconButton onClick={handleAddTodoSection}>
             <AddCircle fontSize="large" />
           </IconButton>
-        </Tooltip>
+          <span>Add todo</span>
+        </div>
+      </Tooltip>
 
-        <Tooltip describeChild title="Reset all tasks">
+      <Tooltip describeChild title="Reset all tasks">
+        <div className={styles.actionButton}>
           <IconButton onClick={handleReset}>
             <DeleteForever fontSize="large" />
           </IconButton>
-        </Tooltip>
-      </div>
-    </>
+          <span>Reset tasks</span>
+        </div>
+      </Tooltip>
+
+      <AlarmPlayer />
+    </div>
   );
 };
 
