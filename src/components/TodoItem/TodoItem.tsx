@@ -144,11 +144,12 @@ const TodoItem = ({
         );
 
         if (latestCompletedListItemIndex < 0) {
-          moveListItem(itemIndex, todoSection.list.length);
+          moveListItem(itemIndex, todoSection.list.length - 1);
           return;
         }
 
-        moveListItem(itemIndex, latestCompletedListItemIndex - 1);
+        moveListItem(itemIndex, latestCompletedListItemIndex);
+        onSubmit();
       }, 500);
     },
     [
