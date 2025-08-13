@@ -13,7 +13,7 @@ import {
 } from "react-hook-form";
 
 import { useTodoContext } from "@providers/TodoProvider/TodoProvider";
-import { TodoItem as TodoItemType, TodoSection } from "types";
+import { TodoItem as TodoItemType } from "types";
 import styles from "./todoItem.module.css";
 
 type TodoItemProps = {
@@ -42,8 +42,12 @@ const TodoItem = ({
 }: TodoItemProps) => {
   const fieldName = `${listFieldName}.${itemIndex}.text`;
   const checkBoxFieldName = `${listFieldName}.${itemIndex}.isCompleted`;
-  const { focusedFieldName, sectionFieldArrayName, setFocusedFieldName } =
-    useTodoContext();
+  const {
+    focusedFieldName,
+    sectionFieldArrayName,
+    setFocusedFieldName,
+    onSubmit,
+  } = useTodoContext();
   const { control, setFocus, setValue, getValues } = useFormContext();
 
   const inputRef = useRef<HTMLTextAreaElement>(null);
@@ -128,16 +132,10 @@ const TodoItem = ({
         const hasNoSubtask = newIncompleteTodoList.length === 0;
 
         if (hasNoSubtask) {
-          const newTodoSections = todoSections.map((section: TodoSection) => {
-            if (section.id === todoSection.id) {
-              return {
-                ...section,
-                isCompleted: true,
-              };
-            }
-            return section;
+          setValue(`todoSections.${sectionIndex}`, {
+            ...todoSection,
+            isCompleted: true,
           });
-          setValue("todoSections", newTodoSections);
           return;
         }
 
@@ -161,6 +159,7 @@ const TodoItem = ({
       setValue,
       getValues,
       moveListItem,
+      onSubmit,
     ]
   );
 
@@ -204,8 +203,6 @@ const TodoItem = ({
           );
         }}
       />
-
-      {/* TODO: Strikethrough when deleted */}
 
       <Controller
         control={control}
