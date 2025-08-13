@@ -106,7 +106,11 @@ const NotificationStatusText = ({
           : "not have desktop notifications"}
         .
         {browserSettingsTutorialUrl ? (
-          <a target="_blank" href={browserSettingsTutorialUrl}>
+          <a
+            target="_blank"
+            rel="noopener noreferrer"
+            href={browserSettingsTutorialUrl}
+          >
             Learn how to change this setting.
           </a>
         ) : (
