@@ -226,7 +226,7 @@ const TodoProvider = ({ children }: PropsWithChildren) => {
   /* Detects data change from the store and updates form default values. */
   useEffect(() => {
     reset({ todoSections });
-  }, [todoSections]);
+  }, [todoSections, reset]);
 
   /* Subscribe to value updates without re-rendering the entire form for draft autosave. */
   useEffect(() => {
@@ -235,7 +235,7 @@ const TodoProvider = ({ children }: PropsWithChildren) => {
         values: true,
         isDirty: true,
       },
-      callback: handleSaveDraft,
+      callback: (props) => handleSaveDraft(props),
     });
 
     return () => handleSubscribe();
@@ -297,7 +297,7 @@ const TodoProvider = ({ children }: PropsWithChildren) => {
       const currentTime = dayjs().format("YYYY:M:D:hh:mm");
 
       activeRemindersArray.forEach((reminderEntry) => {
-        const [sectionIndex, reminder] = reminderEntry;
+        const [, reminder] = reminderEntry;
         const reminderTime =
           reminder.reminderDateTime?.format("YYYY:M:D:hh:mm");
 

@@ -58,7 +58,13 @@ const AddTodo = ({ prependSection, removeSections }: AddTodoProps) => {
     } else {
       prependSection(todoSection);
     }
-  }, [setFocusedFieldName, prependSection, setValue, onSubmit]);
+  }, [
+    setFocusedFieldName,
+    prependSection,
+    getValues,
+    setValue,
+    setSectionFieldArrayName,
+  ]);
 
   const handleReset = useCallback(() => {
     const isResetConfirmed = confirm(

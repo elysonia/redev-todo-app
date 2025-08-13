@@ -90,7 +90,7 @@ const NotificationStatusText = ({
       return "https://support.microsoft.com/en-us/microsoft-edge/manage-website-notifications-in-microsoft-edge-0c555609-5bf2-479d-a59d-fb30a0b80b2b";
     }
     return "";
-  }, [isChrome, isFirefox]);
+  }, []);
 
   return (
     <div className={styles.notificationStatusText}>

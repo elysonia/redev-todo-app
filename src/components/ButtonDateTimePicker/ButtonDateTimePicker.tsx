@@ -15,7 +15,7 @@ import React, { useCallback, useMemo } from "react";
 
 import { dayjsformatter } from "@utils/dayjsUtils";
 
-const ButtonDateTimeField = React.memo((props: DateTimePickerFieldProps) => {
+const ButtonDateTimeField = (props: DateTimePickerFieldProps) => {
   const { internalProps, forwardedProps } = useSplitFieldProps(
     props,
     "date-time"
@@ -62,17 +62,15 @@ const ButtonDateTimeField = React.memo((props: DateTimePickerFieldProps) => {
       <Alarm fontSize="small" />
     </Button>
   );
-});
+};
 
-const ButtonFieldDateTimePicker = React.memo(
-  (props: MobileDateTimePickerProps) => {
-    return (
-      <MobileDateTimePicker
-        {...props}
-        slots={{ ...props.slots, field: ButtonDateTimeField }}
-      />
-    );
-  }
-);
+const ButtonFieldDateTimePicker = (props: MobileDateTimePickerProps) => {
+  return (
+    <MobileDateTimePicker
+      {...props}
+      slots={{ ...props.slots, field: ButtonDateTimeField }}
+    />
+  );
+};
 
-export default ButtonFieldDateTimePicker;
+export default React.memo(ButtonFieldDateTimePicker);

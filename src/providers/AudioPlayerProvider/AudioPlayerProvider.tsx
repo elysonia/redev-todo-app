@@ -50,12 +50,12 @@ const AudioPlayerProvider = ({ children }: PropsWithChildren) => {
     }
   }, [alarmVolume, setIsPlaying]);
 
-  const handlePauseAudio = () => {
+  const handlePauseAudio = useCallback(() => {
     if (!isEmpty(audioRef.current)) {
       audioRef.current.pause();
       setIsPlaying(false);
     }
-  };
+  }, [setIsPlaying]);
 
   const audioPlayerValue: AudioPlayerContextProps = useMemo(() => {
     return {

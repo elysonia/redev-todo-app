@@ -55,7 +55,7 @@ const TodoList = ({ sectionIndex, sectionFieldName }: TodoListProps) => {
     if (hasNoSubtasks && hasNoHeaderName) return false;
     if (!isActiveFieldArray) return true;
     return true;
-  }, [sectionFieldName, focusedFieldName, isActiveFieldArray, fields]);
+  }, [sectionFieldName, isActiveFieldArray, fields, getValues]);
 
   /* Filter out empty todo item on clicking away from the section. */
   const handleClickAway = useCallback(() => {
@@ -100,7 +100,17 @@ const TodoList = ({ sectionIndex, sectionFieldName }: TodoListProps) => {
     setFocusedFieldName("");
     onSubmit();
     setSnackbar({ open: true, message: `Tasks saved` });
-  }, [sectionIndex, fieldName, setSnackbar, setSectionFieldArrayName]);
+  }, [
+    sectionIndex,
+    fieldName,
+    setSnackbar,
+    setSectionFieldArrayName,
+    getValues,
+    setValue,
+    onSubmit,
+    sectionFieldName,
+    setFocusedFieldName,
+  ]);
 
   const handleSetSectionActive = useCallback(
     (nextFocusedFieldName?: string) => {

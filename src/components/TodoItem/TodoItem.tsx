@@ -107,7 +107,14 @@ const TodoItem = ({
         }
       }
     },
-    [itemIndex, setFocus, getValues, removeListItems, insertListItem]
+    [
+      itemIndex,
+      setFocus,
+      getValues,
+      removeListItems,
+      listFieldName,
+      insertListItem,
+    ]
   );
 
   const handleChecked = useCallback(
@@ -155,7 +162,6 @@ const TodoItem = ({
     [
       itemIndex,
       sectionIndex,
-      sectionFieldName,
       isActiveFieldArray,
       setValue,
       getValues,
@@ -183,7 +189,7 @@ const TodoItem = ({
     if (focusedFieldName === fieldName) {
       setFocus(fieldName);
     }
-  }, [focusedFieldName, setFocus]);
+  }, [focusedFieldName, setFocus, fieldName]);
 
   console.log({ isCompleted });
   return (

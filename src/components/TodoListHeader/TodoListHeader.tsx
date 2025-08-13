@@ -55,10 +55,10 @@ const TodoListHeader = ({
     /* Record the field name so we can re-focus to it upon re-render on save. */
     setFocusedFieldName(fieldName);
     onSetSectionActive(fieldName);
-  }, [setFocusedFieldName, fieldName]);
+  }, [setFocusedFieldName, fieldName, onSetSectionActive]);
 
   const reminderText = useMemo(() => {
-    if (!reminderDateTime) return "";
+    if (currentTime === null || !reminderDateTime) return "";
     return dayjsformatter(reminderDateTime);
   }, [reminderDateTime, currentTime]);
 
@@ -75,7 +75,7 @@ const TodoListHeader = ({
         }, 500);
       }
     },
-    [sectionFieldName]
+    [sectionFieldName, getValues, setValue]
   );
 
   useEffect(() => {
@@ -87,7 +87,7 @@ const TodoListHeader = ({
     if (focusedFieldName === fieldName) {
       setFocus(fieldName);
     }
-  }, [focusedFieldName]);
+  }, [focusedFieldName, fieldName, setFocus]);
 
   /* Update reminder text every minute. */
   useEffect(() => {
