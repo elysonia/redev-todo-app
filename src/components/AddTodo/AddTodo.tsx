@@ -81,7 +81,7 @@ const AddTodo = ({ prependSection, removeSections }: AddTodoProps) => {
           <IconButton onClick={handleAddTodoSection}>
             <AddCircle fontSize="large" />
           </IconButton>
-          <span>Add todo</span>
+          <span>Add task</span>
         </div>
       </Tooltip>
 
