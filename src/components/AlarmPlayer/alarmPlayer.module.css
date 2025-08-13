@@ -1,6 +1,7 @@
 .alarmSettingsContainer input[type="range"] {
   writing-mode: vertical-lr;
   direction: rtl;
+  height: 200px;
 }
 
 .alarmSettingsContainer {
@@ -13,7 +14,7 @@
   -webkit-backdrop-filter: blur(30px);
   backdrop-filter: blur(30px);
   border: 1px solid rgb(from var(--background) r g b / 0.3);
-  width: fit-content;
+  width: clamp(240px, 220px, 200px);
   flex-direction: column;
   justify-content: center;
   align-items: center;
@@ -23,12 +24,13 @@
 .notificationStatusText {
   font-size: 0.8rem;
   color: rgb(
-    from var(--foreground) abs(calc(r - 110)) abs(calc(g - 120))
+    from var(--foreground) abs(calc(r - 10)) abs(calc(g - 20))
       abs(calc(b - 100)) / 1
   );
   padding: 4px 0px;
 
   & span {
+    word-wrap: normal;
     padding: 4px;
   }
 
@@ -42,7 +44,8 @@
 .alarmSettings {
   display: flex;
   gap: 5px;
-  padding: 4px 0px;
+  justify-content: space-around;
+  align-items: baseline;
   padding: 10px 0px 0px;
 }
 
@@ -50,7 +53,7 @@
   padding: 0px 10px;
   font-size: 0.8rem;
   color: rgb(
-    from var(--foreground) abs(calc(r - 110)) abs(calc(g - 120))
+    from var(--foreground) abs(calc(r - 10)) abs(calc(g - 20))
       abs(calc(b - 100)) / 1
   );
 }
@@ -81,7 +84,7 @@
   &:hover {
     & svg {
       fill: rgb(
-        from var(--foreground) abs(calc(r - 120)) abs(calc(g - 139))
+        from var(--foreground) abs(calc(r - 10)) abs(calc(g - 19))
           abs(calc(b - 200)) / 1
       );
     }
