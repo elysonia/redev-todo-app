@@ -191,7 +191,6 @@ const TodoItem = ({
     }
   }, [focusedFieldName, setFocus, fieldName]);
 
-  console.log({ isCompleted });
   return (
     <ListItem>
       <Controller
