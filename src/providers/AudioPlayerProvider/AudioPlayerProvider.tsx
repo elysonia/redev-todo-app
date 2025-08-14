@@ -17,14 +17,14 @@ type AudioPlayerContextProps = {
   audioRef: RefObject<HTMLAudioElement | null>;
   isPlaying: boolean;
   onPlayAudio: () => void;
-  onPauseAudio: () => void;
+  onStopAudio: () => void;
 };
 
 const defaultAudioPlayerContext: AudioPlayerContextProps = {
   audioRef: { current: null },
   isPlaying: false,
   onPlayAudio: () => {},
-  onPauseAudio: () => {},
+  onStopAudio: () => {},
 };
 
 const AudioPlayerContext = createContext<AudioPlayerContextProps>(
@@ -50,9 +50,10 @@ const AudioPlayerProvider = ({ children }: PropsWithChildren) => {
     }
   }, [alarmVolume, setIsPlaying]);
 
-  const handlePauseAudio = useCallback(() => {
+  const handleStopAudio = useCallback(() => {
     if (!isEmpty(audioRef.current)) {
       audioRef.current.pause();
+      audioRef.current.load();
       setIsPlaying(false);
     }
   }, [setIsPlaying]);
@@ -62,9 +63,9 @@ const AudioPlayerProvider = ({ children }: PropsWithChildren) => {
       audioRef,
       isPlaying,
       onPlayAudio: handlePlayAudio,
-      onPauseAudio: handlePauseAudio,
+      onStopAudio: handleStopAudio,
     };
-  }, [audioRef, isPlaying, handlePlayAudio, handlePauseAudio]);
+  }, [audioRef, isPlaying, handlePlayAudio, handleStopAudio]);
 
   return (
     <AudioPlayerContext.Provider value={audioPlayerValue}>

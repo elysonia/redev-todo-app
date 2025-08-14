@@ -1,7 +1,7 @@
 .alarmSettingsContainer input[type="range"] {
   writing-mode: vertical-lr;
   direction: rtl;
-  height: 180px;
+  height: 190px;
 }
 
 .alarmSettingsContainer {
@@ -49,13 +49,21 @@
   width: 100%;
 }
 
-.currentAlarmText {
-  padding: 0px 10px;
-  font-size: 0.8rem;
+.currentAlarmPreview button {
+  padding: 4px 10px;
+  font-size: 1rem;
+  font-weight: 600;
   color: rgb(
     from var(--foreground) abs(calc(r - 10)) abs(calc(g - 20))
       abs(calc(b - 100)) / 1
   );
+
+  & svg {
+    fill: rgb(
+      from var(--foreground) abs(calc(r - 10)) abs(calc(g - 20))
+        abs(calc(b - 100)) / 1
+    );
+  }
 }
 
 .alarmVolume {
