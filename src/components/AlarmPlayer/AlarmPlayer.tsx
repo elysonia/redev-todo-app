@@ -64,7 +64,6 @@ const AlarmVolume = () => {
         type="range"
         min={0}
         max={100}
-        step={1}
         aria-label="volume"
         onChange={(event) => {
           if (audioRef?.current) {

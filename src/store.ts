@@ -48,7 +48,7 @@ const defaultState: TodoState = {
   /* List of completed todos. */
   todoHistory: [],
   alarmType: AlarmTypeEnum.dreamscape,
-  alarmVolume: 5,
+  alarmVolume: 0.5,
   isHydrated: false,
 };
 
