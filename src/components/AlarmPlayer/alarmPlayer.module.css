@@ -79,8 +79,13 @@
   flex-direction: column;
   justify-content: center;
   align-items: center;
+  padding: unset;
+  height: 60px;
+  min-width: 95px;
 
   & span {
+    width: 95px;
+    text-overflow: ellipsis;
     font-size: small;
     color: rgb(from var(--foreground) r g b / 0.6);
   }
@@ -89,12 +94,23 @@
     padding: unset;
   }
 
-  &:hover {
+  &.disabled,
+  &.disabled:hover {
+    cursor: not-allowed;
     & svg {
-      fill: rgb(
-        from var(--foreground) abs(calc(r - 10)) abs(calc(g - 19))
-          abs(calc(b - 200)) / 1
-      );
+      fill: rgb(from var(--foreground) r g b / 0.5);
+    }
+  }
+
+  &:hover {
+    border-radius: unset;
+    background-color: rgb(from var(--foreground) r g b / 0.4);
+    & span {
+      color: rgb(from var(--background) r g b / 0.6);
+    }
+
+    & svg {
+      fill: rgb(from var(--background) r g b / 0.6);
     }
   }
 }

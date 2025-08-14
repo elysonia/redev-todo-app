@@ -14,7 +14,6 @@ import {
 import {
   Button,
   ClickAwayListener,
-  IconButton,
   MenuItem,
   MenuList,
   Popper,
@@ -202,12 +201,13 @@ const AlarmPlayer = () => {
     <div className={styles.alarmPlayerContainer}>
       <audio ref={audioRef} src={alarmObject.filePath} />
       <Tooltip title="Alarm settings">
-        <div className={styles.actionButton}>
-          <IconButton onClick={handleChangeAlarmClick}>
-            <EditNotifications fontSize="large" />
-          </IconButton>
+        <Button
+          classes={{ root: styles.actionButton }}
+          onClick={handleChangeAlarmClick}
+        >
+          <EditNotifications fontSize="large" />
           <span>Alarm Settings</span>
-        </div>
+        </Button>
       </Tooltip>
 
       <ClickAwayListener

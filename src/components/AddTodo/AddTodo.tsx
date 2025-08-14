@@ -1,5 +1,5 @@
 import { AddCircle, AlarmOff, DeleteForever } from "@mui/icons-material";
-import { IconButton, Tooltip } from "@mui/material";
+import { Button, Tooltip } from "@mui/material";
 import clsx from "clsx";
 import { uniqueId } from "lodash";
 import { useCallback } from "react";
@@ -83,36 +83,32 @@ const AddTodo = ({ prependSection, removeSections }: AddTodoProps) => {
   return (
     <div className={styles.actionButtonContainer}>
       <Tooltip describeChild title="Add new task">
-        <div className={styles.actionButton}>
-          <IconButton onClick={handleAddTodoSection}>
-            <AddCircle fontSize="large" />
-          </IconButton>
+        <Button className={styles.actionButton} onClick={handleAddTodoSection}>
+          <AddCircle fontSize="large" />
           <span>Add task</span>
-        </div>
+        </Button>
       </Tooltip>
 
       <Tooltip describeChild title="Reset all tasks">
-        <div className={styles.actionButton}>
-          <IconButton onClick={handleReset}>
-            <DeleteForever fontSize="large" />
-          </IconButton>
+        <Button className={styles.actionButton} onClick={handleReset}>
+          <DeleteForever fontSize="large" />
           <span>Reset tasks</span>
-        </div>
+        </Button>
       </Tooltip>
 
       <AlarmPlayer />
 
       <Tooltip title={isPlaying ? "Silence alarm" : "No alarm playing"}>
-        <div
+        <Button
           className={clsx(styles.actionButton, {
             [styles.disabled]: !isPlaying,
           })}
+          disabled={!isPlaying}
+          onClick={onStopAudio}
         >
-          <IconButton disabled={!isPlaying} onClick={onStopAudio}>
-            <AlarmOff fontSize="large" />
-          </IconButton>
+          <AlarmOff fontSize="large" />
           <span>Silence alarm</span>
-        </div>
+        </Button>
       </Tooltip>
     </div>
   );
