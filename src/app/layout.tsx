@@ -18,9 +18,9 @@ const geistMono = Geist_Mono({
 });
 
 export const metadata: Metadata = {
-  title: "Mini Project: Todo App",
+  title: "Taskeep",
   description:
-    "Todo App based on the default Tasks app in my Redmi Note 10 Pro phone. Made to familiarize myself with TypeScript.",
+    "Create, manage, and track tasks with ease using this simple intuitive task management app.",
 };
 
 export default function RootLayout({
