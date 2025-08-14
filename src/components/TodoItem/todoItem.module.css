@@ -3,6 +3,7 @@
   display: inline-block;
   text-decoration: none;
   word-wrap: break-word;
+  width: 100%;
 }
 
 .item.completed svg {
