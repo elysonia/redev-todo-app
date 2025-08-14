@@ -11,6 +11,7 @@ Based on my Redmi Note 10 Pro default Tasks App that I use frequently. The aim i
 - Set reminders, pick from 5 alarm sounds and get desktop notifications
 - Elegant glassmorphism design
 - Beautiful background picture (I might add more to choose from)
+- Data is stored in the browser local storage.
 
 ## Why did I make this
 
