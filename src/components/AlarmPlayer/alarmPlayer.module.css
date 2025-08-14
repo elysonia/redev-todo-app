@@ -1,7 +1,7 @@
 .alarmSettingsContainer input[type="range"] {
   writing-mode: vertical-lr;
   direction: rtl;
-  height: 200px;
+  height: 180px;
 }
 
 .alarmSettingsContainer {
@@ -43,10 +43,10 @@
 
 .alarmSettings {
   display: flex;
-  gap: 5px;
   justify-content: space-around;
   align-items: baseline;
   padding: 10px 0px 0px;
+  width: 100%;
 }
 
 .currentAlarmText {
@@ -89,4 +89,10 @@
       );
     }
   }
+}
+
+.alarmSound {
+  display: flex;
+  flex-direction: column;
+  justify-content: baseline;
 }
