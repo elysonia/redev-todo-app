@@ -1,5 +1,6 @@
 "use client";
 
+import { GitHub } from "@mui/icons-material";
 import { Controller, useFieldArray, useFormContext } from "react-hook-form";
 
 import AddTodo from "@components/AddTodo";
@@ -47,19 +48,17 @@ const TodoSections = () => {
           );
         })}
       </div>
-      <div className={styles.footer}>
-        <p>
-          &copy; {thisYear} Elysonia. All rights reserved. <br /> Background
-          image by
-          <a
-            href="https://unsplash.com/photos/a-small-lake-surrounded-by-green-hills-and-yellow-flowers-rpryWTMTcSc"
-            target="_blank"
-            rel="noopener noreferrer"
-          >
-            Livia @ Unsplash
-          </a>
-        </p>
-      </div>
+      <footer className={styles.footer}>
+        <span>Re:Dev &copy; {thisYear}</span> &nbsp;&bull;&nbsp;
+        <GitHub />
+        <a
+          href="https://github.com/elysonia/redev-todo-app"
+          target="_blank"
+          rel="noopener noreferrer"
+        >
+          GitHub
+        </a>
+      </footer>
     </div>
   );
 };
