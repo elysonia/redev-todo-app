@@ -1,6 +1,6 @@
-## Mini-project: Simple Todo App
+## Mini-project: [Taskeep](https://redev-taskeep.vercel.app/)
 
-Based on my Redmi Note 10 Pro default Tasks App that I use frequently. The aim is to emulate the features I like from the Tasks App which shouldn't be too hard as a learning project.
+A simple todo app based on my Redmi Note 10 Pro default Tasks App that I use frequently. The aim is to emulate the features I like from the Tasks App which shouldn't be too hard as a learning project.
 
 ## App Features
 
@@ -15,7 +15,7 @@ Based on my Redmi Note 10 Pro default Tasks App that I use frequently. The aim i
 
 ## Why did I make this
 
-- To learn TypeScript because I need work
+- To get better at TypeScript
 - To use libraries I've always wanted to try i.e. Zustand, RHF (useFieldArray)
 - To work with real CSS again after years of JSS (no hate, just miss it)
 - To maintain good programming form :D
