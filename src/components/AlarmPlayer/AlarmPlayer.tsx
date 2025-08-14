@@ -5,11 +5,14 @@ import {
   EditNotifications,
   NotificationsActive,
   NotificationsOff,
+  PauseCircleFilled,
+  PlayCircleFilled,
   VolumeDown,
   VolumeMute,
   VolumeUp,
 } from "@mui/icons-material";
 import {
+  Button,
   ClickAwayListener,
   IconButton,
   MenuItem,
@@ -121,9 +124,15 @@ const NotificationStatusText = ({
   );
 };
 
+const AlarmPreviewEndIcon = ({ isPlaying }: { isPlaying: boolean }) => {
+  if (isPlaying) return <PauseCircleFilled />;
+  return <PlayCircleFilled />;
+};
+
 const AlarmPlayer = () => {
   const [anchorEl, setAnchorEl] = useState<HTMLElement | null>(null);
-  const { audioRef } = useAudioPlayerContext();
+  const { audioRef, isPlaying, onPlayAudio, onStopAudio } =
+    useAudioPlayerContext();
   const { alarmType, updateAlarmType } = useTodoStore(
     useShallow((state) => state)
   );
@@ -135,6 +144,9 @@ const AlarmPlayer = () => {
     return Object.values(alarmMap);
   }, []);
 
+  const alarmPreviewTooltipTitle = isPlaying
+    ? "Stop alarm preview"
+    : "Preview alarm sound";
   const handleChangeAlarmClick = (
     event: React.MouseEvent<HTMLButtonElement>
   ) => {
@@ -153,6 +165,14 @@ const AlarmPlayer = () => {
   const handleMenuItemClick = (alarmType: AlarmTypeEnum) => {
     updateAlarmType(alarmType);
   };
+
+  const handlePreviewAlarm = useCallback(() => {
+    if (isPlaying) {
+      onStopAudio();
+      return;
+    }
+    onPlayAudio();
+  }, [isPlaying, onPlayAudio, onStopAudio]);
 
   useEffect(() => {
     if ("Notification" in window) {
@@ -189,10 +209,16 @@ const AlarmPlayer = () => {
           <div className={styles.alarmSettings}>
             <AlarmVolume />
             <div className={styles.alarmSound}>
-              <div className={styles.currentAlarmText}>
-                <Audiotrack fontSize="small" />
-                &nbsp;
-                {alarmObject.title}
+              <div className={styles.currentAlarmPreview}>
+                <Tooltip title={alarmPreviewTooltipTitle}>
+                  <Button
+                    startIcon={<Audiotrack fontSize="small" />}
+                    endIcon={<AlarmPreviewEndIcon isPlaying={isPlaying} />}
+                    onClick={handlePreviewAlarm}
+                  >
+                    {alarmObject.title}
+                  </Button>
+                </Tooltip>
               </div>
               <MenuList>
                 {alarmList.map((alarm) => {

@@ -29,7 +29,7 @@ const AddTodo = ({ prependSection, removeSections }: AddTodoProps) => {
     setSectionFieldArrayName,
   } = useTodoContext();
   const { getValues, setValue } = useFormContext();
-  const { isPlaying, onPauseAudio } = useAudioPlayerContext();
+  const { isPlaying, onStopAudio } = useAudioPlayerContext();
 
   /* TODO: Form validation */
   const handleAddTodoSection = useCallback(() => {
@@ -108,7 +108,7 @@ const AddTodo = ({ prependSection, removeSections }: AddTodoProps) => {
             [styles.disabled]: !isPlaying,
           })}
         >
-          <IconButton disabled={!isPlaying} onClick={onPauseAudio}>
+          <IconButton disabled={!isPlaying} onClick={onStopAudio}>
             <AlarmOff fontSize="large" />
           </IconButton>
           <span>Silence alarm</span>
