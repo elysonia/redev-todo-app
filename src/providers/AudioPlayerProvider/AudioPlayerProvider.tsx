@@ -7,6 +7,7 @@ import {
   RefObject,
   useCallback,
   useContext,
+  useEffect,
   useMemo,
   useRef,
   useState,
@@ -16,6 +17,7 @@ import { useShallow } from "zustand/shallow";
 type AudioPlayerContextProps = {
   audioRef: RefObject<HTMLAudioElement | null>;
   isPlaying: boolean;
+  isPlayable: boolean;
   onPlayAudio: () => void;
   onStopAudio: () => void;
 };
@@ -23,6 +25,7 @@ type AudioPlayerContextProps = {
 const defaultAudioPlayerContext: AudioPlayerContextProps = {
   audioRef: { current: null },
   isPlaying: false,
+  isPlayable: false,
   onPlayAudio: () => {},
   onStopAudio: () => {},
 };
@@ -33,6 +36,7 @@ const AudioPlayerContext = createContext<AudioPlayerContextProps>(
 
 const AudioPlayerProvider = ({ children }: PropsWithChildren) => {
   const [isPlaying, setIsPlaying] = useState(false);
+  const [isPlayable, setIsPlayable] = useState(false);
   const { alarmVolume } = useTodoStore(useShallow((state) => state));
   const audioRef = useRef<HTMLAudioElement | null>(null);
 
@@ -45,7 +49,7 @@ const AudioPlayerProvider = ({ children }: PropsWithChildren) => {
           setIsPlaying(true);
         })
         .catch((error) => {
-          console.error("Error playing audio:", error);
+          console.error("Error:", error);
         });
     }
   }, [alarmVolume, setIsPlaying]);
@@ -62,10 +66,39 @@ const AudioPlayerProvider = ({ children }: PropsWithChildren) => {
     return {
       audioRef,
       isPlaying,
+      isPlayable,
       onPlayAudio: handlePlayAudio,
       onStopAudio: handleStopAudio,
     };
-  }, [audioRef, isPlaying, handlePlayAudio, handleStopAudio]);
+  }, [audioRef, isPlaying, isPlayable, handlePlayAudio, handleStopAudio]);
+
+  useEffect(() => {
+    const handleCanPlayThrough = () => {
+      setIsPlayable(true);
+    };
+
+    const handleEnded = () => {
+      if (!isEmpty(audioRef.current)) {
+        audioRef.current.load();
+        setIsPlaying(false);
+      }
+    };
+
+    if (!isEmpty(audioRef.current)) {
+      audioRef.current.addEventListener("canplaythrough", handleCanPlayThrough);
+      audioRef.current.addEventListener("ended", handleEnded);
+    }
+
+    return () => {
+      if (!isEmpty(audioRef.current)) {
+        audioRef.current.removeEventListener(
+          "canplaythrough",
+          handleCanPlayThrough
+        );
+        audioRef.current.removeEventListener("ended", handleEnded);
+      }
+    };
+  }, [setIsPlayable]);
 
   return (
     <AudioPlayerContext.Provider value={audioPlayerValue}>

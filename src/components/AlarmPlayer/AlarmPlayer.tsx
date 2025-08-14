@@ -130,7 +130,8 @@ const AlarmPreviewEndIcon = ({ isPlaying }: { isPlaying: boolean }) => {
 
 const AlarmPlayer = () => {
   const [anchorEl, setAnchorEl] = useState<HTMLElement | null>(null);
-  const { audioRef, isPlaying, onPlayAudio, onStopAudio } =
+  const [isAutoplayNext, setIsAutoplayNext] = useState(false);
+  const { audioRef, isPlayable, isPlaying, onPlayAudio, onStopAudio } =
     useAudioPlayerContext();
   const { alarmType, updateAlarmType } = useTodoStore(
     useShallow((state) => state)
@@ -146,6 +147,7 @@ const AlarmPlayer = () => {
   const alarmPreviewTooltipTitle = isPlaying
     ? "Stop alarm preview"
     : "Preview alarm sound";
+
   const handleChangeAlarmClick = (
     event: React.MouseEvent<HTMLButtonElement>
   ) => {
@@ -161,9 +163,18 @@ const AlarmPlayer = () => {
     setAnchorEl(null);
   };
 
-  const handleMenuItemClick = (alarmType: AlarmTypeEnum) => {
-    updateAlarmType(alarmType);
-  };
+  const handleMenuItemClick = useCallback(
+    (nextAlarmType: AlarmTypeEnum) => {
+      updateAlarmType(nextAlarmType);
+
+      if (isPlaying) {
+        /* Indicates the new alarm should autoplay if it was picked while the previous one is still playing. */
+        setIsAutoplayNext(true);
+        onStopAudio();
+      }
+    },
+    [isPlaying, onStopAudio, audioRef, setIsAutoplayNext, updateAlarmType]
+  );
 
   const handlePreviewAlarm = useCallback(() => {
     if (isPlaying) {
@@ -178,6 +189,14 @@ const AlarmPlayer = () => {
       setIsNotificationEnabled(Notification.permission === "granted");
     }
   }, [setIsNotificationEnabled]);
+
+  /* If the alarm sound should autoplay, call the play function once the data is loaded fully. */
+  useEffect(() => {
+    if (isAutoplayNext && isPlayable) {
+      onPlayAudio();
+      setIsAutoplayNext(false);
+    }
+  }, [isPlayable, isAutoplayNext, setIsAutoplayNext, onPlayAudio]);
 
   return (
     <div className={styles.alarmPlayerContainer}>
