@@ -155,7 +155,7 @@ const TodoItem = ({
           return;
         }
 
-        moveListItem(itemIndex, latestCompletedListItemIndex);
+        moveListItem(itemIndex, latestCompletedListItemIndex - 1);
         onSubmit();
       }, 500);
     },
