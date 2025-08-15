@@ -73,30 +73,27 @@ const AudioPlayerProvider = ({ children }: PropsWithChildren) => {
   }, [audioRef, isPlaying, isPlayable, handlePlayAudio, handleStopAudio]);
 
   useEffect(() => {
+    const currentAudio = audioRef.current;
+
+    if (isEmpty(currentAudio)) return;
+
     const handleCanPlayThrough = () => {
       setIsPlayable(true);
     };
 
     const handleEnded = () => {
-      if (!isEmpty(audioRef.current)) {
-        audioRef.current.load();
+      if (!isEmpty(currentAudio)) {
+        currentAudio.load();
         setIsPlaying(false);
       }
     };
 
-    if (!isEmpty(audioRef.current)) {
-      audioRef.current.addEventListener("canplaythrough", handleCanPlayThrough);
-      audioRef.current.addEventListener("ended", handleEnded);
-    }
+    currentAudio.addEventListener("canplaythrough", handleCanPlayThrough);
+    currentAudio.addEventListener("ended", handleEnded);
 
     return () => {
-      if (!isEmpty(audioRef.current)) {
-        audioRef.current.removeEventListener(
-          "canplaythrough",
-          handleCanPlayThrough
-        );
-        audioRef.current.removeEventListener("ended", handleEnded);
-      }
+      currentAudio.removeEventListener("canplaythrough", handleCanPlayThrough);
+      currentAudio.removeEventListener("ended", handleEnded);
     };
   }, [setIsPlayable]);
 
