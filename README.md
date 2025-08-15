@@ -6,7 +6,6 @@ A simple todo app based on my Redmi Note 10 Pro default Tasks App that I use fre
 
 - Create tasks with subtasks
 - Seamless subtask create/delete/update actions
-- Tasks are saved continuously while editing, you can also save manually
 - Pick up right where you left even when you forgot to save before exiting
 - Set reminders, pick from 5 alarm sounds and get desktop notifications
 - Elegant glassmorphism design

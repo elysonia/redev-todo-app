@@ -71,7 +71,6 @@ const TodoProvider = ({ children }: PropsWithChildren) => {
   const [focusedFieldName, setFocusedFieldName] = useState("");
 
   const [snackbar, setSnackbar] = useState<SnackbarProps>({});
-  const [shouldSaveOnIdle, setShouldSaveOnIdle] = useState(false);
   const [shouldRestoreDraft, setShouldRestoreDraft] = useState(true);
 
   const {
@@ -240,25 +239,6 @@ const TodoProvider = ({ children }: PropsWithChildren) => {
 
     return () => handleSubscribe();
   }, [subscribe, handleSaveDraft]);
-
-  /* Autosaves form data after 5 seconds of inactivity. */
-  useEffect(() => {
-    if (isIdle && shouldSaveOnIdle) {
-      /* Prevent endless API call */
-      setShouldSaveOnIdle(false);
-      handleSubmit();
-      setSnackbar({ open: true, message: `Tasks saved` });
-    } else {
-      setShouldSaveOnIdle(isDirty);
-    }
-  }, [
-    isIdle,
-    shouldSaveOnIdle,
-    isDirty,
-    handleSubmit,
-    setShouldSaveOnIdle,
-    setSnackbar,
-  ]);
 
   /* https://zustand.docs.pmnd.rs/integrations/persisting-store-data#usage-in-next.js  */
   /* If the form somehow did not save before exiting, restore the draft. */
