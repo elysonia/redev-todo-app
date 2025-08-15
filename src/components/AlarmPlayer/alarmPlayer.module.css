@@ -104,13 +104,12 @@
 
   &:hover {
     border-radius: unset;
-    background-color: rgb(from var(--foreground) r g b / 0.4);
+    background-color: rgb(from var(--foreground) r g b / 0.3);
     & span {
-      color: rgb(from var(--background) r g b / 0.6);
+      color: rgb(from var(--background) r g b / 1);
     }
-
     & svg {
-      fill: rgb(from var(--background) r g b / 0.6);
+      fill: rgb(from var(--background) r g b / 1);
     }
   }
 }
