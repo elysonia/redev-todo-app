@@ -24,7 +24,8 @@ const TodoListHeader = ({
 }: TodoListHeaderProps) => {
   const fieldName = `${sectionFieldName}.name`;
   const checkboxFieldName = `${sectionFieldName}.isCompleted`;
-  const { focusedFieldName, setFocusedFieldName } = useTodoContext();
+  const { focusedFieldName, setFocusedFieldName, setSnackbar, onSubmit } =
+    useTodoContext();
   const { control, setFocus, setValue, getValues } = useFormContext();
   const [currentTime, setCurrentTime] = useState<Dayjs | null>(null);
   const inputRef = useRef<HTMLTextAreaElement>(null);
@@ -69,13 +70,20 @@ const TodoListHeader = ({
           const todoSection = getValues(sectionFieldName);
           const todoSections = getValues("todoSections");
           const newTodoSections = todoSections.filter(
-            (section: TodoSection) => section.id !== todoSection.id
+            (section: TodoSection) => {
+              return section.id !== todoSection?.id;
+            }
           );
           setValue("todoSections", newTodoSections);
+          onSubmit();
+          setSnackbar({
+            open: true,
+            message: "Task completed",
+          });
         }, 500);
       }
     },
-    [sectionFieldName, getValues, setValue]
+    [sectionFieldName, getValues, setValue, onSubmit, setSnackbar]
   );
 
   useEffect(() => {
