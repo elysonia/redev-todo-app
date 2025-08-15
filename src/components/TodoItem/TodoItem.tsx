@@ -13,7 +13,7 @@ import {
 } from "react-hook-form";
 
 import { useTodoContext } from "@providers/TodoProvider/TodoProvider";
-import { TodoItem as TodoItemType } from "types";
+import { TodoItem as TodoItemType, TodoSection } from "types";
 import styles from "./todoItem.module.css";
 
 type TodoItemProps = {
@@ -47,6 +47,7 @@ const TodoItem = ({
     sectionFieldArrayName,
     setFocusedFieldName,
     onSubmit,
+    setSnackbar,
   } = useTodoContext();
   const { control, setFocus, setValue, getValues } = useFormContext();
 
@@ -136,12 +137,19 @@ const TodoItem = ({
           }
         );
 
-        const hasNoSubtask = newIncompleteTodoList.length === 0;
+        const isAllSubtasksCompleted = newIncompleteTodoList.length === 0;
 
-        if (hasNoSubtask) {
-          setValue(`todoSections.${sectionIndex}`, {
-            ...todoSection,
-            isCompleted: true,
+        if (isAllSubtasksCompleted) {
+          const newTodoSections = todoSections.filter(
+            (section: TodoSection) => {
+              return section.id !== todoSection.id;
+            }
+          );
+          setValue("todoSections", newTodoSections);
+          onSubmit();
+          setSnackbar({
+            open: true,
+            message: "Task completed",
           });
           return;
         }
@@ -167,6 +175,7 @@ const TodoItem = ({
       getValues,
       moveListItem,
       onSubmit,
+      setSnackbar,
     ]
   );
 
