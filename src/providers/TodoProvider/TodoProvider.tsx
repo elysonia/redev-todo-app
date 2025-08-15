@@ -86,7 +86,6 @@ const TodoProvider = ({ children }: PropsWithChildren) => {
   const methods = useForm<TodoForm>();
   const {
     reset,
-    formState: { isDirty },
     subscribe,
     setValue,
     getValues,
