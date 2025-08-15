@@ -1,7 +1,6 @@
 "use client";
 
 import { Snackbar, SnackbarProps } from "@mui/material";
-import { useIdle } from "@uidotdev/usehooks";
 import dayjs from "dayjs";
 import { debounce, isEmpty } from "lodash";
 import {
@@ -61,8 +60,6 @@ const defaultTodoContext: TodoContextProps = {
 export const TodoContext = createContext<TodoContextProps>(defaultTodoContext);
 
 const TodoProvider = ({ children }: PropsWithChildren) => {
-  /* TODO: Replace with local hook because I'm not using the library much */
-  const isIdle = useIdle(5000);
   /* Path to the current section in the form. */
   const [sectionFieldArrayName, setSectionFieldArrayName] = useState<
     `todoSections.${number}` | ""
