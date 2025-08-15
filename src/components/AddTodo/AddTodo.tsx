@@ -1,4 +1,4 @@
-import { AddCircle, AlarmOff, DeleteForever } from "@mui/icons-material";
+import { AddCircle, DeleteForever, StopCircle } from "@mui/icons-material";
 import { Button, Tooltip } from "@mui/material";
 import clsx from "clsx";
 import { uniqueId } from "lodash";
@@ -106,7 +106,7 @@ const AddTodo = ({ prependSection, removeSections }: AddTodoProps) => {
           disabled={!isPlaying}
           onClick={onStopAudio}
         >
-          <AlarmOff fontSize="large" />
+          <StopCircle fontSize="large" />
           <span>Silence alarm</span>
         </Button>
       </Tooltip>
