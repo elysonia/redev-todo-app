@@ -79,7 +79,6 @@ const TodoProvider = ({ children }: PropsWithChildren) => {
     updateTodoDraft,
   } = useTodoStore(useShallow((state) => state));
   const { isPlaying, onPlayAudio } = useAudioPlayerContext();
-
   const methods = useForm<TodoForm>();
   const {
     reset,
@@ -218,11 +217,6 @@ const TodoProvider = ({ children }: PropsWithChildren) => {
     handleSubmit,
   ]);
 
-  /* Detects data change from the store and updates form default values. */
-  useEffect(() => {
-    reset({ todoSections });
-  }, [todoSections, reset]);
-
   /* Subscribe to value updates without re-rendering the entire form for draft autosave. */
   useEffect(() => {
     const handleSubscribe = subscribe({
@@ -236,17 +230,18 @@ const TodoProvider = ({ children }: PropsWithChildren) => {
     return () => handleSubscribe();
   }, [subscribe, handleSaveDraft]);
 
-  /* https://zustand.docs.pmnd.rs/integrations/persisting-store-data#usage-in-next.js  */
+  /* Detects data change from the store and updates form default values. */
+  useEffect(() => {
+    if (!isHydrated) return;
+    reset({ todoSections });
+  }, [todoSections, reset, isHydrated]);
+
   /* If the form somehow did not save before exiting, restore the draft. */
   useEffect(() => {
     if (!isHydrated) return;
     if (!shouldRestoreDraft) return;
-    if (!todoDraft.isDirty) {
-      setShouldRestoreDraft(false);
-      return;
-    }
 
-    if (shouldRestoreDraft && todoDraft.isDirty) {
+    if (todoDraft.isDirty) {
       setFocusedFieldName(todoDraft.focusedFieldName);
       setSectionFieldArrayName(todoDraft.sectionFieldArrayName);
       setValue("todoSections", todoDraft.values);
@@ -254,16 +249,16 @@ const TodoProvider = ({ children }: PropsWithChildren) => {
         open: true,
         message: `Unsaved changes detected, draft restored`,
       });
-      setShouldRestoreDraft(false);
     }
+    setShouldRestoreDraft(false);
   }, [
-    isHydrated,
-    shouldRestoreDraft,
     todoDraft,
-    setValue,
-    setSnackbar,
+    shouldRestoreDraft,
+    isHydrated,
     setFocusedFieldName,
     setSectionFieldArrayName,
+    setValue,
+    setSnackbar,
     setShouldRestoreDraft,
   ]);
 
