@@ -67,11 +67,10 @@ const TodoListHeader = ({
     (isChecked: boolean) => {
       if (isChecked) {
         setTimeout(() => {
-          const todoSection = getValues(sectionFieldName);
           const todoSections = getValues("todoSections");
           const newTodoSections = todoSections.filter(
             (section: TodoSection) => {
-              return section.id !== todoSection?.id;
+              return !section.isCompleted;
             }
           );
           setValue("todoSections", newTodoSections);
@@ -83,7 +82,7 @@ const TodoListHeader = ({
         }, 500);
       }
     },
-    [sectionFieldName, getValues, setValue, onSubmit, setSnackbar]
+    [getValues, setValue, onSubmit, setSnackbar]
   );
 
   useEffect(() => {
