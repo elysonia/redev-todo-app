@@ -172,7 +172,7 @@ const AlarmPlayer = () => {
         onStopAudio();
       }
     },
-    [isPlaying, onStopAudio, audioRef, setIsAutoplayNext, updateAlarmType]
+    [isPlaying, onStopAudio, setIsAutoplayNext, updateAlarmType]
   );
 
   const handlePreviewAlarm = useCallback(() => {
