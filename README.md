@@ -1,30 +1,40 @@
 ## Mini-project: [Taskeep](https://redev-taskeep.vercel.app/)
 
-A simple todo app based on my Redmi Note 10 Pro default Tasks App that I use frequently. The aim is to emulate the features I like from the Tasks App which shouldn't be too hard as a learning project.
+A simple todo app based on my Redmi Note 10 Pro default Tasks App that I use frequently. The aim is to emulate the features I like.
 
 ## App Features
 
-- Create tasks with subtasks
-- Seamless subtask create/delete/update actions
-- Pick up right where you left even when you forgot to save before exiting
-- Set reminders, pick from 5 alarm sounds and get desktop notifications
-- Elegant glassmorphism design
-- Beautiful background picture (I might add more to choose from)
-- Local data storage - different browser, different storage.
+- **Intuitive:** Create/update/complete tasks with subtasks seamlessly.
+- **Draft autosave:** Pick up right where you left even when you forgot to save before exiting.
+- **Reminders:** Set reminders, pick from 5 alarm sounds and get desktop notifications.
+- **Simple and elegant design:** Elegant glassmorphism design with a beautiful background picture.
+- **Local data storage:** Data is saved locally on your browser.
 
-## Why did I make this
+## Installation
 
-- To get better at TypeScript
-- To use libraries I've always wanted to try i.e. Zustand, RHF (useFieldArray)
-- To work with real CSS again after years of JSS (no hate, just miss it)
-- To maintain good programming form :D
+1. Clone the repository
+   ```
+   git clone https://github.com/elysonia/redev-todo-app.git && cd redev-todo-app
+   ```
+2. Install dependencies
+   ```
+   yarn
+   ```
+3. Run development mode
+   ```
+   yarn dev
+   ```
+4. Production build
+   ```
+   yarn build
+   ```
 
-## TODOs
+## Tech Stack
 
-1. Clean up components. I got a little lazy with separating components, so the next main thing is to clean them up.
-2. Improve performance. I have some unmemoized components and the list could potentially grow bigger so might be good to implement virtualization.
-3. Expand/minimize tasks. Like an accordion.
-4. Make the theme customizable. I want color sliders.
+1. [Next.js with TypeScript](https://nextjs.org/docs/app/getting-started/installation)
+2. [Material UI](https://mui.com/material-ui/getting-started/installation/)
+3. [Zustand](https://zustand.docs.pmnd.rs/getting-started/introduction)
+4. [React Hook Form](https://react-hook-form.com/get-started)
 
 ## Assets
 
