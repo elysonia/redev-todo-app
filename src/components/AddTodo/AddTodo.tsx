@@ -48,11 +48,12 @@ const AddTodo = ({ prependSection, removeSections }: AddTodoProps) => {
       list: [todoItem],
     };
 
-    /* Add section at the start of list and focus on the first item immediatelly. */
+    /* Add section at the start of list and focus on the first item immediately. */
     const todoSections = getValues("todoSections");
     const nextTodoItemFieldName = `todoSections.0.list.0.text`;
     setFocusedFieldName(nextTodoItemFieldName);
     setSectionFieldArrayName(`todoSections.0`);
+
     if (todoSections.length === 0) {
       setValue("todoSections", [todoSection]);
     } else {
