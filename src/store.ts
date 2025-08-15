@@ -74,6 +74,7 @@ const createTodoStore = (initState: TodoState = defaultState) => {
               undefined,
               "todo/updateTodoSections"
             ),
+
           updateTodoSection: (data: TodoSection) =>
             set(
               (state: TodoStore) => {
