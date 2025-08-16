@@ -1,13 +1,12 @@
 import { Alarm } from "@mui/icons-material";
 import { Checkbox, Input } from "@mui/material";
 import clsx from "clsx";
+import dayjs, { Dayjs } from "dayjs";
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import { Controller, useFormContext, useWatch } from "react-hook-form";
 
 import { useTodoContext } from "@providers/TodoProvider/TodoProvider";
 import { dayjsformatter } from "@utils/dayjsUtils";
-import { defaultTodoSection } from "@utils/todoUtils";
-import dayjs, { Dayjs } from "dayjs";
 import { TodoSection } from "types";
 import styles from "./todoListHeader.module.css";
 
@@ -134,7 +133,7 @@ const TodoListHeader = ({
                   inputRef.current = ref;
                 }}
                 value={value}
-                placeholder={defaultTodoSection.name}
+                placeholder="Checklist for subtasks"
                 className={clsx(styles.listHeader, {
                   [styles.completed]: isCompleted,
                 })}

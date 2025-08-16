@@ -1,7 +1,6 @@
 import { AddCircle, DeleteForever, StopCircle } from "@mui/icons-material";
 import { Button, Tooltip } from "@mui/material";
 import clsx from "clsx";
-import { uniqueId } from "lodash";
 import { useCallback } from "react";
 import {
   FieldValues,
@@ -13,7 +12,8 @@ import {
 import AlarmPlayer from "@components/AlarmPlayer";
 import { useAudioPlayerContext } from "@providers/AudioPlayerProvider/AudioPlayerProvider";
 import { useTodoContext } from "@providers/TodoProvider/TodoProvider";
-import { TodoItem, TodoSection } from "types";
+import { getDefaultTodoItem, getDefaultTodoSection } from "@utils/todoUtils";
+import { TodoSection } from "types";
 import styles from "./addTodo.module.css";
 
 type AddTodoProps = {
@@ -31,25 +31,14 @@ const AddTodo = ({ prependSection, removeSections }: AddTodoProps) => {
   const { getValues, setValue } = useFormContext();
   const { isPlaying, onStopAudio } = useAudioPlayerContext();
 
-  /* TODO: Form validation */
   const handleAddTodoSection = useCallback(() => {
-    const todoItem: TodoItem = {
-      id: uniqueId(),
-      isCompleted: false,
-      text: "",
-    };
-
     const todoSection: TodoSection = {
-      id: uniqueId(),
-      name: "",
-      isCompleted: false,
-      isReminderExpired: false,
-      reminderDateTime: null,
-      list: [todoItem],
+      ...getDefaultTodoSection(),
+      list: [getDefaultTodoItem()],
     };
 
     /* Add section at the start of list and focus on the first item immediately. */
-    const todoSections = getValues("todoSections");
+    const todoSections = getValues(`todoSections`);
     const nextTodoItemFieldName = `todoSections.0.list.0.text`;
     setFocusedFieldName(nextTodoItemFieldName);
     setSectionFieldArrayName(`todoSections.0`);
