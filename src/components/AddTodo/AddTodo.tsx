@@ -100,16 +100,18 @@ const AddTodo = ({ prependSection, removeSections }: AddTodoProps) => {
       <AlarmPlayer />
 
       <Tooltip title={isPlaying ? "Silence alarm" : "No alarm playing"}>
-        <Button
-          className={clsx(styles.actionButton, {
-            [styles.disabled]: !isPlaying,
-          })}
-          disabled={!isPlaying}
-          onClick={onStopAudio}
-        >
-          <StopCircle fontSize="large" />
-          <span>Silence alarm</span>
-        </Button>
+        <span>
+          <Button
+            className={clsx(styles.actionButton, {
+              [styles.disabled]: !isPlaying,
+            })}
+            disabled={!isPlaying}
+            onClick={onStopAudio}
+          >
+            <StopCircle fontSize="large" />
+            <span>Silence alarm</span>
+          </Button>
+        </span>
       </Tooltip>
     </div>
   );
