@@ -7,10 +7,10 @@ dayjs.extend(relativeTime);
 dayjs.extend(isTomorrow);
 dayjs.extend(isToday);
 
-export const dayjsformatter = (date: Dayjs) => {
+export const dayjsformatter = (date: Dayjs, currentDate?: Dayjs | null) => {
   const dateObject = dayjs(date);
 
-  const today = dayjs();
+  const today = currentDate || dayjs();
   const weekFromToday = today.add(7, "day");
   const twoDaysLater = today.add(2, "day");
 

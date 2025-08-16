@@ -58,8 +58,9 @@ const TodoListHeader = ({
   }, [setFocusedFieldName, fieldName, onSetSectionActive]);
 
   const reminderText = useMemo(() => {
-    if (currentTime === null || !reminderDateTime) return "";
-    return dayjsformatter(reminderDateTime);
+    const isReminderDateTimeValid = dayjs(reminderDateTime).isValid();
+    if (currentTime === null && !isReminderDateTimeValid) return "";
+    return dayjsformatter(reminderDateTime, currentTime);
   }, [reminderDateTime, currentTime]);
 
   const handleChecked = useCallback(
