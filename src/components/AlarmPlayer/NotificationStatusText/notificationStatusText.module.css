@@ -1,0 +1,19 @@
+.notificationStatusText {
+  font-size: 0.8rem;
+  color: rgb(
+    from var(--foreground) abs(calc(r - 10)) abs(calc(g - 20))
+      abs(calc(b - 100)) / 1
+  );
+  padding: 4px 0px;
+
+  & span {
+    word-wrap: normal;
+    padding: 4px;
+  }
+
+  & a {
+    padding: 6px 4px;
+    text-decoration: underline;
+    cursor: pointer;
+  }
+}
