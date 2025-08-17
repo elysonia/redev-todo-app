@@ -44,7 +44,6 @@ const TodoSections = () => {
                     key={field.id}
                     sectionIndex={index}
                     sectionFieldName={name}
-                    sectionFieldArrayMethods={sectionFieldArrayMethods}
                   />
                 );
               }}

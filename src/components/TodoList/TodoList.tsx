@@ -7,7 +7,6 @@ import { useCallback, useEffect, useMemo } from "react";
 import {
   Controller,
   useFieldArray,
-  UseFieldArrayReturn,
   useFormContext,
   useWatch,
 } from "react-hook-form";
@@ -22,14 +21,9 @@ import styles from "./todoList.module.css";
 type TodoListProps = {
   sectionIndex: number;
   sectionFieldName: `todoSections.${number}`;
-  sectionFieldArrayMethods: UseFieldArrayReturn;
 };
 
-const TodoList = ({
-  sectionIndex,
-  sectionFieldName,
-  sectionFieldArrayMethods,
-}: TodoListProps) => {
+const TodoList = ({ sectionIndex, sectionFieldName }: TodoListProps) => {
   const fieldName = `todoSections.${sectionIndex}.list`;
   const reminderDateFieldName = `todoSections.${sectionIndex}.reminderDateTime`;
   const {
@@ -196,7 +190,6 @@ const TodoList = ({
               sectionFieldName={`todoSections.${sectionIndex}`}
               listFieldName={fieldName}
               shouldShowHeader={shouldShowHeader}
-              sectionFieldArrayMethods={sectionFieldArrayMethods}
               onSetSectionActive={handleSetSectionActive}
             />
           ))}

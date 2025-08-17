@@ -9,7 +9,6 @@ import {
   UseFieldArrayMove,
   UseFieldArrayRemove,
   UseFieldArrayReplace,
-  UseFieldArrayReturn,
   useFormContext,
   useWatch,
 } from "react-hook-form";
@@ -36,7 +35,6 @@ type TodoItemProps = {
     FieldValues,
     `todoSections.${number}.list`
   >;
-  sectionFieldArrayMethods: UseFieldArrayReturn;
   onSetSectionActive: (nextFocusedFieldName?: string) => void;
 };
 
@@ -50,7 +48,6 @@ const TodoItem = ({
   insertListItem,
   removeListItems,
   replaceListItems,
-  sectionFieldArrayMethods,
   onSetSectionActive,
 }: TodoItemProps) => {
   const fieldName = `${listFieldName}.${itemIndex}.text`;
@@ -139,22 +136,30 @@ const TodoItem = ({
         !!section.name;
 
       if (shouldCreateSingleTaskFromSectionName) {
-        const newTodoItem = {
-          ...getDefaultTodoItem(),
-          text: section.name,
-        };
+        const newTodoSections = getValues("todoSections").map(
+          (section: TodoSection, index: number) => {
+            if (sectionFieldName === `todoSections.${index}`) {
+              const newTodoItem = {
+                ...getDefaultTodoItem(),
+                text: section.name,
+              };
 
-        const newSection = { ...section, name: "", list: [newTodoItem] };
+              return { ...section, name: "", list: [newTodoItem] };
+            }
+            return section;
+          }
+        );
+
         const nextFieldName = `${listFieldName}.0.text`;
         setFocus(nextFieldName);
-        sectionFieldArrayMethods.replace(newSection);
+        setValue("todoSections", newTodoSections);
       }
     },
     [
       itemIndex,
       setFocus,
+      setValue,
       replaceListItems,
-      sectionFieldArrayMethods,
       removeListItems,
       listFieldName,
       insertListItem,
