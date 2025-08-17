@@ -27,10 +27,7 @@ const TodoSections = () => {
         backgroundImage: `url(${backgroundImageUrl})`,
       }}
     >
-      <AddTodo
-        prependSection={sectionFieldArrayMethods.prepend}
-        removeSections={sectionFieldArrayMethods.remove}
-      />
+      <AddTodo sectionFieldArrayMethods={sectionFieldArrayMethods} />
       <div className={styles.sectionsContainer}>
         {sectionFieldArrayMethods.fields.map((field, index) => {
           return (

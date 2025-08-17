@@ -4,11 +4,7 @@ import { uniqueId } from "lodash";
 import { useCallback, useEffect, useRef } from "react";
 import {
   Controller,
-  FieldValues,
-  UseFieldArrayInsert,
-  UseFieldArrayMove,
-  UseFieldArrayRemove,
-  UseFieldArrayReplace,
+  UseFieldArrayReturn,
   useFormContext,
   useWatch,
 } from "react-hook-form";
@@ -25,16 +21,7 @@ type TodoItemProps = {
   sectionFieldName: string;
   listFieldName: string;
   shouldShowHeader: boolean;
-  moveListItem: UseFieldArrayMove;
-  insertListItem: UseFieldArrayInsert<
-    FieldValues,
-    `todoSections.${number}.list`
-  >;
-  removeListItems: UseFieldArrayRemove;
-  replaceListItems: UseFieldArrayReplace<
-    FieldValues,
-    `todoSections.${number}.list`
-  >;
+  listFieldArrayMethods: UseFieldArrayReturn;
   onSetSectionActive: (nextFocusedFieldName?: string) => void;
 };
 
@@ -44,10 +31,7 @@ const TodoItem = ({
   listFieldName,
   shouldShowHeader,
   sectionFieldName,
-  moveListItem,
-  insertListItem,
-  removeListItems,
-  replaceListItems,
+  listFieldArrayMethods,
   onSetSectionActive,
 }: TodoItemProps) => {
   const fieldName = `${listFieldName}.${itemIndex}.text`;
@@ -61,6 +45,7 @@ const TodoItem = ({
     setSnackbar,
   } = useTodoContext();
   const { control, setFocus, setValue, getValues } = useFormContext();
+  const { move, insert, remove, replace } = listFieldArrayMethods;
 
   const inputRef = useRef<HTMLTextAreaElement>(null);
   const isActiveFieldArray = sectionFieldArrayName === sectionFieldName;
@@ -83,7 +68,7 @@ const TodoItem = ({
         /* Prevent key press from adding an extra newline. */
         event.preventDefault();
 
-        insertListItem(nextItemIndex, {
+        insert(nextItemIndex, {
           id: uniqueId(),
           isCompleted: false,
           text: "",
@@ -121,7 +106,7 @@ const TodoItem = ({
           : `${listFieldName}.0.text`;
 
         setFocus(nextFocusedFieldName);
-        removeListItems(itemIndex);
+        remove(itemIndex);
       }
 
       /*
@@ -155,15 +140,7 @@ const TodoItem = ({
         setValue("todoSections", newTodoSections);
       }
     },
-    [
-      itemIndex,
-      setFocus,
-      setValue,
-      replaceListItems,
-      removeListItems,
-      listFieldName,
-      insertListItem,
-    ]
+    [itemIndex, setFocus, setValue, remove, insert, listFieldName]
   );
 
   const handleChecked = useCallback(
@@ -171,7 +148,7 @@ const TodoItem = ({
       if (isActiveFieldArray) return;
       setTimeout(() => {
         if (!isChecked) {
-          moveListItem(itemIndex, 0);
+          move(itemIndex, 0);
           return;
         }
 
@@ -207,11 +184,11 @@ const TodoItem = ({
         );
 
         if (latestCompletedListItemIndex < 0) {
-          moveListItem(itemIndex, todoSection.list.length - 1);
+          move(itemIndex, todoSection.list.length - 1);
           return;
         }
 
-        moveListItem(itemIndex, latestCompletedListItemIndex - 1);
+        move(itemIndex, latestCompletedListItemIndex - 1);
         onSubmit();
       }, 500);
     },
@@ -221,7 +198,7 @@ const TodoItem = ({
       isActiveFieldArray,
       setValue,
       getValues,
-      moveListItem,
+      move,
       onSubmit,
       setSnackbar,
     ]

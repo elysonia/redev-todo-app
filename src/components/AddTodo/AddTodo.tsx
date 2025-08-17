@@ -2,12 +2,7 @@ import { AddCircle, DeleteForever, StopCircle } from "@mui/icons-material";
 import { Button, Tooltip } from "@mui/material";
 import clsx from "clsx";
 import { useCallback } from "react";
-import {
-  FieldValues,
-  UseFieldArrayPrepend,
-  UseFieldArrayRemove,
-  useFormContext,
-} from "react-hook-form";
+import { UseFieldArrayReturn, useFormContext } from "react-hook-form";
 
 import AlarmPlayer from "@components/AlarmPlayer";
 import { useAudioPlayerContext } from "@providers/AudioPlayerProvider/AudioPlayerProvider";
@@ -17,11 +12,10 @@ import { TodoSection } from "types";
 import styles from "./addTodo.module.css";
 
 type AddTodoProps = {
-  prependSection: UseFieldArrayPrepend<FieldValues>;
-  removeSections: UseFieldArrayRemove;
+  sectionFieldArrayMethods: UseFieldArrayReturn;
 };
 
-const AddTodo = ({ prependSection, removeSections }: AddTodoProps) => {
+const AddTodo = ({ sectionFieldArrayMethods }: AddTodoProps) => {
   const {
     onSubmit,
     setSnackbar,
@@ -30,6 +24,7 @@ const AddTodo = ({ prependSection, removeSections }: AddTodoProps) => {
   } = useTodoContext();
   const { getValues, setValue } = useFormContext();
   const { isPlaying, onStopAudio } = useAudioPlayerContext();
+  const { prepend, remove } = sectionFieldArrayMethods;
 
   const handleAddTodoSection = useCallback(() => {
     const todoSection: TodoSection = {
@@ -46,11 +41,11 @@ const AddTodo = ({ prependSection, removeSections }: AddTodoProps) => {
     if (todoSections.length === 0) {
       setValue("todoSections", [todoSection]);
     } else {
-      prependSection(todoSection);
+      prepend(todoSection);
     }
   }, [
     setFocusedFieldName,
-    prependSection,
+    prepend,
     getValues,
     setValue,
     setSectionFieldArrayName,
@@ -62,13 +57,13 @@ const AddTodo = ({ prependSection, removeSections }: AddTodoProps) => {
     );
 
     if (isResetConfirmed) {
-      removeSections();
+      remove();
       onSubmit();
       setSnackbar({ open: true, message: `Tasks reset` });
     } else {
       setSnackbar({ open: true, message: `Tasks not reset` });
     }
-  }, [onSubmit, removeSections, setSnackbar]);
+  }, [onSubmit, remove, setSnackbar]);
 
   return (
     <div className={styles.actionButtonContainer}>
