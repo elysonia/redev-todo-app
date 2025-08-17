@@ -26,7 +26,7 @@ const TodoListHeader = ({
   const { focusedFieldName, setFocusedFieldName, setSnackbar, onSubmit } =
     useTodoContext();
   const { control, setFocus, setValue, getValues } = useFormContext();
-  const [currentTime, setCurrentTime] = useState<Dayjs | null>(null);
+  const [currentTime, setCurrentTime] = useState<Dayjs>(dayjs());
   const inputRef = useRef<HTMLTextAreaElement>(null);
 
   /* TODO: Make tiny components */
@@ -58,10 +58,11 @@ const TodoListHeader = ({
   }, [setFocusedFieldName, fieldName, onSetSectionActive]);
 
   const reminderText = useMemo(() => {
+    if (isActiveFieldArray) return "";
     const isReminderDateTimeValid = dayjs(reminderDateTime).isValid();
     if (currentTime === null || !isReminderDateTimeValid) return "";
     return dayjsformatter(reminderDateTime, currentTime);
-  }, [reminderDateTime, currentTime]);
+  }, [reminderDateTime, currentTime, isActiveFieldArray]);
 
   const handleChecked = useCallback(
     (isChecked: boolean) => {
@@ -147,7 +148,7 @@ const TodoListHeader = ({
           }}
         />
       </div>
-      {reminderText && !isActiveFieldArray && (
+      {reminderText && (
         <span
           className={clsx(styles.alarmText, {
             [styles.isOverdue]: isReminderExpired,
