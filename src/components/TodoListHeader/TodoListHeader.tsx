@@ -59,7 +59,7 @@ const TodoListHeader = ({
 
   const reminderText = useMemo(() => {
     const isReminderDateTimeValid = dayjs(reminderDateTime).isValid();
-    if (currentTime === null && !isReminderDateTimeValid) return "";
+    if (currentTime === null || !isReminderDateTimeValid) return "";
     return dayjsformatter(reminderDateTime, currentTime);
   }, [reminderDateTime, currentTime]);
 
