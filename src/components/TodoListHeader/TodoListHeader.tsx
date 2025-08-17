@@ -1,12 +1,10 @@
-import { Alarm } from "@mui/icons-material";
 import { Checkbox, Input } from "@mui/material";
 import clsx from "clsx";
-import dayjs, { Dayjs } from "dayjs";
-import { useCallback, useEffect, useMemo, useRef, useState } from "react";
+import { useCallback, useEffect, useRef } from "react";
 import { Controller, useFormContext, useWatch } from "react-hook-form";
 
+import ReminderIndicator from "@components/ReminderIndicator";
 import { useTodoContext } from "@providers/TodoProvider/TodoProvider";
-import { dayjsformatter } from "@utils/dayjsUtils";
 import { TodoSection } from "types";
 import styles from "./todoListHeader.module.css";
 
@@ -21,27 +19,19 @@ const TodoListHeader = ({
   sectionFieldName,
   onSetSectionActive,
 }: TodoListHeaderProps) => {
+  const inputRef = useRef<HTMLTextAreaElement>(null);
   const fieldName = `${sectionFieldName}.name`;
   const checkboxFieldName = `${sectionFieldName}.isCompleted`;
   const { focusedFieldName, setFocusedFieldName, setSnackbar, onSubmit } =
     useTodoContext();
   const { control, setFocus, setValue, getValues } = useFormContext();
-  const [currentTime, setCurrentTime] = useState<Dayjs>(dayjs());
-  const inputRef = useRef<HTMLTextAreaElement>(null);
 
-  /* TODO: Make tiny components */
-  const reminderDateTime = useWatch({
-    control,
-    name: `${sectionFieldName}.reminderDateTime`,
-  });
   const isCompleted = useWatch({
     control,
     name: checkboxFieldName,
   });
-  const isReminderExpired = useWatch({
-    control,
-    name: `${sectionFieldName}.isReminderExpired`,
-  });
+
+  const shouldShowCheckbox = !isActiveFieldArray || isCompleted;
 
   const handleFocus = useCallback(() => {
     if (!inputRef.current) return;
@@ -56,13 +46,6 @@ const TodoListHeader = ({
     setFocusedFieldName(fieldName);
     onSetSectionActive(fieldName);
   }, [setFocusedFieldName, fieldName, onSetSectionActive]);
-
-  const reminderText = useMemo(() => {
-    if (isActiveFieldArray) return "";
-    const isReminderDateTimeValid = dayjs(reminderDateTime).isValid();
-    if (currentTime === null || !isReminderDateTimeValid) return "";
-    return dayjsformatter(reminderDateTime, currentTime);
-  }, [reminderDateTime, currentTime, isActiveFieldArray]);
 
   const handleChecked = useCallback(
     (isChecked: boolean) => {
@@ -97,15 +80,6 @@ const TodoListHeader = ({
     }
   }, [focusedFieldName, fieldName, setFocus]);
 
-  /* Update reminder text every minute. */
-  useEffect(() => {
-    const timer = setInterval(() => {
-      setCurrentTime(dayjs());
-    }, 60000);
-
-    return () => clearInterval(timer);
-  }, [setCurrentTime]);
-
   return (
     <div
       className={clsx(styles.listHeaderContainer, {
@@ -113,7 +87,7 @@ const TodoListHeader = ({
       })}
     >
       <div>
-        {(!isActiveFieldArray || isCompleted) && (
+        {shouldShowCheckbox && (
           <Controller
             control={control}
             name={checkboxFieldName}
@@ -148,16 +122,10 @@ const TodoListHeader = ({
           }}
         />
       </div>
-      {reminderText && (
-        <span
-          className={clsx(styles.alarmText, {
-            [styles.isOverdue]: isReminderExpired,
-          })}
-        >
-          {reminderText}&nbsp;
-          <Alarm style={{ fontSize: "0.8rem" }} />
-        </span>
-      )}
+      <ReminderIndicator
+        isActiveFieldArray={isActiveFieldArray}
+        sectionFieldName={sectionFieldName}
+      />
     </div>
   );
 };

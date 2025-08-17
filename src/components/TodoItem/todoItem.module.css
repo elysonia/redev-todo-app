@@ -8,7 +8,7 @@
 .itemContainer {
   display: flex;
   justify-content: start;
-  align-items: start;
+  align-items: center;
 }
 .item {
   position: relative;
@@ -28,19 +28,4 @@
     from var(--foreground) abs(calc(r - 150)) abs(calc(g - 100))
       abs(calc(b - 100)) / 0.8
   );
-}
-
-.alarmText {
-  display: inline-flex;
-  align-items: center;
-  font-size: 0.8rem;
-  padding: 0px 12px;
-  text-transform: capitalize;
-  color: rgb(
-    from var(--foreground) abs(calc(r - 10)) abs(calc(g - 19))
-      abs(calc(b - 200)) / 1
-  );
-  &.isOverdue {
-    color: rgb(241, 82, 82);
-  }
 }
