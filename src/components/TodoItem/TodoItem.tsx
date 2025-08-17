@@ -8,11 +8,14 @@ import {
   UseFieldArrayInsert,
   UseFieldArrayMove,
   UseFieldArrayRemove,
+  UseFieldArrayReplace,
+  UseFieldArrayReturn,
   useFormContext,
   useWatch,
 } from "react-hook-form";
 
 import { useTodoContext } from "@providers/TodoProvider/TodoProvider";
+import { getDefaultTodoItem } from "@utils/todoUtils";
 import { TodoItem as TodoItemType, TodoSection } from "types";
 import styles from "./todoItem.module.css";
 
@@ -27,6 +30,11 @@ type TodoItemProps = {
     `todoSections.${number}.list`
   >;
   removeListItems: UseFieldArrayRemove;
+  replaceListItems: UseFieldArrayReplace<
+    FieldValues,
+    `todoSections.${number}.list`
+  >;
+  sectionFieldArrayMethods: UseFieldArrayReturn;
   onSetSectionActive: (nextFocusedFieldName?: string) => void;
 };
 
@@ -38,6 +46,8 @@ const TodoItem = ({
   moveListItem,
   insertListItem,
   removeListItems,
+  replaceListItems,
+  sectionFieldArrayMethods,
   onSetSectionActive,
 }: TodoItemProps) => {
   const fieldName = `${listFieldName}.${itemIndex}.text`;
@@ -59,15 +69,15 @@ const TodoItem = ({
     (event: React.KeyboardEvent<HTMLInputElement>) => {
       const nextItemIndex = itemIndex + 1;
       const prevItemIndex = itemIndex - 1;
+      const section = getValues(sectionFieldName);
+
       const isPrevItemIndexValid = prevItemIndex >= 0;
-      const todoList = getValues(listFieldName);
-
       const isNextItemIndexValid =
-        nextItemIndex >= 0 && nextItemIndex < todoList.length;
-
+        nextItemIndex >= 0 && nextItemIndex < section.list.length;
       const isTextEmpty = inputRef.current?.textLength === 0;
 
       const shouldAddNewItem = event.key === "Enter";
+
       if (shouldAddNewItem) {
         /* Prevent key press from adding an extra newline. */
         event.preventDefault();
@@ -81,6 +91,7 @@ const TodoItem = ({
 
       const shouldFocusOnPrevItem =
         event.key === "ArrowUp" && isPrevItemIndexValid;
+
       if (shouldFocusOnPrevItem) {
         event.preventDefault();
         const prevFieldName = `${listFieldName}.${prevItemIndex}.text`;
@@ -89,29 +100,57 @@ const TodoItem = ({
 
       const shouldFocusOnNextItem =
         event.key === "ArrowDown" && isNextItemIndexValid;
+
       if (shouldFocusOnNextItem) {
         event.preventDefault();
         const nextFieldName = `${listFieldName}.${nextItemIndex}.text`;
         setFocus(nextFieldName);
       }
 
-      const shouldRemoveItem = event.key === "Backspace" && isTextEmpty;
+      /* If the item should be removed, focus on either the previous or the next first item on the list. */
+      const shouldRemoveItem =
+        event.key === "Backspace" &&
+        isTextEmpty &&
+        (section.list.length > 1 ||
+          (section.list.length === 1 && !!section.name));
+
       if (shouldRemoveItem) {
-        event.preventDefault();
-        if (prevItemIndex >= 0) {
-          const prevFieldName = `${listFieldName}.${prevItemIndex}.text`;
+        const nextFocusedFieldName = isPrevItemIndexValid
+          ? `${listFieldName}.${prevItemIndex}.text`
+          : `${listFieldName}.0.text`;
 
-          /* Set the next field to focus on after removing the current one. */
-          setFocus(prevFieldName);
+        setFocus(nextFocusedFieldName);
+        removeListItems(itemIndex);
+      }
 
-          removeListItems(itemIndex);
-        }
+      /*
+        If the the user tries to remove the final item on the list, create a new subtask 
+        from the section name or do nothing if there is no section name.
+      */
+      const shouldCreateSingleTaskFromSectionName =
+        event.key === "Backspace" &&
+        isTextEmpty &&
+        !isPrevItemIndexValid &&
+        !isNextItemIndexValid &&
+        !!section.name;
+
+      if (shouldCreateSingleTaskFromSectionName) {
+        const newTodoItem = {
+          ...getDefaultTodoItem(),
+          text: section.name,
+        };
+
+        const newSection = { ...section, name: "", list: [newTodoItem] };
+        const nextFieldName = `${listFieldName}.0.text`;
+        setFocus(nextFieldName);
+        sectionFieldArrayMethods.replace(newSection);
       }
     },
     [
       itemIndex,
       setFocus,
-      getValues,
+      replaceListItems,
+      sectionFieldArrayMethods,
       removeListItems,
       listFieldName,
       insertListItem,

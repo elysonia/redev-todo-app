@@ -7,6 +7,7 @@ import { useCallback, useEffect, useMemo } from "react";
 import {
   Controller,
   useFieldArray,
+  UseFieldArrayReturn,
   useFormContext,
   useWatch,
 } from "react-hook-form";
@@ -21,9 +22,14 @@ import styles from "./todoList.module.css";
 type TodoListProps = {
   sectionIndex: number;
   sectionFieldName: `todoSections.${number}`;
+  sectionFieldArrayMethods: UseFieldArrayReturn;
 };
 
-const TodoList = ({ sectionIndex, sectionFieldName }: TodoListProps) => {
+const TodoList = ({
+  sectionIndex,
+  sectionFieldName,
+  sectionFieldArrayMethods,
+}: TodoListProps) => {
   const fieldName = `todoSections.${sectionIndex}.list`;
   const reminderDateFieldName = `todoSections.${sectionIndex}.reminderDateTime`;
   const {
@@ -35,7 +41,7 @@ const TodoList = ({ sectionIndex, sectionFieldName }: TodoListProps) => {
     setSectionFieldArrayName,
   } = useTodoContext();
   const { control, getValues, setFocus, setValue } = useFormContext();
-  const { fields, insert, remove, move } = useFieldArray({
+  const { fields, insert, remove, move, replace } = useFieldArray({
     control,
     name: fieldName,
   });
@@ -185,9 +191,11 @@ const TodoList = ({ sectionIndex, sectionFieldName }: TodoListProps) => {
               insertListItem={insert}
               moveListItem={move}
               removeListItems={remove}
+              replaceListItems={replace}
               sectionIndex={sectionIndex}
               sectionFieldName={`todoSections.${sectionIndex}`}
               listFieldName={fieldName}
+              sectionFieldArrayMethods={sectionFieldArrayMethods}
               onSetSectionActive={handleSetSectionActive}
             />
           ))}
