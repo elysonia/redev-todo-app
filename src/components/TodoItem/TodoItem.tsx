@@ -141,7 +141,16 @@ const TodoItem = ({
         setValue("todoSections", newTodoSections);
       }
     },
-    [itemIndex, setFocus, setValue, remove, insert, listFieldName]
+    [
+      itemIndex,
+      setFocus,
+      setValue,
+      remove,
+      insert,
+      listFieldName,
+      getValues,
+      sectionFieldName,
+    ]
   );
 
   const handleChecked = useCallback(
