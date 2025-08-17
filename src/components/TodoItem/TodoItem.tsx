@@ -1,7 +1,9 @@
-import { Checkbox, Input, ListItem } from "@mui/material";
+import { Alarm } from "@mui/icons-material";
+import { Checkbox, Input } from "@mui/material";
 import clsx from "clsx";
+import dayjs, { Dayjs } from "dayjs";
 import { uniqueId } from "lodash";
-import { useCallback, useEffect, useRef } from "react";
+import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import {
   Controller,
   FieldValues,
@@ -15,6 +17,7 @@ import {
 } from "react-hook-form";
 
 import { useTodoContext } from "@providers/TodoProvider/TodoProvider";
+import { dayjsformatter } from "@utils/dayjsUtils";
 import { getDefaultTodoItem } from "@utils/todoUtils";
 import { TodoItem as TodoItemType, TodoSection } from "types";
 import styles from "./todoItem.module.css";
@@ -24,6 +27,7 @@ type TodoItemProps = {
   sectionIndex: number;
   sectionFieldName: string;
   listFieldName: string;
+  shouldShowHeader: boolean;
   moveListItem: UseFieldArrayMove;
   insertListItem: UseFieldArrayInsert<
     FieldValues,
@@ -42,6 +46,7 @@ const TodoItem = ({
   itemIndex,
   sectionIndex,
   listFieldName,
+  shouldShowHeader,
   sectionFieldName,
   moveListItem,
   insertListItem,
@@ -52,6 +57,8 @@ const TodoItem = ({
 }: TodoItemProps) => {
   const fieldName = `${listFieldName}.${itemIndex}.text`;
   const checkBoxFieldName = `${listFieldName}.${itemIndex}.isCompleted`;
+  const [currentTime, setCurrentTime] = useState<Dayjs>(dayjs());
+
   const {
     focusedFieldName,
     sectionFieldArrayName,
@@ -64,6 +71,22 @@ const TodoItem = ({
   const inputRef = useRef<HTMLTextAreaElement>(null);
   const isActiveFieldArray = sectionFieldArrayName === sectionFieldName;
   const isCompleted = useWatch({ control, name: checkBoxFieldName });
+  const reminderDateTime = useWatch({
+    control,
+    name: `${sectionFieldName}.reminderDateTime`,
+  });
+
+  const isReminderExpired = useWatch({
+    control,
+    name: `${sectionFieldName}.isReminderExpired`,
+  });
+
+  const reminderText = useMemo(() => {
+    if (isActiveFieldArray) return "";
+    const isReminderDateTimeValid = dayjs(reminderDateTime).isValid();
+    if (currentTime === null || !isReminderDateTimeValid) return "";
+    return dayjsformatter(reminderDateTime, currentTime);
+  }, [reminderDateTime, currentTime, isActiveFieldArray]);
 
   const handleKeyDown = useCallback(
     (event: React.KeyboardEvent<HTMLInputElement>) => {
@@ -239,51 +262,73 @@ const TodoItem = ({
     }
   }, [focusedFieldName, setFocus, fieldName]);
 
-  return (
-    <ListItem>
-      <Controller
-        control={control}
-        name={checkBoxFieldName}
-        render={({ field: { value, onChange } }) => {
-          return (
-            <Checkbox
-              disabled={isActiveFieldArray}
-              checked={value}
-              onChange={(event) => {
-                onChange(event.target.checked);
-                handleChecked(event.target.checked);
-              }}
-            />
-          );
-        }}
-      />
+  /* Update reminder text every minute. */
+  useEffect(() => {
+    const timer = setInterval(() => {
+      setCurrentTime(dayjs());
+    }, 60000);
 
-      <Controller
-        control={control}
-        name={fieldName}
-        render={({ field: { ref: refCallback, value, onChange } }) => {
-          return (
-            <Input
-              inputRef={(ref) => {
-                /* Allow using RHF functions that need refs on this component. */
-                refCallback(ref);
-                /* Access the HTMLElement for more functionality. */
-                inputRef.current = ref;
-              }}
-              className={clsx(styles.item, {
-                [styles.completed]: isCompleted,
-              })}
-              value={value}
-              disableUnderline
-              multiline
-              onFocus={handleFocus}
-              onChange={onChange}
-              onKeyDown={handleKeyDown}
-            />
-          );
-        }}
-      />
-    </ListItem>
+    return () => clearInterval(timer);
+  }, [setCurrentTime]);
+
+  return (
+    <div className={styles.listItem}>
+      <div className={styles.itemContainer}>
+        <Controller
+          control={control}
+          name={checkBoxFieldName}
+          render={({ field: { value, onChange } }) => {
+            return (
+              <Checkbox
+                disabled={isActiveFieldArray}
+                checked={value}
+                onChange={(event) => {
+                  onChange(event.target.checked);
+                  handleChecked(event.target.checked);
+                }}
+              />
+            );
+          }}
+        />
+
+        <Controller
+          control={control}
+          name={fieldName}
+          render={({ field: { ref: refCallback, value, onChange } }) => {
+            return (
+              <Input
+                inputRef={(ref) => {
+                  /* Allow using RHF functions that need refs on this component. */
+                  refCallback(ref);
+                  /* Access the HTMLElement for more functionality. */
+                  inputRef.current = ref;
+                }}
+                className={clsx(styles.item, {
+                  [styles.completed]: isCompleted,
+                })}
+                value={value}
+                disableUnderline
+                multiline
+                onFocus={handleFocus}
+                onChange={onChange}
+                onKeyDown={handleKeyDown}
+              />
+            );
+          }}
+        />
+      </div>
+
+      {reminderText && !shouldShowHeader && (
+        <span
+          className={clsx(styles.alarmText, {
+            [styles.isOverdue]: isReminderExpired,
+          })}
+        >
+          {reminderText}&nbsp;
+          <Alarm style={{ fontSize: "0.8rem" }} />
+        </span>
+      )}
+    </div>
   );
 };
 

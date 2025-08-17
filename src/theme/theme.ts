@@ -11,25 +11,6 @@ const theme = createTheme({
         sx: { color: "var(--foreground)" },
       },
     },
-    MuiListSubheader: {
-      defaultProps: {
-        disableGutters: true,
-        sx: {
-          padding: "4px 10px",
-          MuiInputBase: {
-            padding: "4px 10px 5px",
-          },
-        },
-      },
-    },
-    MuiListItem: {
-      defaultProps: {
-        disableGutters: true,
-        sx: {
-          padding: "4px 16px",
-        },
-      },
-    },
     MuiCheckbox: {
       defaultProps: {
         sx: {

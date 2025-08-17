@@ -195,6 +195,7 @@ const TodoList = ({
               sectionIndex={sectionIndex}
               sectionFieldName={`todoSections.${sectionIndex}`}
               listFieldName={fieldName}
+              shouldShowHeader={shouldShowHeader}
               sectionFieldArrayMethods={sectionFieldArrayMethods}
               onSetSectionActive={handleSetSectionActive}
             />
