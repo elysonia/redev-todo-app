@@ -25,6 +25,7 @@ type TodoItemProps = {
   onSetSectionActive: (nextFocusedFieldName?: string) => void;
 };
 
+/* TODO: Separate input and checkbox */
 const TodoItem = ({
   itemIndex,
   sectionIndex,
@@ -45,7 +46,7 @@ const TodoItem = ({
     setSnackbar,
   } = useTodoContext();
   const { control, setFocus, setValue, getValues } = useFormContext();
-  const { move, insert, remove, replace } = listFieldArrayMethods;
+  const { move, insert, remove } = listFieldArrayMethods;
 
   const inputRef = useRef<HTMLTextAreaElement>(null);
   const isActiveFieldArray = sectionFieldArrayName === sectionFieldName;
