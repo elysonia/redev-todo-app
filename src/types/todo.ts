@@ -8,15 +8,15 @@ export type TodoItem = {
 
 export type TodoList = TodoItem[];
 
-export interface TodoSection {
+export type TodoSection = {
   id: string;
   name: string;
   isCompleted: boolean;
   isReminderExpired: boolean;
   reminderDateTime?: Dayjs | string | null;
   list: TodoList;
-}
+};
 
-export interface TodoSectionDayjs extends TodoSection {
+export type TodoSectionDayjs = TodoSection & {
   reminderDateTime: Dayjs;
-}
+};
