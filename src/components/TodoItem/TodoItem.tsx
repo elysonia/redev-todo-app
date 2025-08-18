@@ -40,7 +40,9 @@ const TodoItem = ({
   const {
     focusedFieldName,
     sectionFieldArrayName,
+    focusedFieldNameSelectionStart,
     setFocusedFieldName,
+    setFocusedFieldNameSelectionStart,
     onSubmit,
     setSnackbar,
   } = useTodoContext();
@@ -68,10 +70,19 @@ const TodoItem = ({
         /* Prevent key press from adding an extra newline. */
         event.preventDefault();
 
+        const cursorLocation = inputRef?.current?.selectionStart;
+        const nextFocusedFieldNameCursorLocation =
+          cursorLocation === inputRef?.current?.textLength ? -1 : 0;
+        const newText = inputRef.current?.textContent?.slice(0, cursorLocation);
+        const nextItemText =
+          inputRef.current?.textContent?.slice(cursorLocation);
+
+        setFocusedFieldNameSelectionStart(nextFocusedFieldNameCursorLocation);
+        setValue(fieldName, newText);
         insert(nextItemIndex, {
           id: uniqueId(),
           isCompleted: false,
-          text: "",
+          text: nextItemText,
         });
       }
 
@@ -149,6 +160,7 @@ const TodoItem = ({
       listFieldName,
       getValues,
       sectionFieldName,
+      setFocusedFieldNameSelectionStart,
     ]
   );
 
@@ -215,7 +227,11 @@ const TodoItem = ({
 
   const handleFocus = useCallback(() => {
     if (!inputRef.current) return;
-    const cursorLocation = inputRef.current.textLength;
+
+    const cursorLocation =
+      focusedFieldNameSelectionStart >= 0
+        ? focusedFieldNameSelectionStart
+        : inputRef.current.textLength;
     inputRef.current.setSelectionRange(
       cursorLocation,
       cursorLocation,
@@ -224,8 +240,15 @@ const TodoItem = ({
 
     /* Record the field name so we can re-focus to it upon re-render on save. */
     setFocusedFieldName(fieldName);
+    setFocusedFieldNameSelectionStart(-1);
     onSetSectionActive(fieldName);
-  }, [setFocusedFieldName, onSetSectionActive, fieldName]);
+  }, [
+    focusedFieldNameSelectionStart,
+    setFocusedFieldName,
+    onSetSectionActive,
+    fieldName,
+    setFocusedFieldNameSelectionStart,
+  ]);
 
   useEffect(() => {
     /* Prevent losing focus on re-render due to data updates from saving. */

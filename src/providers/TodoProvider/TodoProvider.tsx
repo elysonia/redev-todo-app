@@ -42,9 +42,11 @@ type TodoContextProps = {
   todoSections: TodoSection[];
   focusedFieldName: string;
   sectionFieldArrayName: `todoSections.${number}` | "";
+  focusedFieldNameSelectionStart: number;
   setSnackbar: (props: SnackbarProps) => void;
   setFocusedFieldName: (fieldName: string) => void;
   setSectionFieldArrayName: (sectionId: `todoSections.${number}` | "") => void;
+  setFocusedFieldNameSelectionStart: (selectionStart: number) => void;
   onSubmit: (e?: React.BaseSyntheticEvent) => Promise<void>;
 };
 
@@ -53,9 +55,11 @@ const defaultTodoContext: TodoContextProps = {
   todoSections: [],
   focusedFieldName: "",
   sectionFieldArrayName: "",
+  focusedFieldNameSelectionStart: -1,
   setSnackbar: () => {},
   setFocusedFieldName: () => {},
   setSectionFieldArrayName: () => {},
+  setFocusedFieldNameSelectionStart: () => {},
   onSubmit: async () => {},
 };
 export const TodoContext = createContext<TodoContextProps>(defaultTodoContext);
@@ -70,6 +74,8 @@ const TodoProvider = ({ children }: PropsWithChildren) => {
 
   const [snackbar, setSnackbar] = useState<SnackbarProps>({});
   const [shouldRestoreDraft, setShouldRestoreDraft] = useState(true);
+  const [focusedFieldNameSelectionStart, setFocusedFieldNameSelectionStart] =
+    useState(-1);
 
   const {
     todoSections,
@@ -202,9 +208,11 @@ const TodoProvider = ({ children }: PropsWithChildren) => {
       todoSections,
       focusedFieldName,
       sectionFieldArrayName,
+      focusedFieldNameSelectionStart,
       setSnackbar,
       setFocusedFieldName: setFocusedFieldName,
       setSectionFieldArrayName,
+      setFocusedFieldNameSelectionStart,
       onSubmit: handleSubmit,
     };
   }, [
@@ -212,9 +220,11 @@ const TodoProvider = ({ children }: PropsWithChildren) => {
     todoSections,
     focusedFieldName,
     sectionFieldArrayName,
+    focusedFieldNameSelectionStart,
     setSnackbar,
     setFocusedFieldName,
     setSectionFieldArrayName,
+    setFocusedFieldNameSelectionStart,
     handleSubmit,
   ]);
 
