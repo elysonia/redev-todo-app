@@ -25,7 +25,6 @@ type TodoItemProps = {
   onSetSectionActive: (nextFocusedFieldName?: string) => void;
 };
 
-/* TODO: Separate input and checkbox */
 const TodoItem = ({
   itemIndex,
   sectionIndex,
