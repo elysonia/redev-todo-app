@@ -25,6 +25,7 @@ import { useAudioPlayerContext } from "@providers/AudioPlayerProvider/AudioPlaye
 import { useTodoStore } from "@providers/TodoStoreProvider";
 import { defaultTodoDraft } from "store";
 import { TodoSection } from "types";
+import { TodoSectionDayjs } from "types/todo";
 
 type TodoForm = {
   todoSections: TodoSection[];
@@ -149,7 +150,7 @@ const TodoProvider = ({ children }: PropsWithChildren) => {
           ]);
         }
         return accum;
-      }, [] as Array<[number, TodoSection]>)
+      }, [] as Array<[number, TodoSectionDayjs]>)
       .sort((a, b) => {
         const reminderA = a[1].reminderDateTime;
         const reminderB = b[1].reminderDateTime;
@@ -161,7 +162,7 @@ const TodoProvider = ({ children }: PropsWithChildren) => {
   }, [todoSections, getValues, sectionFieldArrayName]);
 
   const showDesktopNotification = useCallback(
-    (reminder: TodoSection) => {
+    (reminder: TodoSectionDayjs) => {
       if (Notification.permission === "granted") {
         const incompleteTasks = reminder.list.filter(
           (item) => !item.isCompleted
@@ -269,13 +270,14 @@ const TodoProvider = ({ children }: PropsWithChildren) => {
 
       activeRemindersArray.forEach((reminderEntry) => {
         const [, reminder] = reminderEntry;
-        const reminderTime =
-          reminder.reminderDateTime?.format("YYYY:M:D:hh:mm");
+        const reminderDateTime = dayjs(reminder.reminderDateTime);
+        const reminderTime = reminderDateTime.format("YYYY:M:D:hh:mm");
 
         if (currentTime === reminderTime) {
           showDesktopNotification(reminder);
           updateTodoSection({
             ...reminder,
+            reminderDateTime,
             isReminderExpired: true,
           });
         }

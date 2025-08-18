@@ -13,7 +13,7 @@ const TodoSections = () => {
   const backgroundImageUrl =
     "https://images.unsplash.com/photo-1686579809662-829e8374d0a8?q=80&w=2072&auto=format&fit=crop&ixlib=rb-4.1.0&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D";
 
-  const { fields, prepend, remove } = useFieldArray({
+  const sectionFieldArrayMethods = useFieldArray({
     control,
     name: "todoSections",
   });
@@ -27,9 +27,9 @@ const TodoSections = () => {
         backgroundImage: `url(${backgroundImageUrl})`,
       }}
     >
-      <AddTodo prependSection={prepend} removeSections={remove} />
+      <AddTodo sectionFieldArrayMethods={sectionFieldArrayMethods} />
       <div className={styles.sectionsContainer}>
-        {fields.map((field, index) => {
+        {sectionFieldArrayMethods.fields.map((field, index) => {
           return (
             <Controller
               key={`${field.id}.${index}`}

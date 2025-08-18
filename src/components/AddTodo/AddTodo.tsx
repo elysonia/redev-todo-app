@@ -1,27 +1,21 @@
 import { AddCircle, DeleteForever, StopCircle } from "@mui/icons-material";
 import { Button, Tooltip } from "@mui/material";
 import clsx from "clsx";
-import { uniqueId } from "lodash";
 import { useCallback } from "react";
-import {
-  FieldValues,
-  UseFieldArrayPrepend,
-  UseFieldArrayRemove,
-  useFormContext,
-} from "react-hook-form";
+import { UseFieldArrayReturn, useFormContext } from "react-hook-form";
 
 import AlarmPlayer from "@components/AlarmPlayer";
 import { useAudioPlayerContext } from "@providers/AudioPlayerProvider/AudioPlayerProvider";
 import { useTodoContext } from "@providers/TodoProvider/TodoProvider";
-import { TodoItem, TodoSection } from "types";
+import { getDefaultTodoItem, getDefaultTodoSection } from "@utils/todoUtils";
+import { TodoSection } from "types";
 import styles from "./addTodo.module.css";
 
 type AddTodoProps = {
-  prependSection: UseFieldArrayPrepend<FieldValues>;
-  removeSections: UseFieldArrayRemove;
+  sectionFieldArrayMethods: UseFieldArrayReturn;
 };
 
-const AddTodo = ({ prependSection, removeSections }: AddTodoProps) => {
+const AddTodo = ({ sectionFieldArrayMethods }: AddTodoProps) => {
   const {
     onSubmit,
     setSnackbar,
@@ -30,26 +24,16 @@ const AddTodo = ({ prependSection, removeSections }: AddTodoProps) => {
   } = useTodoContext();
   const { getValues, setValue } = useFormContext();
   const { isPlaying, onStopAudio } = useAudioPlayerContext();
+  const { prepend, remove } = sectionFieldArrayMethods;
 
-  /* TODO: Form validation */
   const handleAddTodoSection = useCallback(() => {
-    const todoItem: TodoItem = {
-      id: uniqueId(),
-      isCompleted: false,
-      text: "",
-    };
-
     const todoSection: TodoSection = {
-      id: uniqueId(),
-      name: "",
-      isCompleted: false,
-      isReminderExpired: false,
-      reminderDateTime: null,
-      list: [todoItem],
+      ...getDefaultTodoSection(),
+      list: [getDefaultTodoItem()],
     };
 
     /* Add section at the start of list and focus on the first item immediately. */
-    const todoSections = getValues("todoSections");
+    const todoSections = getValues(`todoSections`);
     const nextTodoItemFieldName = `todoSections.0.list.0.text`;
     setFocusedFieldName(nextTodoItemFieldName);
     setSectionFieldArrayName(`todoSections.0`);
@@ -57,11 +41,11 @@ const AddTodo = ({ prependSection, removeSections }: AddTodoProps) => {
     if (todoSections.length === 0) {
       setValue("todoSections", [todoSection]);
     } else {
-      prependSection(todoSection);
+      prepend(todoSection);
     }
   }, [
     setFocusedFieldName,
-    prependSection,
+    prepend,
     getValues,
     setValue,
     setSectionFieldArrayName,
@@ -73,13 +57,13 @@ const AddTodo = ({ prependSection, removeSections }: AddTodoProps) => {
     );
 
     if (isResetConfirmed) {
-      removeSections();
+      remove();
       onSubmit();
       setSnackbar({ open: true, message: `Tasks reset` });
     } else {
       setSnackbar({ open: true, message: `Tasks not reset` });
     }
-  }, [onSubmit, removeSections, setSnackbar]);
+  }, [onSubmit, remove, setSnackbar]);
 
   return (
     <div className={styles.actionButtonContainer}>
@@ -100,16 +84,18 @@ const AddTodo = ({ prependSection, removeSections }: AddTodoProps) => {
       <AlarmPlayer />
 
       <Tooltip title={isPlaying ? "Silence alarm" : "No alarm playing"}>
-        <Button
-          className={clsx(styles.actionButton, {
-            [styles.disabled]: !isPlaying,
-          })}
-          disabled={!isPlaying}
-          onClick={onStopAudio}
-        >
-          <StopCircle fontSize="large" />
-          <span>Silence alarm</span>
-        </Button>
+        <span>
+          <Button
+            className={clsx(styles.actionButton, {
+              [styles.disabled]: !isPlaying,
+            })}
+            disabled={!isPlaying}
+            onClick={onStopAudio}
+          >
+            <StopCircle fontSize="large" />
+            <span>Silence alarm</span>
+          </Button>
+        </span>
       </Tooltip>
     </div>
   );

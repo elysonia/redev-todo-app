@@ -13,6 +13,10 @@ export type TodoSection = {
   name: string;
   isCompleted: boolean;
   isReminderExpired: boolean;
-  reminderDateTime?: Dayjs | null;
+  reminderDateTime?: Dayjs | string | null;
   list: TodoList;
+};
+
+export type TodoSectionDayjs = TodoSection & {
+  reminderDateTime: Dayjs;
 };

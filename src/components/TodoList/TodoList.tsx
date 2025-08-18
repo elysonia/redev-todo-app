@@ -35,10 +35,11 @@ const TodoList = ({ sectionIndex, sectionFieldName }: TodoListProps) => {
     setSectionFieldArrayName,
   } = useTodoContext();
   const { control, getValues, setFocus, setValue } = useFormContext();
-  const { fields, insert, remove, move } = useFieldArray({
+  const listFieldArrayMethods = useFieldArray({
     control,
     name: fieldName,
   });
+  const { fields } = listFieldArrayMethods;
   const isReminderExpired = useWatch({
     control,
     name: `${sectionFieldName}.isReminderExpired`,
@@ -182,12 +183,11 @@ const TodoList = ({ sectionIndex, sectionFieldName }: TodoListProps) => {
             <TodoItem
               key={item.id}
               itemIndex={itemIndex}
-              insertListItem={insert}
-              moveListItem={move}
-              removeListItems={remove}
               sectionIndex={sectionIndex}
               sectionFieldName={`todoSections.${sectionIndex}`}
               listFieldName={fieldName}
+              listFieldArrayMethods={listFieldArrayMethods}
+              shouldShowHeader={shouldShowHeader}
               onSetSectionActive={handleSetSectionActive}
             />
           ))}

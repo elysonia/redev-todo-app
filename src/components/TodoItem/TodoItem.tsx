@@ -1,18 +1,17 @@
-import { Checkbox, Input, ListItem } from "@mui/material";
+import { Checkbox, Input } from "@mui/material";
 import clsx from "clsx";
 import { uniqueId } from "lodash";
 import { useCallback, useEffect, useRef } from "react";
 import {
   Controller,
-  FieldValues,
-  UseFieldArrayInsert,
-  UseFieldArrayMove,
-  UseFieldArrayRemove,
+  UseFieldArrayReturn,
   useFormContext,
   useWatch,
 } from "react-hook-form";
 
+import ReminderIndicator from "@components/ReminderIndicator";
 import { useTodoContext } from "@providers/TodoProvider/TodoProvider";
+import { getDefaultTodoItem } from "@utils/todoUtils";
 import { TodoItem as TodoItemType, TodoSection } from "types";
 import styles from "./todoItem.module.css";
 
@@ -21,12 +20,8 @@ type TodoItemProps = {
   sectionIndex: number;
   sectionFieldName: string;
   listFieldName: string;
-  moveListItem: UseFieldArrayMove;
-  insertListItem: UseFieldArrayInsert<
-    FieldValues,
-    `todoSections.${number}.list`
-  >;
-  removeListItems: UseFieldArrayRemove;
+  shouldShowHeader: boolean;
+  listFieldArrayMethods: UseFieldArrayReturn;
   onSetSectionActive: (nextFocusedFieldName?: string) => void;
 };
 
@@ -34,14 +29,14 @@ const TodoItem = ({
   itemIndex,
   sectionIndex,
   listFieldName,
+  shouldShowHeader,
   sectionFieldName,
-  moveListItem,
-  insertListItem,
-  removeListItems,
+  listFieldArrayMethods,
   onSetSectionActive,
 }: TodoItemProps) => {
   const fieldName = `${listFieldName}.${itemIndex}.text`;
   const checkBoxFieldName = `${listFieldName}.${itemIndex}.isCompleted`;
+
   const {
     focusedFieldName,
     sectionFieldArrayName,
@@ -50,6 +45,7 @@ const TodoItem = ({
     setSnackbar,
   } = useTodoContext();
   const { control, setFocus, setValue, getValues } = useFormContext();
+  const { move, insert, remove } = listFieldArrayMethods;
 
   const inputRef = useRef<HTMLTextAreaElement>(null);
   const isActiveFieldArray = sectionFieldArrayName === sectionFieldName;
@@ -59,20 +55,20 @@ const TodoItem = ({
     (event: React.KeyboardEvent<HTMLInputElement>) => {
       const nextItemIndex = itemIndex + 1;
       const prevItemIndex = itemIndex - 1;
+      const section = getValues(sectionFieldName);
+
       const isPrevItemIndexValid = prevItemIndex >= 0;
-      const todoList = getValues(listFieldName);
-
       const isNextItemIndexValid =
-        nextItemIndex >= 0 && nextItemIndex < todoList.length;
-
+        nextItemIndex >= 0 && nextItemIndex < section.list.length;
       const isTextEmpty = inputRef.current?.textLength === 0;
 
       const shouldAddNewItem = event.key === "Enter";
+
       if (shouldAddNewItem) {
         /* Prevent key press from adding an extra newline. */
         event.preventDefault();
 
-        insertListItem(nextItemIndex, {
+        insert(nextItemIndex, {
           id: uniqueId(),
           isCompleted: false,
           text: "",
@@ -81,6 +77,7 @@ const TodoItem = ({
 
       const shouldFocusOnPrevItem =
         event.key === "ArrowUp" && isPrevItemIndexValid;
+
       if (shouldFocusOnPrevItem) {
         event.preventDefault();
         const prevFieldName = `${listFieldName}.${prevItemIndex}.text`;
@@ -89,32 +86,69 @@ const TodoItem = ({
 
       const shouldFocusOnNextItem =
         event.key === "ArrowDown" && isNextItemIndexValid;
+
       if (shouldFocusOnNextItem) {
         event.preventDefault();
         const nextFieldName = `${listFieldName}.${nextItemIndex}.text`;
         setFocus(nextFieldName);
       }
 
-      const shouldRemoveItem = event.key === "Backspace" && isTextEmpty;
+      /* If the item should be removed, focus on either the previous or the next first item on the list. */
+      const shouldRemoveItem =
+        event.key === "Backspace" &&
+        isTextEmpty &&
+        (section.list.length > 1 ||
+          (section.list.length === 1 && !!section.name));
+
       if (shouldRemoveItem) {
-        event.preventDefault();
-        if (prevItemIndex >= 0) {
-          const prevFieldName = `${listFieldName}.${prevItemIndex}.text`;
+        const nextFocusedFieldName = isPrevItemIndexValid
+          ? `${listFieldName}.${prevItemIndex}.text`
+          : `${listFieldName}.0.text`;
 
-          /* Set the next field to focus on after removing the current one. */
-          setFocus(prevFieldName);
+        setFocus(nextFocusedFieldName);
+        remove(itemIndex);
+      }
 
-          removeListItems(itemIndex);
-        }
+      /*
+        If the the user tries to remove the final item on the list, create a new subtask 
+        from the section name or do nothing if there is no section name.
+      */
+      const shouldCreateSingleTaskFromSectionName =
+        event.key === "Backspace" &&
+        isTextEmpty &&
+        !isPrevItemIndexValid &&
+        !isNextItemIndexValid &&
+        !!section.name;
+
+      if (shouldCreateSingleTaskFromSectionName) {
+        const newTodoSections = getValues("todoSections").map(
+          (section: TodoSection, index: number) => {
+            if (sectionFieldName === `todoSections.${index}`) {
+              const newTodoItem = {
+                ...getDefaultTodoItem(),
+                text: section.name,
+              };
+
+              return { ...section, name: "", list: [newTodoItem] };
+            }
+            return section;
+          }
+        );
+
+        const nextFieldName = `${listFieldName}.0.text`;
+        setFocus(nextFieldName);
+        setValue("todoSections", newTodoSections);
       }
     },
     [
       itemIndex,
       setFocus,
-      getValues,
-      removeListItems,
+      setValue,
+      remove,
+      insert,
       listFieldName,
-      insertListItem,
+      getValues,
+      sectionFieldName,
     ]
   );
 
@@ -123,7 +157,7 @@ const TodoItem = ({
       if (isActiveFieldArray) return;
       setTimeout(() => {
         if (!isChecked) {
-          moveListItem(itemIndex, 0);
+          move(itemIndex, 0);
           return;
         }
 
@@ -159,11 +193,11 @@ const TodoItem = ({
         );
 
         if (latestCompletedListItemIndex < 0) {
-          moveListItem(itemIndex, todoSection.list.length - 1);
+          move(itemIndex, todoSection.list.length - 1);
           return;
         }
 
-        moveListItem(itemIndex, latestCompletedListItemIndex - 1);
+        move(itemIndex, latestCompletedListItemIndex - 1);
         onSubmit();
       }, 500);
     },
@@ -173,7 +207,7 @@ const TodoItem = ({
       isActiveFieldArray,
       setValue,
       getValues,
-      moveListItem,
+      move,
       onSubmit,
       setSnackbar,
     ]
@@ -201,50 +235,59 @@ const TodoItem = ({
   }, [focusedFieldName, setFocus, fieldName]);
 
   return (
-    <ListItem>
-      <Controller
-        control={control}
-        name={checkBoxFieldName}
-        render={({ field: { value, onChange } }) => {
-          return (
-            <Checkbox
-              disabled={isActiveFieldArray}
-              checked={value}
-              onChange={(event) => {
-                onChange(event.target.checked);
-                handleChecked(event.target.checked);
-              }}
-            />
-          );
-        }}
-      />
+    <div className={styles.listItem}>
+      <div className={styles.itemContainer}>
+        <Controller
+          control={control}
+          name={checkBoxFieldName}
+          render={({ field: { value, onChange } }) => {
+            return (
+              <Checkbox
+                disabled={isActiveFieldArray}
+                checked={value}
+                onChange={(event) => {
+                  onChange(event.target.checked);
+                  handleChecked(event.target.checked);
+                }}
+              />
+            );
+          }}
+        />
 
-      <Controller
-        control={control}
-        name={fieldName}
-        render={({ field: { ref: refCallback, value, onChange } }) => {
-          return (
-            <Input
-              inputRef={(ref) => {
-                /* Allow using RHF functions that need refs on this component. */
-                refCallback(ref);
-                /* Access the HTMLElement for more functionality. */
-                inputRef.current = ref;
-              }}
-              className={clsx(styles.item, {
-                [styles.completed]: isCompleted,
-              })}
-              value={value}
-              disableUnderline
-              multiline
-              onFocus={handleFocus}
-              onChange={onChange}
-              onKeyDown={handleKeyDown}
-            />
-          );
-        }}
-      />
-    </ListItem>
+        <Controller
+          control={control}
+          name={fieldName}
+          render={({ field: { ref: refCallback, value, onChange } }) => {
+            return (
+              <Input
+                inputRef={(ref) => {
+                  /* Allow using RHF functions that need refs on this component. */
+                  refCallback(ref);
+                  /* Access the HTMLElement for more functionality. */
+                  inputRef.current = ref;
+                }}
+                className={clsx(styles.item, {
+                  [styles.completed]: isCompleted,
+                })}
+                value={value}
+                disableUnderline
+                multiline
+                onFocus={handleFocus}
+                onChange={onChange}
+                onKeyDown={handleKeyDown}
+              />
+            );
+          }}
+        />
+      </div>
+
+      {!shouldShowHeader && (
+        <ReminderIndicator
+          isActiveFieldArray={isActiveFieldArray}
+          sectionFieldName={sectionFieldName}
+        />
+      )}
+    </div>
   );
 };
 
