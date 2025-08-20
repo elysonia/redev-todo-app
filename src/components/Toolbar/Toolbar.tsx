@@ -9,7 +9,7 @@ import { useAudioPlayerContext } from "@providers/AudioPlayerProvider/AudioPlaye
 import { useTodoContext } from "@providers/TodoProvider/TodoProvider";
 import { getDefaultTodoItem, getDefaultTodoSection } from "@utils/todoUtils";
 import { TodoSection } from "types";
-import styles from "./addTodo.module.css";
+import styles from "./toolbar.module.css";
 
 type ToolbarProps = {
   sectionFieldArrayMethods: UseFieldArrayReturn;
