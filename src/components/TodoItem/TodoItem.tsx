@@ -1,7 +1,7 @@
 import { Checkbox, Input } from "@mui/material";
 import clsx from "clsx";
 import { isNull, uniqueId } from "lodash";
-import { FocusEventHandler, useCallback, useEffect, useRef } from "react";
+import { FocusEvent, useCallback, useEffect, useRef } from "react";
 import {
   Controller,
   UseFieldArrayReturn,
@@ -131,7 +131,7 @@ const TodoItem = ({
       remove,
       listFieldName,
       getValues,
-      sectionFieldName,
+
       setFocusedFieldName,
       setFocusedFieldNameSelectionStart,
     ]
@@ -197,16 +197,15 @@ const TodoItem = ({
       }
     },
     [
-      handleBackspace,
       itemIndex,
       setFocus,
       setValue,
-      remove,
       insert,
+      fieldName,
       listFieldName,
       getValues,
+      handleBackspace,
       sectionFieldName,
-      setFocusedFieldName,
       setFocusedFieldNameSelectionStart,
     ]
   );
@@ -272,7 +271,7 @@ const TodoItem = ({
     ]
   );
   const handleFocus = useCallback(
-    (event: FocusEventHandler<HTMLInputElement | HTMLTextAreaElement>) => {
+    (event: FocusEvent<HTMLTextAreaElement>) => {
       if (!inputRef.current) return;
 
       const eventCursorLocation = event?.target?.selectionStart;
@@ -303,7 +302,6 @@ const TodoItem = ({
     },
     [
       focusedFieldName,
-      isActiveFieldArray,
       focusedFieldNameSelectionStart,
       setFocusedFieldName,
       onSetSectionActive,
