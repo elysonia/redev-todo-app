@@ -27,6 +27,7 @@
 
 .headerInput {
   width: 100%;
+  font-weight: 600;
 }
 
 .headerInput.completed textarea {

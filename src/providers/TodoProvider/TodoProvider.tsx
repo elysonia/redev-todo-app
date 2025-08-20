@@ -194,6 +194,7 @@ const TodoProvider = ({ children }: PropsWithChildren) => {
           }
         );
 
+        /* Prevent audio restarting when multiple reminders are activating at the same time. */
         if (isPlaying) return;
         onPlayAudio();
       }
