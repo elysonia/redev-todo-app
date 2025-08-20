@@ -1,7 +1,7 @@
 import { Checkbox, Input } from "@mui/material";
 import clsx from "clsx";
-import { uniqueId } from "lodash";
-import { useCallback, useEffect, useRef } from "react";
+import { isNull, uniqueId } from "lodash";
+import { FocusEvent, useCallback, useEffect, useRef } from "react";
 import {
   Controller,
   UseFieldArrayReturn,
@@ -40,7 +40,9 @@ const TodoItem = ({
   const {
     focusedFieldName,
     sectionFieldArrayName,
+    focusedFieldNameSelectionStart,
     setFocusedFieldName,
+    setFocusedFieldNameSelectionStart,
     onSubmit,
     setSnackbar,
   } = useTodoContext();
@@ -51,16 +53,99 @@ const TodoItem = ({
   const isActiveFieldArray = sectionFieldArrayName === sectionFieldName;
   const isCompleted = useWatch({ control, name: checkBoxFieldName });
 
+  const handleBackspace = useCallback(
+    (currentSection: TodoSection) => {
+      const isFirstItem = itemIndex === 0;
+      const hasNoSubtasks = currentSection.list.length === 1;
+      const isTextEmpty = inputRef.current?.textLength === 0;
+
+      const shouldCreateSingularTaskWithTitle =
+        isFirstItem && hasNoSubtasks && !!currentSection.name;
+      console.log({
+        shouldCreateSingularTaskWithTitle,
+        isFirstItem,
+        hasNoSubtasks,
+        currentSection,
+      });
+      if (shouldCreateSingularTaskWithTitle) {
+        /*
+          Combine title with current item text, setFocusedFieldNameSelectionStart to the length of the title
+        */
+        const newTodoSections = getValues("todoSections").map(
+          (section: TodoSection) => {
+            if (section.id === currentSection.id) {
+              const newTodoItem = {
+                ...getDefaultTodoItem(),
+                text: section.name + currentSection.list[itemIndex].text,
+              };
+
+              return { ...section, name: "", list: [newTodoItem] };
+            }
+            return section;
+          }
+        );
+
+        const nextFieldName = `${listFieldName}.0.text`;
+        setFocusedFieldNameSelectionStart(currentSection.name.length);
+        setFocus(nextFieldName);
+        setValue("todoSections", newTodoSections);
+        return;
+      }
+
+      const prevItemIndex = itemIndex - 1;
+      const isPrevItemIndexValid = prevItemIndex >= 0;
+      const shouldRemoveItem =
+        (isTextEmpty && isFirstItem && !hasNoSubtasks) ||
+        (isTextEmpty && !isFirstItem);
+      const nextFocusedFieldName = isPrevItemIndexValid
+        ? `${listFieldName}.${prevItemIndex}.text`
+        : `${listFieldName}.0.text`;
+
+      if (shouldRemoveItem) {
+        setFocus(nextFocusedFieldName);
+        setFocusedFieldNameSelectionStart(-1);
+        remove(itemIndex);
+        return;
+      }
+
+      const shouldCombineWithPrevItemText = !isTextEmpty && !isFirstItem;
+      if (shouldCombineWithPrevItemText) {
+        /*
+          Combine the text with the previous item item text, setFocusedFieldNameSelectionStart to the length of the previous item text
+        */
+        const newPrevItemText =
+          currentSection.list[prevItemIndex].text +
+          inputRef?.current?.textContent;
+        const prevItemLength = currentSection.list[prevItemIndex].text.length;
+
+        setFocusedFieldNameSelectionStart(prevItemLength);
+        setFocusedFieldName(nextFocusedFieldName);
+        setValue(`${listFieldName}.${prevItemIndex}.text`, newPrevItemText);
+        remove(itemIndex);
+      }
+    },
+    [
+      itemIndex,
+      setFocus,
+      setValue,
+      remove,
+      listFieldName,
+      getValues,
+
+      setFocusedFieldName,
+      setFocusedFieldNameSelectionStart,
+    ]
+  );
+
   const handleKeyDown = useCallback(
     (event: React.KeyboardEvent<HTMLInputElement>) => {
       const nextItemIndex = itemIndex + 1;
       const prevItemIndex = itemIndex - 1;
-      const section = getValues(sectionFieldName);
+      const currentSection = getValues(sectionFieldName);
 
       const isPrevItemIndexValid = prevItemIndex >= 0;
       const isNextItemIndexValid =
-        nextItemIndex >= 0 && nextItemIndex < section.list.length;
-      const isTextEmpty = inputRef.current?.textLength === 0;
+        nextItemIndex >= 0 && nextItemIndex < currentSection.list.length;
 
       const shouldAddNewItem = event.key === "Enter";
 
@@ -68,10 +153,19 @@ const TodoItem = ({
         /* Prevent key press from adding an extra newline. */
         event.preventDefault();
 
+        const cursorLocation = inputRef?.current?.selectionStart;
+        const nextFocusedFieldNameCursorLocation =
+          cursorLocation === inputRef?.current?.textLength ? -1 : 0;
+        const newText = inputRef.current?.textContent?.slice(0, cursorLocation);
+        const nextItemText =
+          inputRef.current?.textContent?.slice(cursorLocation);
+
+        setFocusedFieldNameSelectionStart(nextFocusedFieldNameCursorLocation);
+        setValue(fieldName, newText);
         insert(nextItemIndex, {
           id: uniqueId(),
           isCompleted: false,
-          text: "",
+          text: nextItemText,
         });
       }
 
@@ -93,62 +187,26 @@ const TodoItem = ({
         setFocus(nextFieldName);
       }
 
-      /* If the item should be removed, focus on either the previous or the next first item on the list. */
-      const shouldRemoveItem =
-        event.key === "Backspace" &&
-        isTextEmpty &&
-        (section.list.length > 1 ||
-          (section.list.length === 1 && !!section.name));
+      const isCursorAtStart = inputRef?.current?.selectionStart === 0;
+      const shouldNotErasePrevCharacter =
+        isCursorAtStart && event.key === "Backspace";
 
-      if (shouldRemoveItem) {
-        const nextFocusedFieldName = isPrevItemIndexValid
-          ? `${listFieldName}.${prevItemIndex}.text`
-          : `${listFieldName}.0.text`;
-
-        setFocus(nextFocusedFieldName);
-        remove(itemIndex);
-      }
-
-      /*
-        If the the user tries to remove the final item on the list, create a new subtask 
-        from the section name or do nothing if there is no section name.
-      */
-      const shouldCreateSingleTaskFromSectionName =
-        event.key === "Backspace" &&
-        isTextEmpty &&
-        !isPrevItemIndexValid &&
-        !isNextItemIndexValid &&
-        !!section.name;
-
-      if (shouldCreateSingleTaskFromSectionName) {
-        const newTodoSections = getValues("todoSections").map(
-          (section: TodoSection, index: number) => {
-            if (sectionFieldName === `todoSections.${index}`) {
-              const newTodoItem = {
-                ...getDefaultTodoItem(),
-                text: section.name,
-              };
-
-              return { ...section, name: "", list: [newTodoItem] };
-            }
-            return section;
-          }
-        );
-
-        const nextFieldName = `${listFieldName}.0.text`;
-        setFocus(nextFieldName);
-        setValue("todoSections", newTodoSections);
+      if (shouldNotErasePrevCharacter) {
+        event.preventDefault();
+        handleBackspace(currentSection);
       }
     },
     [
       itemIndex,
       setFocus,
       setValue,
-      remove,
       insert,
+      fieldName,
       listFieldName,
       getValues,
+      handleBackspace,
       sectionFieldName,
+      setFocusedFieldNameSelectionStart,
     ]
   );
 
@@ -172,13 +230,13 @@ const TodoItem = ({
         );
 
         const isAllSubtasksCompleted = newIncompleteTodoList.length === 0;
-
         if (isAllSubtasksCompleted) {
           const newTodoSections = todoSections.filter(
             (section: TodoSection) => {
               return section.id !== todoSection.id;
             }
           );
+
           setValue("todoSections", newTodoSections);
           onSubmit();
           setSnackbar({
@@ -212,23 +270,48 @@ const TodoItem = ({
       setSnackbar,
     ]
   );
+  const handleFocus = useCallback(
+    (event: FocusEvent<HTMLTextAreaElement>) => {
+      if (!inputRef.current) return;
 
-  const handleFocus = useCallback(() => {
-    if (!inputRef.current) return;
-    const cursorLocation = inputRef.current.textLength;
-    inputRef.current.setSelectionRange(
-      cursorLocation,
-      cursorLocation,
-      "forward"
-    );
+      const eventCursorLocation = event?.target?.selectionStart;
+      const shouldFocusAtStartOrMiddle =
+        focusedFieldName === fieldName &&
+        !isNull(focusedFieldNameSelectionStart) &&
+        focusedFieldNameSelectionStart >= 0;
+      const shouldFocusAtEnd =
+        !isNull(focusedFieldNameSelectionStart) &&
+        focusedFieldNameSelectionStart < 0;
 
-    /* Record the field name so we can re-focus to it upon re-render on save. */
-    setFocusedFieldName(fieldName);
-    onSetSectionActive(fieldName);
-  }, [setFocusedFieldName, onSetSectionActive, fieldName]);
+      const cursorLocation = shouldFocusAtEnd
+        ? inputRef.current.textLength
+        : shouldFocusAtStartOrMiddle
+        ? focusedFieldNameSelectionStart
+        : eventCursorLocation;
+
+      inputRef.current.setSelectionRange(
+        cursorLocation,
+        cursorLocation,
+        "forward"
+      );
+
+      /* Record the field name so we can re-focus to it upon re-render on save. */
+      setFocusedFieldName(fieldName);
+      setFocusedFieldNameSelectionStart(null);
+      onSetSectionActive(fieldName);
+    },
+    [
+      focusedFieldName,
+      focusedFieldNameSelectionStart,
+      setFocusedFieldName,
+      onSetSectionActive,
+      fieldName,
+      setFocusedFieldNameSelectionStart,
+    ]
+  );
 
   useEffect(() => {
-    /* Prevent losing focus on re-render due to data updates from saving. */
+    /* Restore focus on field on reload without saving */
     if (focusedFieldName === fieldName) {
       setFocus(fieldName);
     }
