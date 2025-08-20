@@ -11,11 +11,11 @@ import { getDefaultTodoItem, getDefaultTodoSection } from "@utils/todoUtils";
 import { TodoSection } from "types";
 import styles from "./addTodo.module.css";
 
-type AddTodoProps = {
+type ToolbarProps = {
   sectionFieldArrayMethods: UseFieldArrayReturn;
 };
 
-const AddTodo = ({ sectionFieldArrayMethods }: AddTodoProps) => {
+const ToolbarProps = ({ sectionFieldArrayMethods }: ToolbarProps) => {
   const {
     onSubmit,
     setSnackbar,
@@ -101,4 +101,4 @@ const AddTodo = ({ sectionFieldArrayMethods }: AddTodoProps) => {
   );
 };
 
-export default AddTodo;
+export default ToolbarProps;

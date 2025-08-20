@@ -3,7 +3,7 @@
 import { GitHub } from "@mui/icons-material";
 import { Controller, useFieldArray, useFormContext } from "react-hook-form";
 
-import AddTodo from "@components/AddTodo";
+import Toolbar from "@components/AddTodo";
 import TodoList from "@components/TodoList";
 import styles from "./todoSections.module.css";
 
@@ -27,7 +27,7 @@ const TodoSections = () => {
         backgroundImage: `url(${backgroundImageUrl})`,
       }}
     >
-      <AddTodo sectionFieldArrayMethods={sectionFieldArrayMethods} />
+      <Toolbar sectionFieldArrayMethods={sectionFieldArrayMethods} />
       <div className={styles.sectionsContainer}>
         {sectionFieldArrayMethods.fields.map((field, index) => {
           return (
