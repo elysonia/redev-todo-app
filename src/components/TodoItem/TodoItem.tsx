@@ -53,33 +53,90 @@ const TodoItem = ({
   const isActiveFieldArray = sectionFieldArrayName === sectionFieldName;
   const isCompleted = useWatch({ control, name: checkBoxFieldName });
 
-  /*
-   * Pressing backspace when the cursor is at position 0:
-   ** The input is empty
-   *** If First item:
-   **** With no other subtasks
-   ***** With title:
-   ****** Item is removed and the title becomes a singular task, the cursor focuses at the end of the text
-   ***** Without title:
-   ****** Nothing happens as without a title, the subtask had already become a singular task.
-   **** With other subtasks
-   ***** Item is removed and the cursor focuses at the end of the next subtask
-   *** If Non-first items:
-   **** Item is removed and the cursor focuses at the end of the previous subtask
-   ** The input is not empty
-   *** If First item:
-   **** With no other subtasks
-   ***** With title:
-   ****** Item text is combined with the title and becomes a singular task, the cursor will be at the end of the title text/connection point of the two texts.
-   ***** Without title:
-   ****** Nothing happens as without a title, the subtask had already become a singular task.
-   **** With other subtasks
-   ***** Nothing happens
-   *** If Non-first items:
-   **** Item text is combined with the previous item text but the item itself is removed, the cursor wil be at the connection point of the two texts.
-   * Pressing backspace when the cursor is at any other position:
-   ** Erases a character
-   */
+  const handleBackspace = useCallback(
+    (currentSection: TodoSection) => {
+      const isFirstItem = itemIndex === 0;
+      const hasNoSubtasks = currentSection.list.length === 1;
+      const isTextEmpty = inputRef.current?.textLength === 0;
+
+      const shouldCreateSingularTaskWithTitle =
+        isFirstItem && hasNoSubtasks && !!currentSection.name;
+      console.log({
+        shouldCreateSingularTaskWithTitle,
+        isFirstItem,
+        hasNoSubtasks,
+        currentSection,
+      });
+      if (shouldCreateSingularTaskWithTitle) {
+        /*
+          Combine title with current item text, setFocusedFieldNameSelectionStart to the length of the title
+        */
+        const newTodoSections = getValues("todoSections").map(
+          (section: TodoSection) => {
+            if (section.id === currentSection.id) {
+              const newTodoItem = {
+                ...getDefaultTodoItem(),
+                text: section.name + currentSection.list[itemIndex].text,
+              };
+
+              return { ...section, name: "", list: [newTodoItem] };
+            }
+            return section;
+          }
+        );
+
+        const nextFieldName = `${listFieldName}.0.text`;
+        setFocusedFieldNameSelectionStart(currentSection.name.length);
+        setFocus(nextFieldName);
+        setValue("todoSections", newTodoSections);
+        return;
+      }
+
+      const prevItemIndex = itemIndex - 1;
+      const isPrevItemIndexValid = prevItemIndex >= 0;
+      const shouldRemoveItem =
+        (isTextEmpty && isFirstItem && !hasNoSubtasks) ||
+        (isTextEmpty && !isFirstItem);
+      const nextFocusedFieldName = isPrevItemIndexValid
+        ? `${listFieldName}.${prevItemIndex}.text`
+        : `${listFieldName}.0.text`;
+
+      if (shouldRemoveItem) {
+        setFocus(nextFocusedFieldName);
+        setFocusedFieldNameSelectionStart(-1);
+        remove(itemIndex);
+        return;
+      }
+
+      const shouldCombineWithPrevItemText = !isTextEmpty && !isFirstItem;
+      if (shouldCombineWithPrevItemText) {
+        /*
+          Combine the text with the previous item item text, setFocusedFieldNameSelectionStart to the length of the previous item text
+        */
+        const newPrevItemText =
+          currentSection.list[prevItemIndex].text +
+          inputRef?.current?.textContent;
+        const prevItemLength = currentSection.list[prevItemIndex].text.length;
+
+        setFocusedFieldNameSelectionStart(prevItemLength);
+        setFocusedFieldName(nextFocusedFieldName);
+        setValue(`${listFieldName}.${prevItemIndex}.text`, newPrevItemText);
+        remove(itemIndex);
+      }
+    },
+    [
+      itemIndex,
+      setFocus,
+      setValue,
+      remove,
+      listFieldName,
+      getValues,
+      sectionFieldName,
+      setFocusedFieldName,
+      setFocusedFieldNameSelectionStart,
+    ]
+  );
+
   const handleKeyDown = useCallback(
     (event: React.KeyboardEvent<HTMLInputElement>) => {
       const nextItemIndex = itemIndex + 1;
@@ -89,7 +146,6 @@ const TodoItem = ({
       const isPrevItemIndexValid = prevItemIndex >= 0;
       const isNextItemIndexValid =
         nextItemIndex >= 0 && nextItemIndex < currentSection.list.length;
-      const isTextEmpty = inputRef.current?.textLength === 0;
 
       const shouldAddNewItem = event.key === "Enter";
 
@@ -134,95 +190,14 @@ const TodoItem = ({
       const isCursorAtStart = inputRef?.current?.selectionStart === 0;
       const shouldNotErasePrevCharacter =
         isCursorAtStart && event.key === "Backspace";
-      const isFirstItem = itemIndex === 0;
-      const hasNoSubtasks = currentSection.list.length === 1;
 
       if (shouldNotErasePrevCharacter) {
         event.preventDefault();
-        const nextFocusedFieldName = isPrevItemIndexValid
-          ? `${listFieldName}.${prevItemIndex}.text`
-          : `${listFieldName}.0.text`;
-
-        if (isTextEmpty) {
-          if (isFirstItem) {
-            if (hasNoSubtasks) {
-              if (!!currentSection.name) {
-                // Combine title with current item text, setFocusedFieldNameSelectionStart to the length of the title
-                const newTodoSections = getValues("todoSections").map(
-                  (section: TodoSection) => {
-                    if (section.id === currentSection.id) {
-                      const newTodoItem = {
-                        ...getDefaultTodoItem(),
-                        text:
-                          section.name + currentSection.list[itemIndex].text,
-                      };
-
-                      return { ...section, name: "", list: [newTodoItem] };
-                    }
-                    return section;
-                  }
-                );
-
-                const nextFieldName = `${listFieldName}.0.text`;
-                setFocusedFieldNameSelectionStart(currentSection.name.length);
-                setFocus(nextFieldName);
-                setValue("todoSections", newTodoSections);
-              }
-            } else {
-              // Remove item and cursor focuses at the end of the next subtask
-              setFocus(nextFocusedFieldName);
-              setFocusedFieldNameSelectionStart(-1);
-              remove(itemIndex);
-            }
-          } else {
-            // Remove item and focus cursor at the end of the prev item
-            setFocus(nextFocusedFieldName);
-            setFocusedFieldNameSelectionStart(-1);
-            remove(itemIndex);
-          }
-        } else {
-          if (isFirstItem) {
-            if (hasNoSubtasks) {
-              if (!!currentSection.name) {
-                // Combine title with current item text, setFocusedFieldNameSelectionStart to the length of the title
-                const newTodoSections = getValues("todoSections").map(
-                  (section: TodoSection) => {
-                    if (section.id === currentSection.id) {
-                      const newTodoItem = {
-                        ...getDefaultTodoItem(),
-                        text:
-                          section.name + currentSection.list[itemIndex].text,
-                      };
-
-                      return { ...section, name: "", list: [newTodoItem] };
-                    }
-                    return section;
-                  }
-                );
-
-                const nextFieldName = `${listFieldName}.0.text`;
-                setFocusedFieldNameSelectionStart(currentSection.name.length);
-                setFocus(nextFieldName);
-                setValue("todoSections", newTodoSections);
-              }
-            }
-          } else {
-            // Combine the text with the previous item item text, setFocusedFieldNameSelectionStart to the length of the previous item text
-            const newPrevItemText =
-              currentSection.list[prevItemIndex].text +
-              inputRef?.current?.textContent;
-            const prevItemLength =
-              currentSection.list[prevItemIndex].text.length;
-
-            setFocusedFieldNameSelectionStart(prevItemLength);
-            setFocusedFieldName(nextFocusedFieldName);
-            setValue(`${listFieldName}.${prevItemIndex}.text`, newPrevItemText);
-            remove(itemIndex);
-          }
-        }
+        handleBackspace(currentSection);
       }
     },
     [
+      handleBackspace,
       itemIndex,
       setFocus,
       setValue,
