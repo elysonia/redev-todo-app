@@ -5,11 +5,14 @@
   align-items: start;
   padding: 4px 16px;
 }
+
 .itemContainer {
   display: flex;
   justify-content: start;
   align-items: center;
+  width: 100%;
 }
+
 .item {
   position: relative;
   display: inline-block;

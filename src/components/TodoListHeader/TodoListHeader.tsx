@@ -86,7 +86,7 @@ const TodoListHeader = ({
         [styles.isSectionActive]: isActiveFieldArray,
       })}
     >
-      <div>
+      <div className={styles.listHeader}>
         {shouldShowCheckbox && (
           <Controller
             control={control}
@@ -110,7 +110,7 @@ const TodoListHeader = ({
                 }}
                 value={value}
                 placeholder="Checklist for subtasks"
-                className={clsx(styles.listHeader, {
+                className={clsx(styles.headerInput, {
                   [styles.completed]: isCompleted,
                 })}
                 disableUnderline
