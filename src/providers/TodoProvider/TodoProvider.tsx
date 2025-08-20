@@ -42,11 +42,11 @@ type TodoContextProps = {
   todoSections: TodoSection[];
   focusedFieldName: string;
   sectionFieldArrayName: `todoSections.${number}` | "";
-  focusedFieldNameSelectionStart: number;
+  focusedFieldNameSelectionStart: number | null;
   setSnackbar: (props: SnackbarProps) => void;
   setFocusedFieldName: (fieldName: string) => void;
   setSectionFieldArrayName: (sectionId: `todoSections.${number}` | "") => void;
-  setFocusedFieldNameSelectionStart: (selectionStart: number) => void;
+  setFocusedFieldNameSelectionStart: (selectionStart: number | null) => void;
   onSubmit: (e?: React.BaseSyntheticEvent) => Promise<void>;
 };
 
@@ -55,7 +55,7 @@ const defaultTodoContext: TodoContextProps = {
   todoSections: [],
   focusedFieldName: "",
   sectionFieldArrayName: "",
-  focusedFieldNameSelectionStart: -1,
+  focusedFieldNameSelectionStart: null,
   setSnackbar: () => {},
   setFocusedFieldName: () => {},
   setSectionFieldArrayName: () => {},
@@ -71,11 +71,10 @@ const TodoProvider = ({ children }: PropsWithChildren) => {
   >("");
   /* Path to the current field in focus in the form. */
   const [focusedFieldName, setFocusedFieldName] = useState("");
-
   const [snackbar, setSnackbar] = useState<SnackbarProps>({});
   const [shouldRestoreDraft, setShouldRestoreDraft] = useState(true);
   const [focusedFieldNameSelectionStart, setFocusedFieldNameSelectionStart] =
-    useState(-1);
+    useState<number | null>(null);
 
   const {
     todoSections,
