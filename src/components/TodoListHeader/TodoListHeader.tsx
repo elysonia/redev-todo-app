@@ -44,35 +44,29 @@ const TodoListHeader = ({
 
     /* Record the field name so we can re-focus to it upon re-render on save. */
     setFocusedInputField({ fieldName, selectionStart: cursorLocation });
-
     onSetSectionActive(sectionFieldName);
   }, [setFocusedInputField, fieldName, sectionFieldName, onSetSectionActive]);
 
   const handleChecked = useCallback(
     (isChecked: boolean) => {
-      if (isChecked) {
-        setTimeout(() => {
-          const todoSections = getValues("todoSections");
-          const newTodoSections = todoSections.filter(
-            (section: TodoSection) => {
-              return !section.isCompleted;
-            }
-          );
-          setValue("todoSections", newTodoSections);
-          onSubmit();
-          setSnackbar({
-            open: true,
-            message: "Task completed",
-          });
-        }, 500);
-      }
+      if (!isChecked) return;
+      /* Delay the function for 3 ms so the feedback for the delete action doesn't feel so sudden. */
+      setTimeout(() => {
+        const todoSections = getValues("todoSections");
+        const currentSection = getValues(sectionFieldName);
+        const newTodoSections = todoSections.filter((section: TodoSection) => {
+          return section.id !== currentSection.id;
+        });
+        setValue("todoSections", newTodoSections);
+        onSubmit();
+        setSnackbar({
+          open: true,
+          message: "Task completed",
+        });
+      }, 300);
     },
-    [getValues, setValue, onSubmit, setSnackbar]
+    [getValues, setValue, sectionFieldName, onSubmit, setSnackbar]
   );
-
-  useEffect(() => {
-    handleChecked(isCompleted);
-  }, [isCompleted, handleChecked]);
 
   useEffect(() => {
     /* Prevent losing focus on re-render due to data updates from saving. */
@@ -93,7 +87,15 @@ const TodoListHeader = ({
             control={control}
             name={checkboxFieldName}
             render={({ field: { value, onChange } }) => {
-              return <Checkbox checked={value} onChange={onChange} />;
+              return (
+                <Checkbox
+                  checked={value}
+                  onChange={(event) => {
+                    onChange(event);
+                    handleChecked(event.target.checked);
+                  }}
+                />
+              );
             }}
           />
         )}
