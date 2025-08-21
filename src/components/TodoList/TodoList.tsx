@@ -27,11 +27,11 @@ const TodoList = ({ sectionIndex, sectionFieldName }: TodoListProps) => {
   const fieldName = `todoSections.${sectionIndex}.list`;
   const reminderDateFieldName = `todoSections.${sectionIndex}.reminderDateTime`;
   const {
-    focusedFieldName,
+    focusedInputField,
     sectionFieldArrayName,
     onSubmit,
     setSnackbar,
-    setFocusedFieldName,
+    setFocusedInputField,
     setSectionFieldArrayName,
   } = useTodoContext();
   const { control, getValues, setFocus, setValue } = useFormContext();
@@ -98,7 +98,10 @@ const TodoList = ({ sectionIndex, sectionFieldName }: TodoListProps) => {
     }
 
     setSectionFieldArrayName("");
-    setFocusedFieldName("");
+    setFocusedInputField({
+      fieldName: "",
+      selectionStart: null,
+    });
     onSubmit();
     setSnackbar({ open: true, message: `Tasks saved` });
   }, [
@@ -110,13 +113,13 @@ const TodoList = ({ sectionIndex, sectionFieldName }: TodoListProps) => {
     setValue,
     onSubmit,
     sectionFieldName,
-    setFocusedFieldName,
+    setFocusedInputField,
   ]);
 
   const handleSetSectionActive = useCallback(
     (nextFocusedFieldName?: string) => {
       if (isActiveFieldArray) return;
-      if (focusedFieldName) return;
+      if (focusedInputField.fieldName) return;
 
       if (nextFocusedFieldName) {
         setFocus(nextFocusedFieldName);
@@ -133,7 +136,7 @@ const TodoList = ({ sectionIndex, sectionFieldName }: TodoListProps) => {
     [
       isActiveFieldArray,
       sectionFieldName,
-      focusedFieldName,
+      focusedInputField,
       fieldName,
       setFocus,
       setSectionFieldArrayName,
@@ -153,10 +156,10 @@ const TodoList = ({ sectionIndex, sectionFieldName }: TodoListProps) => {
 
   useEffect(() => {
     if (!isActiveFieldArray) return;
-    if (focusedFieldName) return;
+    if (focusedInputField.fieldName) return;
     const lastItemFieldName = `${fieldName}.${getValues(fieldName).length - 1}`;
     setFocus(lastItemFieldName);
-  }, [isActiveFieldArray, focusedFieldName, fieldName, setFocus, getValues]);
+  }, [isActiveFieldArray, focusedInputField, fieldName, setFocus, getValues]);
 
   return (
     <ClickAwayListener

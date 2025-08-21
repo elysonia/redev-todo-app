@@ -22,7 +22,7 @@ const TodoListHeader = ({
   const inputRef = useRef<HTMLTextAreaElement>(null);
   const fieldName = `${sectionFieldName}.name`;
   const checkboxFieldName = `${sectionFieldName}.isCompleted`;
-  const { focusedFieldName, setFocusedFieldName, setSnackbar, onSubmit } =
+  const { focusedInputField, setFocusedInputField, setSnackbar, onSubmit } =
     useTodoContext();
   const { control, setFocus, setValue, getValues } = useFormContext();
 
@@ -43,9 +43,10 @@ const TodoListHeader = ({
     );
 
     /* Record the field name so we can re-focus to it upon re-render on save. */
-    setFocusedFieldName(fieldName);
-    onSetSectionActive(fieldName);
-  }, [setFocusedFieldName, fieldName, onSetSectionActive]);
+    setFocusedInputField({ fieldName, selectionStart: cursorLocation });
+
+    onSetSectionActive(sectionFieldName);
+  }, [setFocusedInputField, fieldName, sectionFieldName, onSetSectionActive]);
 
   const handleChecked = useCallback(
     (isChecked: boolean) => {
@@ -75,10 +76,10 @@ const TodoListHeader = ({
 
   useEffect(() => {
     /* Prevent losing focus on re-render due to data updates from saving. */
-    if (focusedFieldName === fieldName) {
+    if (focusedInputField.fieldName === fieldName) {
       setFocus(fieldName);
     }
-  }, [focusedFieldName, fieldName, setFocus]);
+  }, [focusedInputField, fieldName, setFocus]);
 
   return (
     <div

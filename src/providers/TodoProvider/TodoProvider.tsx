@@ -23,9 +23,10 @@ import { useShallow } from "zustand/react/shallow";
 
 import { useAudioPlayerContext } from "@providers/AudioPlayerProvider/AudioPlayerProvider";
 import { useTodoStore } from "@providers/TodoStoreProvider";
+import { defaultFocusedInputField } from "@utils/todoUtils";
 import { defaultTodoDraft } from "store";
 import { TodoSection } from "types";
-import { TodoSectionDayjs } from "types/todo";
+import { FocusedInputField, TodoSectionDayjs } from "types/todo";
 
 type TodoForm = {
   todoSections: TodoSection[];
@@ -40,26 +41,22 @@ type RHFSubscribeProps = Partial<FormState<TodoForm>> & {
 type TodoContextProps = {
   snackbar: SnackbarProps;
   todoSections: TodoSection[];
-  focusedFieldName: string;
+  focusedInputField: FocusedInputField;
   sectionFieldArrayName: `todoSections.${number}` | "";
-  focusedFieldNameSelectionStart: number | null;
   setSnackbar: (props: SnackbarProps) => void;
-  setFocusedFieldName: (fieldName: string) => void;
+  setFocusedInputField: (focusedField: FocusedInputField) => void;
   setSectionFieldArrayName: (sectionId: `todoSections.${number}` | "") => void;
-  setFocusedFieldNameSelectionStart: (selectionStart: number | null) => void;
   onSubmit: (e?: React.BaseSyntheticEvent) => Promise<void>;
 };
 
 const defaultTodoContext: TodoContextProps = {
   snackbar: {},
   todoSections: [],
-  focusedFieldName: "",
+  focusedInputField: defaultFocusedInputField,
   sectionFieldArrayName: "",
-  focusedFieldNameSelectionStart: null,
   setSnackbar: () => {},
-  setFocusedFieldName: () => {},
+  setFocusedInputField: () => {},
   setSectionFieldArrayName: () => {},
-  setFocusedFieldNameSelectionStart: () => {},
   onSubmit: async () => {},
 };
 export const TodoContext = createContext<TodoContextProps>(defaultTodoContext);
@@ -70,11 +67,11 @@ const TodoProvider = ({ children }: PropsWithChildren) => {
     `todoSections.${number}` | ""
   >("");
   /* Path to the current field in focus in the form. */
-  const [focusedFieldName, setFocusedFieldName] = useState("");
+  const [focusedInputField, setFocusedInputField] = useState<FocusedInputField>(
+    defaultFocusedInputField
+  );
   const [snackbar, setSnackbar] = useState<SnackbarProps>({});
   const [shouldRestoreDraft, setShouldRestoreDraft] = useState(true);
-  const [focusedFieldNameSelectionStart, setFocusedFieldNameSelectionStart] =
-    useState<number | null>(null);
 
   const {
     todoSections,
@@ -129,11 +126,11 @@ const TodoProvider = ({ children }: PropsWithChildren) => {
       updateTodoDraft({
         isDirty: Boolean(isDirty),
         sectionFieldArrayName,
-        focusedFieldName,
+        focusedInputField,
         values: values.todoSections,
       });
     }, 500),
-    [sectionFieldArrayName, focusedFieldName, updateTodoDraft, getValues]
+    [sectionFieldArrayName, focusedInputField, updateTodoDraft, getValues]
   );
 
   const activeRemindersArray = useMemo(() => {
@@ -206,25 +203,21 @@ const TodoProvider = ({ children }: PropsWithChildren) => {
     return {
       snackbar,
       todoSections,
-      focusedFieldName,
+      focusedInputField,
       sectionFieldArrayName,
-      focusedFieldNameSelectionStart,
       setSnackbar,
-      setFocusedFieldName: setFocusedFieldName,
+      setFocusedInputField,
       setSectionFieldArrayName,
-      setFocusedFieldNameSelectionStart,
       onSubmit: handleSubmit,
     };
   }, [
     snackbar,
     todoSections,
-    focusedFieldName,
+    focusedInputField,
     sectionFieldArrayName,
-    focusedFieldNameSelectionStart,
     setSnackbar,
-    setFocusedFieldName,
+    setFocusedInputField,
     setSectionFieldArrayName,
-    setFocusedFieldNameSelectionStart,
     handleSubmit,
   ]);
 
@@ -253,7 +246,7 @@ const TodoProvider = ({ children }: PropsWithChildren) => {
     if (!shouldRestoreDraft) return;
 
     if (todoDraft.isDirty) {
-      setFocusedFieldName(todoDraft.focusedFieldName);
+      setFocusedInputField(todoDraft.focusedInputField);
       setSectionFieldArrayName(todoDraft.sectionFieldArrayName);
       setValue("todoSections", todoDraft.values);
       setSnackbar({
@@ -266,11 +259,11 @@ const TodoProvider = ({ children }: PropsWithChildren) => {
     todoDraft,
     shouldRestoreDraft,
     isHydrated,
-    setFocusedFieldName,
-    setSectionFieldArrayName,
     setValue,
     setSnackbar,
+    setFocusedInputField,
     setShouldRestoreDraft,
+    setSectionFieldArrayName,
   ]);
 
   /* Send desktop notification when the reminder date times match current time. */

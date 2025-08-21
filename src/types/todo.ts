@@ -20,3 +20,8 @@ export type TodoSection = {
 export type TodoSectionDayjs = TodoSection & {
   reminderDateTime: Dayjs;
 };
+
+export type FocusedInputField = {
+  fieldName: string;
+  selectionStart: number | null;
+};
