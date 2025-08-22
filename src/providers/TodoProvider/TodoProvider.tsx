@@ -293,8 +293,8 @@ const TodoProvider = ({ children }: PropsWithChildren) => {
 
   /* Set focus on the current fieldName if it changes */
   useEffect(() => {
-    if (!isEmpty(todoDraft.focusedTextInputField.fieldName)) {
-      setFocus(todoDraft.focusedTextInputField.fieldName);
+    if (!isEmpty(focusedTextInputField.fieldName)) {
+      setFocus(focusedTextInputField.fieldName);
     }
   }, [focusedTextInputField, setFocus]);
 
