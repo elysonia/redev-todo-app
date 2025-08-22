@@ -119,29 +119,10 @@ const TodoList = ({ sectionIndex, sectionFieldName }: TodoListProps) => {
   const handleSetSectionActive = useCallback(
     (nextFocusedFieldName?: string) => {
       if (isActiveFieldArray) return;
-      if (focusedTextInputField.fieldName) return;
-
-      if (nextFocusedFieldName) {
-        setFocus(nextFocusedFieldName);
-      } else {
-        const lastItemFieldName = `${fieldName}.${
-          getValues(fieldName).length - 1
-        }.text`;
-
-        setFocus(lastItemFieldName);
-      }
 
       setSectionFieldArrayName(sectionFieldName);
     },
-    [
-      isActiveFieldArray,
-      sectionFieldName,
-      focusedTextInputField,
-      fieldName,
-      setFocus,
-      setSectionFieldArrayName,
-      getValues,
-    ]
+    [isActiveFieldArray, sectionFieldName, setSectionFieldArrayName]
   );
 
   /* If the user sets a new reminder, reset isReminderExpired. */
