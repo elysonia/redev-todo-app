@@ -173,16 +173,30 @@ const TodoItem = ({
         inputRef.current?.selectionStart === 0 &&
         isPrevItemIndexValid;
 
+      const shouldFocusOnHeaderName =
+        event.key === "ArrowUp" &&
+        inputRef.current?.selectionStart === 0 &&
+        !isPrevItemIndexValid;
+
       if (shouldFocusOnPrevItem) {
         event.preventDefault();
         const prevFieldName =
           `${listFieldName}.${prevItemIndex}.text` as TextInputFieldName;
-        const newSelectionStart = !isNull(inputRef.current)
-          ? inputRef.current.selectionStart
-          : null;
+
         setFocusedTextInputField({
           fieldName: prevFieldName,
-          selectionStart: newSelectionStart,
+          selectionStart: 0,
+        });
+      }
+
+      if (shouldFocusOnHeaderName) {
+        event.preventDefault();
+        const headerNameFieldName =
+          `${sectionFieldName}.name` as TextInputFieldName;
+
+        setFocusedTextInputField({
+          fieldName: headerNameFieldName,
+          selectionStart: 0,
         });
       }
 

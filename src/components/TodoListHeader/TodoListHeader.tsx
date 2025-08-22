@@ -1,10 +1,11 @@
 import { Checkbox, Input } from "@mui/material";
 import clsx from "clsx";
-import { useCallback, useEffect, useRef } from "react";
+import { FocusEvent, useCallback, useRef } from "react";
 import { Controller, useFormContext, useWatch } from "react-hook-form";
 
 import ReminderIndicator from "@components/ReminderIndicator";
 import { useTodoContext } from "@providers/TodoProvider/TodoProvider";
+import { isNull } from "lodash";
 import { TodoSection } from "types";
 import { TextInputFieldName } from "types/todo";
 import styles from "./todoListHeader.module.css";
@@ -38,24 +39,54 @@ const TodoListHeader = ({
 
   const shouldShowCheckbox = !isActiveFieldArray || isCompleted;
 
-  const handleFocus = useCallback(() => {
-    if (!inputRef.current) return;
-    const cursorLocation = inputRef.current.textLength;
-    inputRef.current.setSelectionRange(
-      cursorLocation,
-      cursorLocation,
-      "forward"
-    );
+  const handleKeyDown = useCallback(
+    (event: React.KeyboardEvent<HTMLInputElement>) => {
+      const shouldFocusOnFirstSubtask =
+        event.key === "ArrowDown" &&
+        inputRef.current?.selectionStart === inputRef?.current?.textLength;
 
-    /* Record the field name so we can re-focus to it upon re-render on save. */
-    setFocusedTextInputField({ fieldName, selectionStart: cursorLocation });
-    onSetSectionActive(sectionFieldName);
-  }, [
-    setFocusedTextInputField,
-    fieldName,
-    sectionFieldName,
-    onSetSectionActive,
-  ]);
+      if (shouldFocusOnFirstSubtask) {
+        event.preventDefault();
+        const nextFieldName =
+          `${sectionFieldName}.list.0.text` as TextInputFieldName;
+
+        setFocusedTextInputField({
+          fieldName: nextFieldName,
+          selectionStart: -1,
+        });
+      }
+    },
+    [sectionFieldName, setFocusedTextInputField]
+  );
+
+  const handleFocus = useCallback(
+    (event: FocusEvent<HTMLTextAreaElement>) => {
+      if (!inputRef.current) return;
+      const eventCursorLocation = event?.target?.selectionStart;
+      const shouldFocusAtStartOrMiddle =
+        focusedTextInputField.fieldName === fieldName &&
+        !isNull(focusedTextInputField.selectionStart) &&
+        focusedTextInputField.selectionStart >= 0;
+      const shouldFocusAtEnd =
+        !isNull(focusedTextInputField.selectionStart) &&
+        focusedTextInputField.selectionStart < 0;
+
+      const cursorLocation = shouldFocusAtEnd
+        ? inputRef.current.textLength
+        : shouldFocusAtStartOrMiddle
+        ? focusedTextInputField.selectionStart
+        : eventCursorLocation;
+
+      inputRef.current.setSelectionRange(
+        cursorLocation,
+        cursorLocation,
+        "forward"
+      );
+
+      onSetSectionActive(sectionFieldName);
+    },
+    [setFocusedTextInputField, fieldName, sectionFieldName, onSetSectionActive]
+  );
 
   const handleChecked = useCallback(
     (isChecked: boolean) => {
@@ -77,13 +108,6 @@ const TodoListHeader = ({
     },
     [getValues, setValue, sectionFieldName, onSubmit, setSnackbar]
   );
-
-  useEffect(() => {
-    /* Prevent losing focus on re-render due to data updates from saving. */
-    if (focusedTextInputField.fieldName === fieldName) {
-      setFocus(fieldName);
-    }
-  }, [focusedTextInputField, fieldName, setFocus]);
 
   return (
     <div
@@ -130,6 +154,7 @@ const TodoListHeader = ({
                 multiline
                 onChange={onChange}
                 onFocus={handleFocus}
+                onKeyDown={handleKeyDown}
               />
             );
           }}
