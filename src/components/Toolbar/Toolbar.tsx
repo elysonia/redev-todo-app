@@ -19,7 +19,7 @@ const ToolbarProps = ({ sectionFieldArrayMethods }: ToolbarProps) => {
   const {
     onSubmit,
     setSnackbar,
-    setFocusedInputField,
+    setFocusedTextInputField,
     setSectionFieldArrayName,
   } = useTodoContext();
   const { getValues, setValue } = useFormContext();
@@ -35,7 +35,7 @@ const ToolbarProps = ({ sectionFieldArrayMethods }: ToolbarProps) => {
     /* Add section at the start of list and focus on the first item immediately. */
     const todoSections = getValues(`todoSections`);
     const nextTodoItemFieldName = `todoSections.0.list.0.text`;
-    setFocusedInputField({
+    setFocusedTextInputField({
       fieldName: nextTodoItemFieldName,
       selectionStart: -1,
     });
@@ -50,7 +50,7 @@ const ToolbarProps = ({ sectionFieldArrayMethods }: ToolbarProps) => {
     prepend,
     getValues,
     setValue,
-    setFocusedInputField,
+    setFocusedTextInputField,
     setSectionFieldArrayName,
   ]);
 

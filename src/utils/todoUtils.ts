@@ -1,6 +1,7 @@
 import { uniqueId } from "lodash";
+
 import { TodoItem, TodoSection } from "types";
-import { FocusedInputField } from "types/todo";
+import { FocusedTextInputField } from "types/todo";
 
 type ReturnDefaultValue<DefaultValueType> = () => DefaultValueType;
 
@@ -23,7 +24,7 @@ export const getDefaultTodoSection: ReturnDefaultValue<TodoSection> = () => {
   };
 };
 
-export const defaultFocusedInputField: FocusedInputField = {
+export const defaultFocusedTextInputField: FocusedTextInputField = {
   fieldName: "",
   selectionStart: null,
 };

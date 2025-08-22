@@ -1,13 +1,13 @@
-import { defaultFocusedInputField } from "@utils/todoUtils";
+import { defaultFocusedTextInputField } from "@utils/todoUtils";
 import { AlarmTypeEnum } from "enums/alarmEnum";
 import { TodoSection } from "types";
-import { FocusedInputField } from "types/todo";
+import { FocusedTextInputField } from "types/todo";
 import { createStore } from "zustand";
 import { devtools, persist } from "zustand/middleware";
 
 export type TodoDraft = {
   isDirty: boolean;
-  focusedInputField: FocusedInputField;
+  focusedTextInputField: FocusedTextInputField;
   sectionFieldArrayName: `todoSections.${number}` | "";
   values: TodoSection[];
 };
@@ -23,7 +23,7 @@ export type TodoState = {
 
 export const defaultTodoDraft: TodoDraft = {
   isDirty: false,
-  focusedInputField: defaultFocusedInputField,
+  focusedTextInputField: defaultFocusedTextInputField,
   sectionFieldArrayName: "",
   values: [],
 };
