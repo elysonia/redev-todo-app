@@ -30,7 +30,7 @@ const TodoListHeader = ({
     setSnackbar,
     onSubmit,
   } = useTodoContext();
-  const { control, setFocus, setValue, getValues } = useFormContext();
+  const { control, setValue, getValues } = useFormContext();
 
   const isCompleted = useWatch({
     control,
