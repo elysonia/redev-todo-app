@@ -40,7 +40,6 @@ type RHFSubscribeProps = Partial<FormState<TodoForm>> & {
 
 type TodoContextProps = {
   snackbar: SnackbarProps;
-  todoSections: TodoSection[];
   focusedTextInputField: FocusedTextInputField;
   sectionFieldArrayName: `todoSections.${number}` | "";
   setSnackbar: (props: SnackbarProps) => void;
@@ -51,7 +50,6 @@ type TodoContextProps = {
 
 const defaultTodoContext: TodoContextProps = {
   snackbar: {},
-  todoSections: [],
   focusedTextInputField: defaultFocusedTextInputField,
   sectionFieldArrayName: "",
   setSnackbar: () => {},
@@ -203,7 +201,6 @@ const TodoProvider = ({ children }: PropsWithChildren) => {
   const todoValue: TodoContextProps = useMemo(() => {
     return {
       snackbar,
-      todoSections,
       focusedTextInputField,
       sectionFieldArrayName,
       setSnackbar,
@@ -213,7 +210,6 @@ const TodoProvider = ({ children }: PropsWithChildren) => {
     };
   }, [
     snackbar,
-    todoSections,
     focusedTextInputField,
     sectionFieldArrayName,
     setSnackbar,
