@@ -188,6 +188,7 @@ const TodoProvider = ({ children }: PropsWithChildren) => {
             body,
             icon: "/favicon.ico",
             tag: reminder.id,
+            requireInteraction: true,
           }
         );
 
