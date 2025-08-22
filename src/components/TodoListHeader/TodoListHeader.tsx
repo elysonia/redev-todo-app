@@ -6,6 +6,7 @@ import { Controller, useFormContext, useWatch } from "react-hook-form";
 import ReminderIndicator from "@components/ReminderIndicator";
 import { useTodoContext } from "@providers/TodoProvider/TodoProvider";
 import { TodoSection } from "types";
+import { TextInputFieldName } from "types/todo";
 import styles from "./todoListHeader.module.css";
 
 type TodoListHeaderProps = {
@@ -20,10 +21,14 @@ const TodoListHeader = ({
   onSetSectionActive,
 }: TodoListHeaderProps) => {
   const inputRef = useRef<HTMLTextAreaElement>(null);
-  const fieldName = `${sectionFieldName}.name`;
+  const fieldName = `${sectionFieldName}.name` as TextInputFieldName;
   const checkboxFieldName = `${sectionFieldName}.isCompleted`;
-  const { focusedInputField, setFocusedInputField, setSnackbar, onSubmit } =
-    useTodoContext();
+  const {
+    focusedTextInputField,
+    setFocusedTextInputField,
+    setSnackbar,
+    onSubmit,
+  } = useTodoContext();
   const { control, setFocus, setValue, getValues } = useFormContext();
 
   const isCompleted = useWatch({
@@ -43,9 +48,14 @@ const TodoListHeader = ({
     );
 
     /* Record the field name so we can re-focus to it upon re-render on save. */
-    setFocusedInputField({ fieldName, selectionStart: cursorLocation });
+    setFocusedTextInputField({ fieldName, selectionStart: cursorLocation });
     onSetSectionActive(sectionFieldName);
-  }, [setFocusedInputField, fieldName, sectionFieldName, onSetSectionActive]);
+  }, [
+    setFocusedTextInputField,
+    fieldName,
+    sectionFieldName,
+    onSetSectionActive,
+  ]);
 
   const handleChecked = useCallback(
     (isChecked: boolean) => {
@@ -70,10 +80,10 @@ const TodoListHeader = ({
 
   useEffect(() => {
     /* Prevent losing focus on re-render due to data updates from saving. */
-    if (focusedInputField.fieldName === fieldName) {
+    if (focusedTextInputField.fieldName === fieldName) {
       setFocus(fieldName);
     }
-  }, [focusedInputField, fieldName, setFocus]);
+  }, [focusedTextInputField, fieldName, setFocus]);
 
   return (
     <div
