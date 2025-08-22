@@ -85,7 +85,7 @@ const TodoListHeader = ({
 
       onSetSectionActive(sectionFieldName);
     },
-    [setFocusedTextInputField, fieldName, sectionFieldName, onSetSectionActive]
+    [fieldName, sectionFieldName, focusedTextInputField, onSetSectionActive]
   );
 
   const handleChecked = useCallback(
