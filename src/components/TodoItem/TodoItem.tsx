@@ -27,6 +27,7 @@ type TodoItemProps = {
   listFieldName: string;
   shouldShowHeader: boolean;
   listFieldArrayMethods: UseFieldArrayReturn;
+  onKeyDown: (event: React.KeyboardEvent<HTMLInputElement>) => void;
   onSetSectionActive: (nextFocusedFieldName?: string) => void;
 };
 
@@ -37,6 +38,7 @@ const TodoItem = ({
   shouldShowHeader,
   sectionFieldName,
   listFieldArrayMethods,
+  onKeyDown,
   onSetSectionActive,
 }: TodoItemProps) => {
   const {
@@ -201,6 +203,14 @@ const TodoItem = ({
       const isNextItemIndexValid =
         nextItemIndex >= 0 && nextItemIndex < currentSection.list.length;
 
+      const shouldFocusOnActionButtons =
+        event.key === "ArrowDown" && !isNextItemIndexValid;
+
+      if (shouldFocusOnActionButtons) {
+        onKeyDown(event);
+        return;
+      }
+
       const shouldFocusOnPrevItem =
         event.key === "ArrowUp" &&
         inputState.selectionStart === 0 &&
@@ -213,7 +223,7 @@ const TodoItem = ({
 
       const shouldFocusOnNextItem =
         event.key === "ArrowDown" &&
-        inputState.selectionStart === inputRef?.current?.textLength &&
+        inputState.selectionStart === inputState.length &&
         isNextItemIndexValid;
 
       /* Only prevent default cursor behavior when they need to move focus to another field */

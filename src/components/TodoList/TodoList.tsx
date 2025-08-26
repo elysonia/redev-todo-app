@@ -3,7 +3,7 @@ import { ClickAwayListener, IconButton, List, Tooltip } from "@mui/material";
 import clsx from "clsx";
 import dayjs from "dayjs";
 import { isEmpty, uniqueId } from "lodash";
-import { useCallback, useEffect, useMemo } from "react";
+import { useCallback, useEffect, useMemo, useRef } from "react";
 import {
   Controller,
   useFieldArray,
@@ -16,6 +16,7 @@ import TodoItem from "@components/TodoItem";
 import TodoListHeader from "@components/TodoListHeader";
 import { useTodoContext } from "@providers/TodoProvider/TodoProvider";
 import { TodoItem as TodoItemType, TodoSection } from "types";
+import { ObjectInputFieldName, TextInputFieldName } from "types/todo";
 import styles from "./todoList.module.css";
 
 type TodoListProps = {
@@ -26,6 +27,8 @@ type TodoListProps = {
 const TodoList = ({ sectionIndex, sectionFieldName }: TodoListProps) => {
   const fieldName = `todoSections.${sectionIndex}.list`;
   const reminderDateFieldName = `todoSections.${sectionIndex}.reminderDateTime`;
+  const submitButtonRef = useRef<HTMLButtonElement>(null);
+  const reminderDateTimeRef = useRef<HTMLButtonElement>(null);
   const {
     focusedTextInputField,
     sectionFieldArrayName,
@@ -135,6 +138,57 @@ const TodoList = ({ sectionIndex, sectionFieldName }: TodoListProps) => {
     setValue(sectionFieldName, newTodoSection);
   }, [getValues, setValue, sectionFieldName]);
 
+  const handleKeyDown = useCallback(
+    (
+      event: React.KeyboardEvent<
+        HTMLInputElement | HTMLDivElement | HTMLButtonElement
+      >
+    ) => {
+      if (event.key === "ArrowUp") {
+        event.preventDefault();
+        if (event.target === submitButtonRef.current) {
+          setFocusedTextInputField({
+            fieldName: reminderDateFieldName as ObjectInputFieldName,
+            selectionStart: null,
+          });
+          setFocus(reminderDateFieldName);
+          return;
+        }
+        const lastItemIndex = getValues(fieldName).length - 1;
+        const lastItemFieldName =
+          `${fieldName}.${lastItemIndex}.text` as TextInputFieldName;
+        setFocusedTextInputField({
+          fieldName: lastItemFieldName,
+          selectionStart: -1,
+        });
+        return;
+      }
+      if (event.key === "ArrowDown") {
+        if (event.target === submitButtonRef.current) return;
+        event.preventDefault();
+        if (event.target === reminderDateTimeRef.current) {
+          submitButtonRef.current?.focus();
+          setFocusedTextInputField({
+            fieldName: "",
+            selectionStart: null,
+          });
+          return;
+        }
+        setFocusedTextInputField({
+          fieldName: reminderDateFieldName as ObjectInputFieldName,
+          selectionStart: null,
+        });
+      }
+    },
+    [
+      reminderDateFieldName,
+      fieldName,
+      setFocus,
+      getValues,
+      setFocusedTextInputField,
+    ]
+  );
+
   useEffect(() => {
     if (!isActiveFieldArray) return;
     if (focusedTextInputField.fieldName) return;
@@ -178,6 +232,7 @@ const TodoList = ({ sectionIndex, sectionFieldName }: TodoListProps) => {
               listFieldName={fieldName}
               listFieldArrayMethods={listFieldArrayMethods}
               shouldShowHeader={shouldShowHeader}
+              onKeyDown={handleKeyDown}
               onSetSectionActive={handleSetSectionActive}
             />
           ))}
@@ -187,10 +242,14 @@ const TodoList = ({ sectionIndex, sectionFieldName }: TodoListProps) => {
             <Controller
               control={control}
               name={reminderDateFieldName}
-              render={({ field: { value, onChange } }) => {
+              render={({ field: { ref: refCallback, value, onChange } }) => {
                 return (
                   <ButtonFieldDateTimePicker
                     disablePast
+                    ref={(ref) => {
+                      refCallback(ref);
+                      reminderDateTimeRef.current = ref;
+                    }}
                     value={value ? dayjs(value) : value}
                     sx={{
                       textTransform: "capitalize",
@@ -198,6 +257,9 @@ const TodoList = ({ sectionIndex, sectionFieldName }: TodoListProps) => {
                     slotProps={{
                       actionBar: {
                         actions: ["clear", "cancel", "nextOrAccept"],
+                      },
+                      field: {
+                        onKeyDown: handleKeyDown,
                       },
                     }}
                     onChange={(event) => {
@@ -209,7 +271,11 @@ const TodoList = ({ sectionIndex, sectionFieldName }: TodoListProps) => {
               }}
             />
             <Tooltip describeChild title="Done">
-              <IconButton onClick={handleClickAway}>
+              <IconButton
+                ref={submitButtonRef}
+                onKeyDown={handleKeyDown}
+                onClick={handleClickAway}
+              >
                 <CheckCircle fontSize="large" />
               </IconButton>
             </Tooltip>

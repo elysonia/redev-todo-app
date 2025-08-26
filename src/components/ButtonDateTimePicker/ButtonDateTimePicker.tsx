@@ -11,18 +11,25 @@ import {
 } from "@mui/x-date-pickers/hooks";
 import { useValidation, validateDate } from "@mui/x-date-pickers/validation";
 import dayjs from "dayjs";
-import React, { useCallback, useMemo } from "react";
+import React, { forwardRef, useCallback, useMemo } from "react";
 
 import { dayjsformatter } from "@utils/dayjsUtils";
 
-const ButtonDateTimeField = (props: DateTimePickerFieldProps) => {
+const ButtonDateTimeField = forwardRef<
+  HTMLButtonElement,
+  DateTimePickerFieldProps
+>((props: DateTimePickerFieldProps, ref) => {
   const { internalProps, forwardedProps } = useSplitFieldProps(
     props,
     "date-time"
   );
 
   const pickerContext = usePickerContext();
-  const handleRef = useForkRef(pickerContext.triggerRef, pickerContext.rootRef);
+  const handleRef = useForkRef(
+    ref,
+    pickerContext.triggerRef,
+    pickerContext.rootRef
+  );
   const { hasValidationError } = useValidation({
     validator: validateDate,
     value: pickerContext.value,
@@ -46,7 +53,6 @@ const ButtonDateTimeField = (props: DateTimePickerFieldProps) => {
       pickerContext.setOpen((prev) => !prev);
     }
   }, [pickerContext]);
-
   return (
     <Button
       {...forwardedProps}
@@ -62,15 +68,26 @@ const ButtonDateTimeField = (props: DateTimePickerFieldProps) => {
       <Alarm fontSize="small" />
     </Button>
   );
-};
+});
 
-const ButtonFieldDateTimePicker = (props: MobileDateTimePickerProps) => {
+const ButtonFieldDateTimePicker = forwardRef<
+  HTMLButtonElement,
+  MobileDateTimePickerProps
+>((props: MobileDateTimePickerProps, ref) => {
   return (
     <MobileDateTimePicker
       {...props}
       slots={{ ...props.slots, field: ButtonDateTimeField }}
+      slotProps={{
+        ...props.slotProps,
+
+        field: {
+          ref,
+          ...(props?.slotProps?.field || {}),
+        },
+      }}
     />
   );
-};
+});
 
 export default React.memo(ButtonFieldDateTimePicker);
