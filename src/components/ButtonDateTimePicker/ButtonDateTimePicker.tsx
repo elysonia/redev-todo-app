@@ -18,7 +18,7 @@ import { dayjsformatter } from "@utils/dayjsUtils";
 const ButtonDateTimeField = forwardRef<
   HTMLButtonElement,
   DateTimePickerFieldProps
->((props: DateTimePickerFieldProps, ref) => {
+>(function ButtonDateTimeField(props: DateTimePickerFieldProps, ref) {
   const { internalProps, forwardedProps } = useSplitFieldProps(
     props,
     "date-time"
@@ -73,7 +73,7 @@ const ButtonDateTimeField = forwardRef<
 const ButtonFieldDateTimePicker = forwardRef<
   HTMLButtonElement,
   MobileDateTimePickerProps
->((props: MobileDateTimePickerProps, ref) => {
+>(function ButtonFieldDateTimePicker(props: MobileDateTimePickerProps, ref) {
   return (
     <MobileDateTimePicker
       {...props}
