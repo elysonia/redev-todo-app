@@ -144,6 +144,7 @@ const TodoList = forwardRef<HTMLDivElement, TodoListProps>(function TodoList(
     (event: React.KeyboardEvent<HTMLDivElement>) => {
       console.log("handleselectsection");
       if (event.key === KeyboardEnum.KeyEnum.enter) {
+        if (isActiveFieldArray) return;
         /* Prevent adding a newline to the header input */
         event.preventDefault();
         setSectionFieldArrayName(sectionFieldName);
@@ -151,6 +152,7 @@ const TodoList = forwardRef<HTMLDivElement, TodoListProps>(function TodoList(
         return;
       }
       if (event.key === KeyboardEnum.KeyEnum.escape) {
+        if (!isActiveFieldArray) return;
         /* Prevent adding a newline to the header input */
         event.preventDefault();
         setSectionFieldArrayName("");
@@ -158,7 +160,13 @@ const TodoList = forwardRef<HTMLDivElement, TodoListProps>(function TodoList(
         return;
       }
     },
-    [sectionFieldName, headerInputFieldName, setFocus, setSectionFieldArrayName]
+    [
+      sectionFieldName,
+      headerInputFieldName,
+      isActiveFieldArray,
+      setFocus,
+      setSectionFieldArrayName,
+    ]
   );
 
   /* If the user sets a new reminder, reset isReminderExpired. */
@@ -177,6 +185,7 @@ const TodoList = forwardRef<HTMLDivElement, TodoListProps>(function TodoList(
         HTMLInputElement | HTMLDivElement | HTMLButtonElement
       >
     ) => {
+      /* If tab key is pressed, switch to and between the action buttons. */
       if (event.key === KeyboardEnum.KeyEnum.tab) {
         event.preventDefault();
         if (event.target === submitButtonRef.current) {
@@ -195,6 +204,13 @@ const TodoList = forwardRef<HTMLDivElement, TodoListProps>(function TodoList(
           });
           return;
         }
+
+        setFocusedTextInputField({
+          fieldName: reminderDateFieldName as ObjectInputFieldName,
+          selectionStart: null,
+        });
+        setFocus(reminderDateFieldName);
+        return;
       }
       if (event.key === "ArrowUp") {
         event.preventDefault();
