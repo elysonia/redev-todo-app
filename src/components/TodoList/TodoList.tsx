@@ -3,7 +3,7 @@ import { ClickAwayListener, IconButton, List, Tooltip } from "@mui/material";
 import clsx from "clsx";
 import dayjs from "dayjs";
 import { isEmpty, uniqueId } from "lodash";
-import { useCallback, useEffect, useMemo, useRef } from "react";
+import { forwardRef, useCallback, useEffect, useMemo, useRef } from "react";
 import {
   Controller,
   useFieldArray,
@@ -29,7 +29,12 @@ type TodoListProps = {
   sectionFieldName: `todoSections.${number}`;
 };
 
-const TodoList = ({ sectionIndex, sectionFieldName }: TodoListProps) => {
+const TodoList = forwardRef<HTMLDivElement, TodoListProps>(function TodoList(
+  props: TodoListProps,
+  ref
+) {
+  const { sectionIndex, sectionFieldName } = props;
+
   const fieldName = `todoSections.${sectionIndex}.list`;
   const reminderDateFieldName = `todoSections.${sectionIndex}.reminderDateTime`;
   const submitButtonRef = useRef<HTMLButtonElement>(null);
@@ -48,6 +53,8 @@ const TodoList = ({ sectionIndex, sectionFieldName }: TodoListProps) => {
     name: fieldName,
   });
   const { fields } = listFieldArrayMethods;
+  const headerInputFieldName = `${sectionFieldName}.name` as TextInputFieldName;
+
   const isReminderExpired = useWatch({
     control,
     name: `${sectionFieldName}.isReminderExpired`,
@@ -131,6 +138,27 @@ const TodoList = ({ sectionIndex, sectionFieldName }: TodoListProps) => {
       setSectionFieldArrayName(sectionFieldName);
     },
     [isActiveFieldArray, sectionFieldName, setSectionFieldArrayName]
+  );
+
+  const handleSelectSection = useCallback(
+    (event: React.KeyboardEvent<HTMLDivElement>) => {
+      console.log("handleselectsection");
+      if (event.key === KeyboardEnum.KeyEnum.enter) {
+        /* Prevent adding a newline to the header input */
+        event.preventDefault();
+        setSectionFieldArrayName(sectionFieldName);
+        setFocus(headerInputFieldName);
+        return;
+      }
+      if (event.key === KeyboardEnum.KeyEnum.escape) {
+        /* Prevent adding a newline to the header input */
+        event.preventDefault();
+        setSectionFieldArrayName("");
+        setFocus(sectionFieldName);
+        return;
+      }
+    },
+    [sectionFieldName, headerInputFieldName, setFocus, setSectionFieldArrayName]
   );
 
   /* If the user sets a new reminder, reset isReminderExpired. */
@@ -225,7 +253,7 @@ const TodoList = ({ sectionIndex, sectionFieldName }: TodoListProps) => {
     setFocus,
     getValues,
   ]);
-
+  console.log({ "todolist isActiveFieldArray": isActiveFieldArray });
   return (
     <ClickAwayListener
       key={sectionIndex}
@@ -234,15 +262,17 @@ const TodoList = ({ sectionIndex, sectionFieldName }: TodoListProps) => {
       onClickAway={handleClickAway}
     >
       <div
+        ref={ref}
+        tabIndex={0}
         className={clsx(styles.listContainer, {
           [styles.isOverdue]: isReminderExpired,
         })}
+        onKeyDown={handleSelectSection}
       >
         {shouldShowHeader && (
           <TodoListHeader
             isActiveFieldArray={isActiveFieldArray}
             sectionFieldName={sectionFieldName}
-            onSetSectionActive={handleSetSectionActive}
           />
         )}
 
@@ -257,7 +287,6 @@ const TodoList = ({ sectionIndex, sectionFieldName }: TodoListProps) => {
               listFieldArrayMethods={listFieldArrayMethods}
               shouldShowHeader={shouldShowHeader}
               onKeyDown={handleKeyDown}
-              onSetSectionActive={handleSetSectionActive}
             />
           ))}
         </List>
@@ -283,6 +312,7 @@ const TodoList = ({ sectionIndex, sectionFieldName }: TodoListProps) => {
                         actions: ["clear", "cancel", "nextOrAccept"],
                       },
                       field: {
+                        tabIndex: isActiveFieldArray ? 0 : -1,
                         onKeyDown: handleKeyDown,
                       },
                     }}
@@ -297,6 +327,7 @@ const TodoList = ({ sectionIndex, sectionFieldName }: TodoListProps) => {
             <Tooltip describeChild title="Done">
               <IconButton
                 ref={submitButtonRef}
+                tabIndex={isActiveFieldArray ? 0 : -1}
                 onKeyDown={handleKeyDown}
                 onClick={handleClickAway}
               >
@@ -308,6 +339,6 @@ const TodoList = ({ sectionIndex, sectionFieldName }: TodoListProps) => {
       </div>
     </ClickAwayListener>
   );
-};
+});
 
 export default TodoList;

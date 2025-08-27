@@ -28,7 +28,6 @@ type TodoItemProps = {
   shouldShowHeader: boolean;
   listFieldArrayMethods: UseFieldArrayReturn;
   onKeyDown: (event: React.KeyboardEvent<HTMLInputElement>) => void;
-  onSetSectionActive: (nextFocusedFieldName?: string) => void;
 };
 
 const TodoItem = ({
@@ -39,7 +38,6 @@ const TodoItem = ({
   sectionFieldName,
   listFieldArrayMethods,
   onKeyDown,
-  onSetSectionActive,
 }: TodoItemProps) => {
   const {
     sectionFieldArrayName,
@@ -276,6 +274,7 @@ const TodoItem = ({
 
   const handleKeyDown = useCallback(
     (event: React.KeyboardEvent<HTMLInputElement>) => {
+      if (!isActiveFieldArray) return;
       switch (event.key) {
         case KeyboardEnum.KeyEnum.tab:
           onKeyDown(event);
@@ -292,7 +291,13 @@ const TodoItem = ({
           break;
       }
     },
-    [handleEnterKey, handleArrowKey, handleBackspaceKey, onKeyDown]
+    [
+      handleEnterKey,
+      handleArrowKey,
+      handleBackspaceKey,
+      onKeyDown,
+      isActiveFieldArray,
+    ]
   );
 
   const handleChecked = useCallback(
@@ -383,10 +388,8 @@ const TodoItem = ({
         cursorLocation,
         "forward"
       );
-
-      onSetSectionActive(fieldName);
     },
-    [fieldName, focusedTextInputField, onSetSectionActive]
+    [fieldName, focusedTextInputField]
   );
 
   const handleBlur = useCallback(() => {
@@ -402,6 +405,11 @@ const TodoItem = ({
           render={({ field: { value, onChange } }) => {
             return (
               <Checkbox
+                slotProps={{
+                  input: {
+                    tabIndex: isActiveFieldArray ? 0 : -1,
+                  },
+                }}
                 disabled={isActiveFieldArray}
                 checked={value}
                 onChange={(event) => {
@@ -428,6 +436,11 @@ const TodoItem = ({
                 className={clsx(styles.item, {
                   [styles.completed]: isCompleted,
                 })}
+                slotProps={{
+                  input: {
+                    tabIndex: isActiveFieldArray ? 0 : -1,
+                  },
+                }}
                 value={value}
                 disableUnderline
                 multiline

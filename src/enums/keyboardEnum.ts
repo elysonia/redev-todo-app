@@ -4,4 +4,5 @@ export enum KeyEnum {
   arrowDown = "ArrowDown",
   backspace = "Backspace",
   tab = "Tab",
+  escape = "Escape",
 }

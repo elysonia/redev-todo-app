@@ -13,13 +13,11 @@ import styles from "./todoListHeader.module.css";
 type TodoListHeaderProps = {
   isActiveFieldArray: boolean;
   sectionFieldName: string;
-  onSetSectionActive: (nextFocusedFieldName?: string) => void;
 };
 
 const TodoListHeader = ({
   isActiveFieldArray,
   sectionFieldName,
-  onSetSectionActive,
 }: TodoListHeaderProps) => {
   const inputRef = useRef<HTMLTextAreaElement>(null);
   const fieldName = `${sectionFieldName}.name` as TextInputFieldName;
@@ -41,6 +39,8 @@ const TodoListHeader = ({
 
   const handleKeyDown = useCallback(
     (event: React.KeyboardEvent<HTMLInputElement>) => {
+      if (!isActiveFieldArray) return;
+
       const shouldFocusOnFirstSubtask =
         event.key === "ArrowDown" &&
         inputRef.current?.selectionStart === inputRef?.current?.textLength;
@@ -56,7 +56,7 @@ const TodoListHeader = ({
         });
       }
     },
-    [sectionFieldName, setFocusedTextInputField]
+    [sectionFieldName, isActiveFieldArray, setFocusedTextInputField]
   );
 
   const handleFocus = useCallback(
@@ -82,10 +82,8 @@ const TodoListHeader = ({
         cursorLocation,
         "forward"
       );
-
-      onSetSectionActive(sectionFieldName);
     },
-    [fieldName, sectionFieldName, focusedTextInputField, onSetSectionActive]
+    [fieldName, sectionFieldName, focusedTextInputField]
   );
 
   const handleChecked = useCallback(
@@ -109,6 +107,8 @@ const TodoListHeader = ({
     [getValues, setValue, sectionFieldName, onSubmit, setSnackbar]
   );
 
+  console.log({ isActiveFieldArray });
+
   return (
     <div
       className={clsx(styles.listHeaderContainer, {
@@ -123,6 +123,11 @@ const TodoListHeader = ({
             render={({ field: { value, onChange } }) => {
               return (
                 <Checkbox
+                  slotProps={{
+                    input: {
+                      tabIndex: isActiveFieldArray ? 0 : -1,
+                    },
+                  }}
                   checked={value}
                   onChange={(event) => {
                     onChange(event);
@@ -139,6 +144,11 @@ const TodoListHeader = ({
           render={({ field: { ref: refCallback, value, onChange } }) => {
             return (
               <Input
+                slotProps={{
+                  input: {
+                    tabIndex: isActiveFieldArray ? 0 : -1,
+                  },
+                }}
                 inputRef={(ref) => {
                   /* Allow using RHF functions that need refs on this component. */
                   refCallback(ref);
