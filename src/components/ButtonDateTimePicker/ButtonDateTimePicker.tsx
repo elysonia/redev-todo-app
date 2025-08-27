@@ -14,6 +14,7 @@ import dayjs from "dayjs";
 import React, { forwardRef, useCallback, useMemo } from "react";
 
 import { dayjsformatter } from "@utils/dayjsUtils";
+import { HTMLDivButtonElement } from "types";
 
 const ButtonDateTimeField = forwardRef<
   HTMLButtonElement,
@@ -71,7 +72,7 @@ const ButtonDateTimeField = forwardRef<
 });
 
 const ButtonFieldDateTimePicker = forwardRef<
-  HTMLButtonElement,
+  HTMLDivButtonElement,
   MobileDateTimePickerProps
 >(function ButtonFieldDateTimePicker(props: MobileDateTimePickerProps, ref) {
   return (

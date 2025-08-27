@@ -15,7 +15,11 @@ import ButtonFieldDateTimePicker from "@components/ButtonDateTimePicker";
 import TodoItem from "@components/TodoItem";
 import TodoListHeader from "@components/TodoListHeader";
 import { useTodoContext } from "@providers/TodoProvider/TodoProvider";
-import { TodoItem as TodoItemType, TodoSection } from "types";
+import {
+  HTMLDivButtonElement,
+  TodoItem as TodoItemType,
+  TodoSection,
+} from "types";
 import { ObjectInputFieldName, TextInputFieldName } from "types/todo";
 import styles from "./todoList.module.css";
 
@@ -28,7 +32,7 @@ const TodoList = ({ sectionIndex, sectionFieldName }: TodoListProps) => {
   const fieldName = `todoSections.${sectionIndex}.list`;
   const reminderDateFieldName = `todoSections.${sectionIndex}.reminderDateTime`;
   const submitButtonRef = useRef<HTMLButtonElement>(null);
-  const reminderDateTimeRef = useRef<HTMLButtonElement>(null);
+  const reminderDateTimeRef = useRef<HTMLDivButtonElement>(null);
   const {
     focusedTextInputField,
     sectionFieldArrayName,
