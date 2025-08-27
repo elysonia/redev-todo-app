@@ -277,6 +277,9 @@ const TodoItem = ({
   const handleKeyDown = useCallback(
     (event: React.KeyboardEvent<HTMLInputElement>) => {
       switch (event.key) {
+        case KeyboardEnum.KeyEnum.tab:
+          onKeyDown(event);
+          break;
         case KeyboardEnum.KeyEnum.enter:
           handleEnterKey(event);
           break;
@@ -289,7 +292,7 @@ const TodoItem = ({
           break;
       }
     },
-    [handleEnterKey, handleArrowKey, handleBackspaceKey]
+    [handleEnterKey, handleArrowKey, handleBackspaceKey, onKeyDown]
   );
 
   const handleChecked = useCallback(

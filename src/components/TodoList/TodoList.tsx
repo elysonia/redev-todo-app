@@ -15,6 +15,7 @@ import ButtonFieldDateTimePicker from "@components/ButtonDateTimePicker";
 import TodoItem from "@components/TodoItem";
 import TodoListHeader from "@components/TodoListHeader";
 import { useTodoContext } from "@providers/TodoProvider/TodoProvider";
+import { KeyboardEnum } from "enums";
 import {
   HTMLDivButtonElement,
   TodoItem as TodoItemType,
@@ -148,6 +149,25 @@ const TodoList = ({ sectionIndex, sectionFieldName }: TodoListProps) => {
         HTMLInputElement | HTMLDivElement | HTMLButtonElement
       >
     ) => {
+      if (event.key === KeyboardEnum.KeyEnum.tab) {
+        event.preventDefault();
+        if (event.target === submitButtonRef.current) {
+          setFocusedTextInputField({
+            fieldName: reminderDateFieldName as ObjectInputFieldName,
+            selectionStart: null,
+          });
+          setFocus(reminderDateFieldName);
+          return;
+        }
+        if (event.target === reminderDateTimeRef.current) {
+          submitButtonRef.current?.focus();
+          setFocusedTextInputField({
+            fieldName: "",
+            selectionStart: null,
+          });
+          return;
+        }
+      }
       if (event.key === "ArrowUp") {
         event.preventDefault();
         if (event.target === submitButtonRef.current) {
