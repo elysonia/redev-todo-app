@@ -25,6 +25,7 @@ const TodoListHeader = ({
   const {
     focusedTextInputField,
     setFocusedTextInputField,
+    setSectionFieldArrayName,
     setSnackbar,
     onSubmit,
   } = useTodoContext();
@@ -82,8 +83,15 @@ const TodoListHeader = ({
         cursorLocation,
         "forward"
       );
+
+      setSectionFieldArrayName(sectionFieldName as `todoSections.${number}`);
     },
-    [fieldName, sectionFieldName, focusedTextInputField]
+    [
+      fieldName,
+      sectionFieldName,
+      focusedTextInputField,
+      setSectionFieldArrayName,
+    ]
   );
 
   const handleChecked = useCallback(

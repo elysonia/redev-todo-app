@@ -43,6 +43,7 @@ const TodoItem = ({
     sectionFieldArrayName,
     focusedTextInputField,
     setFocusedTextInputField,
+    setSectionFieldArrayName,
     onSubmit,
     setSnackbar,
   } = useTodoContext();
@@ -388,8 +389,14 @@ const TodoItem = ({
         cursorLocation,
         "forward"
       );
+      setSectionFieldArrayName(sectionFieldName as `todoSections.${number}`);
     },
-    [fieldName, focusedTextInputField]
+    [
+      fieldName,
+      focusedTextInputField,
+      setSectionFieldArrayName,
+      sectionFieldName,
+    ]
   );
 
   const handleBlur = useCallback(() => {
