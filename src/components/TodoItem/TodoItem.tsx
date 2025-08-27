@@ -270,6 +270,7 @@ const TodoItem = ({
       listFieldName,
       sectionFieldName,
       setFocusedTextInputField,
+      onKeyDown,
     ]
   );
 
