@@ -64,10 +64,12 @@ const TodoListHeader = ({
     (event: FocusEvent<HTMLTextAreaElement>) => {
       if (!inputRef.current) return;
       const eventCursorLocation = event?.target?.selectionStart;
+
       const shouldFocusAtStartOrMiddle =
         focusedTextInputField.fieldName === fieldName &&
         !isNull(focusedTextInputField.selectionStart) &&
         focusedTextInputField.selectionStart >= 0;
+
       const shouldFocusAtEnd =
         !isNull(focusedTextInputField.selectionStart) &&
         focusedTextInputField.selectionStart < 0;
@@ -114,8 +116,6 @@ const TodoListHeader = ({
     },
     [getValues, setValue, sectionFieldName, onSubmit, setSnackbar]
   );
-
-  console.log({ isActiveFieldArray });
 
   return (
     <div

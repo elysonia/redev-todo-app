@@ -131,18 +131,8 @@ const TodoList = forwardRef<HTMLDivElement, TodoListProps>(function TodoList(
     setFocusedTextInputField,
   ]);
 
-  const handleSetSectionActive = useCallback(
-    (nextFocusedFieldName?: string) => {
-      if (isActiveFieldArray) return;
-
-      setSectionFieldArrayName(sectionFieldName);
-    },
-    [isActiveFieldArray, sectionFieldName, setSectionFieldArrayName]
-  );
-
   const handleSelectSection = useCallback(
     (event: React.KeyboardEvent<HTMLDivElement>) => {
-      console.log("handleselectsection");
       if (event.key === KeyboardEnum.KeyEnum.enter) {
         if (isActiveFieldArray) return;
         /* Prevent adding a newline to the header input */
@@ -153,7 +143,6 @@ const TodoList = forwardRef<HTMLDivElement, TodoListProps>(function TodoList(
       }
       if (event.key === KeyboardEnum.KeyEnum.escape) {
         if (!isActiveFieldArray) return;
-        /* Prevent adding a newline to the header input */
         event.preventDefault();
         setSectionFieldArrayName("");
         setFocus(sectionFieldName);
@@ -269,7 +258,7 @@ const TodoList = forwardRef<HTMLDivElement, TodoListProps>(function TodoList(
     setFocus,
     getValues,
   ]);
-  console.log({ "todolist isActiveFieldArray": isActiveFieldArray });
+
   return (
     <ClickAwayListener
       key={sectionIndex}
