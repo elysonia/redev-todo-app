@@ -10,6 +10,7 @@ import {
 
 import ReminderIndicator from "@components/ReminderIndicator";
 import { useTodoContext } from "@providers/TodoProvider/TodoProvider";
+import { KeyboardEnum } from "enums";
 import { useRefCallback } from "hooks";
 import { isNull } from "lodash";
 import { TodoSection } from "types";
@@ -102,11 +103,13 @@ const ListHeaderCheckbox = (props: ListHeaderCheckboxProps) => {
 type TodoListHeaderProps = {
   isActiveFieldArray: boolean;
   sectionFieldName: string;
+  onKeyDown: (event: React.KeyboardEvent<HTMLInputElement>) => void;
 };
 
 const TodoListHeader = ({
   isActiveFieldArray,
   sectionFieldName,
+  onKeyDown,
 }: TodoListHeaderProps) => {
   const fieldName = `${sectionFieldName}.name` as TextInputFieldName;
   const checkboxFieldName = `${sectionFieldName}.isCompleted`;
@@ -145,6 +148,10 @@ const TodoListHeader = ({
   const handleKeyDown = useCallback(
     (event: React.KeyboardEvent<HTMLInputElement>) => {
       if (!isActiveFieldArray) return;
+      if (event.key === KeyboardEnum.KeyEnum.tab) {
+        onKeyDown(event);
+        return;
+      }
       const target = event.target as HTMLTextAreaElement;
       const inputState = getInputState(target);
 
