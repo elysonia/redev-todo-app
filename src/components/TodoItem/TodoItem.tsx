@@ -28,7 +28,7 @@ type ItemInputProps = {
   value: string;
   onBlur: () => void;
   onFocus: (event: FocusEvent<HTMLTextAreaElement>) => void;
-  onChange: (...event: any[]) => void;
+  onChange: (event: ChangeEvent<HTMLTextAreaElement>) => void;
   onKeyDown: (event: React.KeyboardEvent<HTMLInputElement>) => void;
 };
 
@@ -82,7 +82,7 @@ type ItemCheckboxProps = {
   value: boolean;
   onBlur?: () => void;
   onFocus?: (event: FocusEvent<HTMLInputElement>) => void;
-  onChange: (...event: any[]) => void;
+  onChange: (event: ChangeEvent<HTMLInputElement>) => void;
   onKeyDown?: (event: React.KeyboardEvent<HTMLInputElement>) => void;
   onChecked: (checked: boolean) => void;
 };
@@ -99,7 +99,7 @@ const ItemCheckbox = (props: ItemCheckboxProps) => {
 
   const handleChange = useCallback(
     (event: ChangeEvent<HTMLInputElement>) => {
-      onChange(event.target.checked);
+      onChange(event);
       onChecked(event.target.checked);
     },
     [onChange, onChecked]
