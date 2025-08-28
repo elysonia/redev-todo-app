@@ -1,30 +1,35 @@
 import { Checkbox, Input } from "@mui/material";
 import clsx from "clsx";
-import { useCallback, useEffect, useRef } from "react";
+import { FocusEvent, useCallback, useRef } from "react";
 import { Controller, useFormContext, useWatch } from "react-hook-form";
 
 import ReminderIndicator from "@components/ReminderIndicator";
 import { useTodoContext } from "@providers/TodoProvider/TodoProvider";
+import { isNull } from "lodash";
 import { TodoSection } from "types";
+import { TextInputFieldName } from "types/todo";
 import styles from "./todoListHeader.module.css";
 
 type TodoListHeaderProps = {
   isActiveFieldArray: boolean;
   sectionFieldName: string;
-  onSetSectionActive: (nextFocusedFieldName?: string) => void;
 };
 
 const TodoListHeader = ({
   isActiveFieldArray,
   sectionFieldName,
-  onSetSectionActive,
 }: TodoListHeaderProps) => {
   const inputRef = useRef<HTMLTextAreaElement>(null);
-  const fieldName = `${sectionFieldName}.name`;
+  const fieldName = `${sectionFieldName}.name` as TextInputFieldName;
   const checkboxFieldName = `${sectionFieldName}.isCompleted`;
-  const { focusedFieldName, setFocusedFieldName, setSnackbar, onSubmit } =
-    useTodoContext();
-  const { control, setFocus, setValue, getValues } = useFormContext();
+  const {
+    focusedTextInputField,
+    setFocusedTextInputField,
+    setSectionFieldArrayName,
+    setSnackbar,
+    onSubmit,
+  } = useTodoContext();
+  const { control, setValue, getValues } = useFormContext();
 
   const isCompleted = useWatch({
     control,
@@ -33,52 +38,84 @@ const TodoListHeader = ({
 
   const shouldShowCheckbox = !isActiveFieldArray || isCompleted;
 
-  const handleFocus = useCallback(() => {
-    if (!inputRef.current) return;
-    const cursorLocation = inputRef.current.textLength;
-    inputRef.current.setSelectionRange(
-      cursorLocation,
-      cursorLocation,
-      "forward"
-    );
+  const handleKeyDown = useCallback(
+    (event: React.KeyboardEvent<HTMLInputElement>) => {
+      if (!isActiveFieldArray) return;
 
-    /* Record the field name so we can re-focus to it upon re-render on save. */
-    setFocusedFieldName(fieldName);
-    onSetSectionActive(fieldName);
-  }, [setFocusedFieldName, fieldName, onSetSectionActive]);
+      const shouldFocusOnFirstSubtask =
+        event.key === "ArrowDown" &&
+        inputRef.current?.selectionStart === inputRef?.current?.textLength;
+
+      if (shouldFocusOnFirstSubtask) {
+        event.preventDefault();
+        const nextFieldName =
+          `${sectionFieldName}.list.0.text` as TextInputFieldName;
+
+        setFocusedTextInputField({
+          fieldName: nextFieldName,
+          selectionStart: -1,
+        });
+      }
+    },
+    [sectionFieldName, isActiveFieldArray, setFocusedTextInputField]
+  );
+
+  const handleFocus = useCallback(
+    (event: FocusEvent<HTMLTextAreaElement>) => {
+      if (!inputRef.current) return;
+      const eventCursorLocation = event?.target?.selectionStart;
+
+      const shouldFocusAtStartOrMiddle =
+        focusedTextInputField.fieldName === fieldName &&
+        !isNull(focusedTextInputField.selectionStart) &&
+        focusedTextInputField.selectionStart >= 0;
+
+      const shouldFocusAtEnd =
+        !isNull(focusedTextInputField.selectionStart) &&
+        focusedTextInputField.selectionStart < 0;
+
+      const cursorLocation = shouldFocusAtEnd
+        ? inputRef.current.textLength
+        : shouldFocusAtStartOrMiddle
+        ? focusedTextInputField.selectionStart
+        : eventCursorLocation;
+
+      inputRef.current.setSelectionRange(
+        cursorLocation,
+        cursorLocation,
+        "forward"
+      );
+
+      setSectionFieldArrayName(sectionFieldName as `todoSections.${number}`);
+    },
+    [
+      fieldName,
+      sectionFieldName,
+      focusedTextInputField,
+      setSectionFieldArrayName,
+    ]
+  );
 
   const handleChecked = useCallback(
     (isChecked: boolean) => {
-      if (isChecked) {
-        setTimeout(() => {
-          const todoSections = getValues("todoSections");
-          const newTodoSections = todoSections.filter(
-            (section: TodoSection) => {
-              return !section.isCompleted;
-            }
-          );
-          setValue("todoSections", newTodoSections);
-          onSubmit();
-          setSnackbar({
-            open: true,
-            message: "Task completed",
-          });
-        }, 500);
-      }
+      if (!isChecked) return;
+      /* Delay the function for 3 ms so the feedback for the delete action doesn't feel so sudden. */
+      setTimeout(() => {
+        const todoSections = getValues("todoSections");
+        const currentSection = getValues(sectionFieldName);
+        const newTodoSections = todoSections.filter((section: TodoSection) => {
+          return section.id !== currentSection.id;
+        });
+        setValue("todoSections", newTodoSections);
+        onSubmit();
+        setSnackbar({
+          open: true,
+          message: "Task completed",
+        });
+      }, 300);
     },
-    [getValues, setValue, onSubmit, setSnackbar]
+    [getValues, setValue, sectionFieldName, onSubmit, setSnackbar]
   );
-
-  useEffect(() => {
-    handleChecked(isCompleted);
-  }, [isCompleted, handleChecked]);
-
-  useEffect(() => {
-    /* Prevent losing focus on re-render due to data updates from saving. */
-    if (focusedFieldName === fieldName) {
-      setFocus(fieldName);
-    }
-  }, [focusedFieldName, fieldName, setFocus]);
 
   return (
     <div
@@ -92,7 +129,20 @@ const TodoListHeader = ({
             control={control}
             name={checkboxFieldName}
             render={({ field: { value, onChange } }) => {
-              return <Checkbox checked={value} onChange={onChange} />;
+              return (
+                <Checkbox
+                  slotProps={{
+                    input: {
+                      tabIndex: isActiveFieldArray ? 0 : -1,
+                    },
+                  }}
+                  checked={value}
+                  onChange={(event) => {
+                    onChange(event);
+                    handleChecked(event.target.checked);
+                  }}
+                />
+              );
             }}
           />
         )}
@@ -102,6 +152,11 @@ const TodoListHeader = ({
           render={({ field: { ref: refCallback, value, onChange } }) => {
             return (
               <Input
+                slotProps={{
+                  input: {
+                    tabIndex: isActiveFieldArray ? 0 : -1,
+                  },
+                }}
                 inputRef={(ref) => {
                   /* Allow using RHF functions that need refs on this component. */
                   refCallback(ref);
@@ -117,6 +172,7 @@ const TodoListHeader = ({
                 multiline
                 onChange={onChange}
                 onFocus={handleFocus}
+                onKeyDown={handleKeyDown}
               />
             );
           }}

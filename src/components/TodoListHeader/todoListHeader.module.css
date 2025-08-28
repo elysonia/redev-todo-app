@@ -27,6 +27,9 @@
 
 .headerInput {
   width: 100%;
+}
+
+.headerInput textarea {
   font-weight: 600;
 }
 

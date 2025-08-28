@@ -3,7 +3,7 @@ import { ClickAwayListener, IconButton, List, Tooltip } from "@mui/material";
 import clsx from "clsx";
 import dayjs from "dayjs";
 import { isEmpty, uniqueId } from "lodash";
-import { useCallback, useEffect, useMemo } from "react";
+import { forwardRef, useCallback, useEffect, useMemo, useRef } from "react";
 import {
   Controller,
   useFieldArray,
@@ -15,7 +15,13 @@ import ButtonFieldDateTimePicker from "@components/ButtonDateTimePicker";
 import TodoItem from "@components/TodoItem";
 import TodoListHeader from "@components/TodoListHeader";
 import { useTodoContext } from "@providers/TodoProvider/TodoProvider";
-import { TodoItem as TodoItemType, TodoSection } from "types";
+import { KeyboardEnum } from "enums";
+import {
+  HTMLDivButtonElement,
+  TodoItem as TodoItemType,
+  TodoSection,
+} from "types";
+import { ObjectInputFieldName, TextInputFieldName } from "types/todo";
 import styles from "./todoList.module.css";
 
 type TodoListProps = {
@@ -23,15 +29,22 @@ type TodoListProps = {
   sectionFieldName: `todoSections.${number}`;
 };
 
-const TodoList = ({ sectionIndex, sectionFieldName }: TodoListProps) => {
+const TodoList = forwardRef<HTMLDivElement, TodoListProps>(function TodoList(
+  props: TodoListProps,
+  ref
+) {
+  const { sectionIndex, sectionFieldName } = props;
+
   const fieldName = `todoSections.${sectionIndex}.list`;
   const reminderDateFieldName = `todoSections.${sectionIndex}.reminderDateTime`;
+  const submitButtonRef = useRef<HTMLButtonElement>(null);
+  const reminderDateTimeRef = useRef<HTMLDivButtonElement>(null);
   const {
-    focusedFieldName,
+    focusedTextInputField,
     sectionFieldArrayName,
     onSubmit,
     setSnackbar,
-    setFocusedFieldName,
+    setFocusedTextInputField,
     setSectionFieldArrayName,
   } = useTodoContext();
   const { control, getValues, setFocus, setValue } = useFormContext();
@@ -40,6 +53,8 @@ const TodoList = ({ sectionIndex, sectionFieldName }: TodoListProps) => {
     name: fieldName,
   });
   const { fields } = listFieldArrayMethods;
+  const headerInputFieldName = `${sectionFieldName}.name` as TextInputFieldName;
+
   const isReminderExpired = useWatch({
     control,
     name: `${sectionFieldName}.isReminderExpired`,
@@ -98,7 +113,10 @@ const TodoList = ({ sectionIndex, sectionFieldName }: TodoListProps) => {
     }
 
     setSectionFieldArrayName("");
-    setFocusedFieldName("");
+    setFocusedTextInputField({
+      fieldName: "",
+      selectionStart: null,
+    });
     onSubmit();
     setSnackbar({ open: true, message: `Tasks saved` });
   }, [
@@ -110,34 +128,33 @@ const TodoList = ({ sectionIndex, sectionFieldName }: TodoListProps) => {
     setValue,
     onSubmit,
     sectionFieldName,
-    setFocusedFieldName,
+    setFocusedTextInputField,
   ]);
 
-  const handleSetSectionActive = useCallback(
-    (nextFocusedFieldName?: string) => {
-      if (isActiveFieldArray) return;
-      if (focusedFieldName) return;
-
-      if (nextFocusedFieldName) {
-        setFocus(nextFocusedFieldName);
-      } else {
-        const lastItemFieldName = `${fieldName}.${
-          getValues(fieldName).length - 1
-        }.text`;
-
-        setFocus(lastItemFieldName);
+  const handleSelectSection = useCallback(
+    (event: React.KeyboardEvent<HTMLDivElement>) => {
+      if (event.key === KeyboardEnum.KeyEnum.enter) {
+        if (isActiveFieldArray) return;
+        /* Prevent adding a newline to the header input */
+        event.preventDefault();
+        setSectionFieldArrayName(sectionFieldName);
+        setFocus(headerInputFieldName);
+        return;
       }
-
-      setSectionFieldArrayName(sectionFieldName);
+      if (event.key === KeyboardEnum.KeyEnum.escape) {
+        if (!isActiveFieldArray) return;
+        event.preventDefault();
+        setSectionFieldArrayName("");
+        setFocus(sectionFieldName);
+        return;
+      }
     },
     [
-      isActiveFieldArray,
       sectionFieldName,
-      focusedFieldName,
-      fieldName,
+      headerInputFieldName,
+      isActiveFieldArray,
       setFocus,
       setSectionFieldArrayName,
-      getValues,
     ]
   );
 
@@ -151,12 +168,96 @@ const TodoList = ({ sectionIndex, sectionFieldName }: TodoListProps) => {
     setValue(sectionFieldName, newTodoSection);
   }, [getValues, setValue, sectionFieldName]);
 
+  const handleKeyDown = useCallback(
+    (
+      event: React.KeyboardEvent<
+        HTMLInputElement | HTMLDivElement | HTMLButtonElement
+      >
+    ) => {
+      /* If tab key is pressed, switch to and between the action buttons. */
+      if (event.key === KeyboardEnum.KeyEnum.tab) {
+        event.preventDefault();
+        if (event.target === submitButtonRef.current) {
+          setFocusedTextInputField({
+            fieldName: reminderDateFieldName as ObjectInputFieldName,
+            selectionStart: null,
+          });
+          setFocus(reminderDateFieldName);
+          return;
+        }
+        if (event.target === reminderDateTimeRef.current) {
+          submitButtonRef.current?.focus();
+          setFocusedTextInputField({
+            fieldName: "",
+            selectionStart: null,
+          });
+          return;
+        }
+
+        setFocusedTextInputField({
+          fieldName: reminderDateFieldName as ObjectInputFieldName,
+          selectionStart: null,
+        });
+        setFocus(reminderDateFieldName);
+        return;
+      }
+      if (event.key === "ArrowUp") {
+        event.preventDefault();
+        if (event.target === submitButtonRef.current) {
+          setFocusedTextInputField({
+            fieldName: reminderDateFieldName as ObjectInputFieldName,
+            selectionStart: null,
+          });
+          setFocus(reminderDateFieldName);
+          return;
+        }
+        const lastItemIndex = getValues(fieldName).length - 1;
+        const lastItemFieldName =
+          `${fieldName}.${lastItemIndex}.text` as TextInputFieldName;
+        setFocusedTextInputField({
+          fieldName: lastItemFieldName,
+          selectionStart: -1,
+        });
+        return;
+      }
+      if (event.key === "ArrowDown") {
+        if (event.target === submitButtonRef.current) return;
+        event.preventDefault();
+        if (event.target === reminderDateTimeRef.current) {
+          submitButtonRef.current?.focus();
+          setFocusedTextInputField({
+            fieldName: "",
+            selectionStart: null,
+          });
+          return;
+        }
+        setFocusedTextInputField({
+          fieldName: reminderDateFieldName as ObjectInputFieldName,
+          selectionStart: null,
+        });
+      }
+    },
+    [
+      reminderDateFieldName,
+      fieldName,
+      setFocus,
+      getValues,
+      setFocusedTextInputField,
+    ]
+  );
+
   useEffect(() => {
     if (!isActiveFieldArray) return;
-    if (focusedFieldName) return;
+    if (focusedTextInputField.fieldName) return;
     const lastItemFieldName = `${fieldName}.${getValues(fieldName).length - 1}`;
     setFocus(lastItemFieldName);
-  }, [isActiveFieldArray, focusedFieldName, fieldName, setFocus, getValues]);
+  }, [
+    isActiveFieldArray,
+    focusedTextInputField,
+    fieldName,
+    setFocus,
+    getValues,
+  ]);
 
   return (
     <ClickAwayListener
@@ -166,15 +267,17 @@ const TodoList = ({ sectionIndex, sectionFieldName }: TodoListProps) => {
       onClickAway={handleClickAway}
     >
       <div
+        ref={ref}
+        tabIndex={0}
         className={clsx(styles.listContainer, {
           [styles.isOverdue]: isReminderExpired,
         })}
+        onKeyDown={handleSelectSection}
       >
         {shouldShowHeader && (
           <TodoListHeader
             isActiveFieldArray={isActiveFieldArray}
             sectionFieldName={sectionFieldName}
-            onSetSectionActive={handleSetSectionActive}
           />
         )}
 
@@ -188,7 +291,7 @@ const TodoList = ({ sectionIndex, sectionFieldName }: TodoListProps) => {
               listFieldName={fieldName}
               listFieldArrayMethods={listFieldArrayMethods}
               shouldShowHeader={shouldShowHeader}
-              onSetSectionActive={handleSetSectionActive}
+              onKeyDown={handleKeyDown}
             />
           ))}
         </List>
@@ -197,10 +300,14 @@ const TodoList = ({ sectionIndex, sectionFieldName }: TodoListProps) => {
             <Controller
               control={control}
               name={reminderDateFieldName}
-              render={({ field: { value, onChange } }) => {
+              render={({ field: { ref: refCallback, value, onChange } }) => {
                 return (
                   <ButtonFieldDateTimePicker
                     disablePast
+                    ref={(ref) => {
+                      refCallback(ref);
+                      reminderDateTimeRef.current = ref;
+                    }}
                     value={value ? dayjs(value) : value}
                     sx={{
                       textTransform: "capitalize",
@@ -208,6 +315,10 @@ const TodoList = ({ sectionIndex, sectionFieldName }: TodoListProps) => {
                     slotProps={{
                       actionBar: {
                         actions: ["clear", "cancel", "nextOrAccept"],
+                      },
+                      field: {
+                        tabIndex: isActiveFieldArray ? 0 : -1,
+                        onKeyDown: handleKeyDown,
                       },
                     }}
                     onChange={(event) => {
@@ -219,7 +330,12 @@ const TodoList = ({ sectionIndex, sectionFieldName }: TodoListProps) => {
               }}
             />
             <Tooltip describeChild title="Done">
-              <IconButton onClick={handleClickAway}>
+              <IconButton
+                ref={submitButtonRef}
+                tabIndex={isActiveFieldArray ? 0 : -1}
+                onKeyDown={handleKeyDown}
+                onClick={handleClickAway}
+              >
                 <CheckCircle fontSize="large" />
               </IconButton>
             </Tooltip>
@@ -228,6 +344,6 @@ const TodoList = ({ sectionIndex, sectionFieldName }: TodoListProps) => {
       </div>
     </ClickAwayListener>
   );
-};
+});
 
 export default TodoList;

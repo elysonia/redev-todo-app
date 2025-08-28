@@ -5,10 +5,17 @@ import { Controller, useFieldArray, useFormContext } from "react-hook-form";
 
 import TodoList from "@components/TodoList";
 import Toolbar from "@components/Toolbar";
+import { useTodoContext } from "@providers/TodoProvider/TodoProvider";
+import { KeyboardEnum } from "enums";
+import { useCallback } from "react";
 import styles from "./todoSections.module.css";
+
+const thisYear = new Date().getFullYear();
+const sectionFocusShortcuts = [KeyboardEnum.KeyEnum.tab];
 
 const TodoSections = () => {
   const methods = useFormContext();
+  const { sectionFieldArrayName } = useTodoContext();
   const { control } = methods;
   const backgroundImageUrl =
     "https://images.unsplash.com/photo-1686579809662-829e8374d0a8?q=80&w=2072&auto=format&fit=crop&ixlib=rb-4.1.0&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D";
@@ -18,8 +25,21 @@ const TodoSections = () => {
     name: "todoSections",
   });
 
-  const thisYear = new Date().getFullYear();
+  const { fields } = sectionFieldArrayMethods;
 
+  const handleListKeyDown = useCallback(
+    (event: React.KeyboardEvent<HTMLDivElement>) => {
+      if (sectionFieldArrayName) return;
+      if (!sectionFocusShortcuts.includes(event.key as KeyboardEnum.KeyEnum)) {
+        return;
+      }
+      const target = event.target as HTMLDivElement;
+      target.scrollIntoView(true);
+    },
+    [sectionFieldArrayName]
+  );
+
+  /* TODO: Minimize rerendering */
   return (
     <div
       className={styles.todosBackground}
@@ -28,16 +48,19 @@ const TodoSections = () => {
       }}
     >
       <Toolbar sectionFieldArrayMethods={sectionFieldArrayMethods} />
-      <div className={styles.sectionsContainer}>
-        {sectionFieldArrayMethods.fields.map((field, index) => {
+      <div className={styles.sectionsContainer} onKeyDown={handleListKeyDown}>
+        {fields.map((field, index) => {
           return (
             <Controller
               key={`${field.id}.${index}`}
               name={`todoSections.${index}`}
               control={control}
-              render={({ field: { name } }) => {
+              render={({ field: { ref: refCallback, name } }) => {
                 return (
                   <TodoList
+                    ref={(ref: HTMLDivElement) => {
+                      refCallback(ref);
+                    }}
                     key={field.id}
                     sectionIndex={index}
                     sectionFieldName={name}

@@ -49,3 +49,15 @@ A simple todo app based on my Redmi Note 10 Pro default Tasks App that I use fre
 - [Morning Joy Alarm Clock](https://pixabay.com/sound-effects/morning-joy-alarm-clock-20961/)
 - [Oversimplified Alarm Clock](https://pixabay.com/sound-effects/oversimplified-alarm-clock-113180/)
 - [Soft Plucks Alarm Clock](https://pixabay.com/sound-effects/soft-plucks-alarm-clock-120696/)
+
+## TODO
+
+- [ ] Task history
+- [/] Allow users to delete string characters between selectionStart and selectionEnd in input.
+- [ ] Notification for alarms that had gone off, by clicking them users can be redirected to the attached task.
+- [ ] Alarm queue where the next alarm is autoplayed.
+- [ ] Set up testing to prevent regression.
+- [ ] Set up CI/CD
+- [ ] Use TSDoc to comment on variables and functions
+- [ ] Improve accessibility (add aria- labels)
+- [ ] Virtualization and memoization to improve performance on large lists.
