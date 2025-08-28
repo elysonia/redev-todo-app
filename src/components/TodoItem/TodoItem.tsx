@@ -1,9 +1,10 @@
 import { Checkbox, Input } from "@mui/material";
 import clsx from "clsx";
 import { isEmpty, isNull, uniqueId } from "lodash";
-import { FocusEvent, useCallback, useRef } from "react";
+import { ChangeEvent, FocusEvent, forwardRef, useCallback } from "react";
 import {
   Controller,
+  RefCallBack,
   UseFieldArrayReturn,
   useFormContext,
   useWatch,
@@ -19,6 +20,105 @@ import { KeyboardEnum } from "enums";
 import { TodoItem as TodoItemType, TodoSection } from "types";
 import { FocusedTextInputField, TextInputFieldName } from "types/todo";
 import styles from "./todoItem.module.css";
+
+type ItemInputProps = {
+  refCallback: RefCallBack;
+  isCompleted: boolean;
+  isActiveFieldArray: boolean;
+  value: string;
+  onBlur: () => void;
+  onFocus: (event: FocusEvent<HTMLTextAreaElement>) => void;
+  onChange: (...event: any[]) => void;
+  onKeyDown: (event: React.KeyboardEvent<HTMLInputElement>) => void;
+};
+
+const ItemInput = forwardRef<HTMLTextAreaElement, ItemInputProps>(
+  function ItemInput(props: ItemInputProps, ref) {
+    const {
+      refCallback,
+      isCompleted,
+      isActiveFieldArray,
+      value,
+      onBlur,
+      onFocus,
+      onChange,
+      onKeyDown,
+    } = props;
+
+    const handleRefCallback = useCallback(
+      (inputRef: HTMLTextAreaElement) => {
+        refCallback(inputRef);
+      },
+      [refCallback]
+    );
+
+    return (
+      <Input
+        inputRef={handleRefCallback}
+        className={clsx(styles.item, {
+          [styles.completed]: isCompleted,
+        })}
+        slotProps={{
+          input: {
+            tabIndex: isActiveFieldArray ? 0 : -1,
+          },
+        }}
+        value={value}
+        disableUnderline
+        multiline
+        onBlur={onBlur}
+        onFocus={onFocus}
+        onChange={onChange}
+        onKeyDown={onKeyDown}
+      />
+    );
+  }
+);
+
+type ItemCheckboxProps = {
+  refCallback: RefCallBack;
+  isCompleted: boolean;
+  isActiveFieldArray: boolean;
+  value: boolean;
+  onBlur?: () => void;
+  onFocus?: (event: FocusEvent<HTMLInputElement>) => void;
+  onChange: (...event: any[]) => void;
+  onKeyDown?: (event: React.KeyboardEvent<HTMLInputElement>) => void;
+  onChecked: (checked: boolean) => void;
+};
+
+const ItemCheckbox = (props: ItemCheckboxProps) => {
+  const { isActiveFieldArray, value, refCallback, onChange, onChecked } = props;
+
+  const handleRefCallback = useCallback(
+    (inputRef: HTMLInputElement) => {
+      refCallback(inputRef);
+    },
+    [refCallback]
+  );
+
+  const handleChange = useCallback(
+    (event: ChangeEvent<HTMLInputElement>) => {
+      onChange(event.target.checked);
+      onChecked(event.target.checked);
+    },
+    [onChange, onChecked]
+  );
+
+  return (
+    <Checkbox
+      slotProps={{
+        input: {
+          ref: handleRefCallback,
+          tabIndex: isActiveFieldArray ? -1 : 0,
+        },
+      }}
+      disabled={isActiveFieldArray}
+      checked={value}
+      onChange={handleChange}
+    />
+  );
+};
 
 type TodoItemProps = {
   itemIndex: number;
@@ -50,14 +150,13 @@ const TodoItem = ({
   const fieldName = `${listFieldName}.${itemIndex}.text` as TextInputFieldName;
   const { control, setValue, getValues } = useFormContext();
   const { move, insert, remove } = listFieldArrayMethods;
-  const inputRef = useRef<HTMLTextAreaElement>(null);
   const checkBoxFieldName = `${listFieldName}.${itemIndex}.isCompleted`;
   const isCompleted = useWatch({ control, name: checkBoxFieldName });
 
   const isActiveFieldArray = sectionFieldArrayName === sectionFieldName;
 
-  const getInputState = () => {
-    if (!inputRef.current) {
+  const getInputState = (ref: HTMLTextAreaElement | null) => {
+    if (!ref) {
       return {
         value: "",
         selectionStart: 0,
@@ -66,15 +165,16 @@ const TodoItem = ({
     }
 
     return {
-      value: inputRef.current.value,
-      selectionStart: inputRef.current.selectionStart,
-      length: inputRef.current.value.length,
+      value: ref.value,
+      selectionStart: ref.selectionStart,
+      length: ref.value.length,
     };
   };
 
   const handleBackspaceKey = useCallback(
     (event: React.KeyboardEvent<HTMLInputElement>) => {
-      const inputState = getInputState();
+      const target = event.target as HTMLTextAreaElement;
+      const inputState = getInputState(target);
       const isCursorAtStart = inputState.selectionStart === 0;
       if (!isCursorAtStart) return;
 
@@ -132,7 +232,7 @@ const TodoItem = ({
       const shouldMergeWithPrevText = !isFirstItem;
       if (shouldMergeWithPrevText) {
         const newPrevItemText =
-          currentSection.list[prevItemIndex].text + inputRef?.current?.value;
+          currentSection.list[prevItemIndex].text + inputState.value;
         const prevItemLength = currentSection.list[prevItemIndex].text.length;
 
         setFocusedTextInputField({
@@ -156,7 +256,8 @@ const TodoItem = ({
 
   const handleEnterKey = useCallback(
     (event: React.KeyboardEvent<HTMLInputElement>) => {
-      const inputState = getInputState();
+      const target = event.target as HTMLTextAreaElement;
+      const inputState = getInputState(target);
       /* Prevent key press from adding an extra newline. */
       event.preventDefault();
       const nextItemIndex = itemIndex + 1;
@@ -193,7 +294,9 @@ const TodoItem = ({
 
   const handleArrowKey = useCallback(
     (event: React.KeyboardEvent<HTMLInputElement>) => {
-      const inputState = getInputState();
+      const target = event.target as HTMLTextAreaElement;
+      const inputState = getInputState(target);
+
       const nextItemIndex = itemIndex + 1;
       const prevItemIndex = itemIndex - 1;
       const currentSection = getValues(sectionFieldName);
@@ -364,8 +467,10 @@ const TodoItem = ({
 
   const handleFocus = useCallback(
     (event: FocusEvent<HTMLTextAreaElement>) => {
-      if (!inputRef.current) return;
-      const eventCursorLocation = event?.target?.selectionStart;
+      const target = event.target as HTMLTextAreaElement;
+      const inputState = getInputState(target);
+
+      const eventCursorLocation = inputState.selectionStart;
       const shouldFocusAtStartOrMiddle =
         focusedTextInputField.fieldName === fieldName &&
         !isNull(focusedTextInputField.selectionStart) &&
@@ -376,7 +481,7 @@ const TodoItem = ({
 
       const cursorLocation = (() => {
         if (shouldFocusAtEnd) {
-          return inputRef.current.value.length;
+          return inputState.value.length;
         }
         if (shouldFocusAtStartOrMiddle) {
           return focusedTextInputField.selectionStart;
@@ -384,11 +489,7 @@ const TodoItem = ({
         return eventCursorLocation;
       })();
 
-      inputRef.current.setSelectionRange(
-        cursorLocation,
-        cursorLocation,
-        "forward"
-      );
+      target.setSelectionRange(cursorLocation, cursorLocation, "forward");
       setSectionFieldArrayName(sectionFieldName as `todoSections.${number}`);
     },
     [
@@ -409,20 +510,15 @@ const TodoItem = ({
         <Controller
           control={control}
           name={checkBoxFieldName}
-          render={({ field: { value, onChange } }) => {
+          render={({ field: { ref: refCallback, value, onChange } }) => {
             return (
-              <Checkbox
-                slotProps={{
-                  input: {
-                    tabIndex: isActiveFieldArray ? 0 : -1,
-                  },
-                }}
-                disabled={isActiveFieldArray}
-                checked={value}
-                onChange={(event) => {
-                  onChange(event.target.checked);
-                  handleChecked(event.target.checked);
-                }}
+              <ItemCheckbox
+                value={value}
+                isCompleted={isCompleted}
+                isActiveFieldArray={isActiveFieldArray}
+                refCallback={refCallback}
+                onChange={onChange}
+                onChecked={handleChecked}
               />
             );
           }}
@@ -433,24 +529,11 @@ const TodoItem = ({
           name={fieldName}
           render={({ field: { ref: refCallback, value, onChange } }) => {
             return (
-              <Input
-                inputRef={(ref) => {
-                  /* Allow using RHF functions that need refs on this component. */
-                  refCallback(ref);
-                  /* Access the HTMLElement for more functionality. */
-                  inputRef.current = ref;
-                }}
-                className={clsx(styles.item, {
-                  [styles.completed]: isCompleted,
-                })}
-                slotProps={{
-                  input: {
-                    tabIndex: isActiveFieldArray ? 0 : -1,
-                  },
-                }}
+              <ItemInput
+                refCallback={refCallback}
+                isCompleted={isCompleted}
+                isActiveFieldArray={isActiveFieldArray}
                 value={value}
-                disableUnderline
-                multiline
                 onBlur={handleBlur}
                 onFocus={handleFocus}
                 onChange={onChange}

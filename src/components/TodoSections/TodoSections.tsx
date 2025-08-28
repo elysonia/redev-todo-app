@@ -58,9 +58,7 @@ const TodoSections = () => {
               render={({ field: { ref: refCallback, name } }) => {
                 return (
                   <TodoList
-                    ref={(ref: HTMLDivElement) => {
-                      refCallback(ref);
-                    }}
+                    refCallback={refCallback}
                     key={field.id}
                     sectionIndex={index}
                     sectionFieldName={name}

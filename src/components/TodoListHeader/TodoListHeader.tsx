@@ -1,7 +1,18 @@
 import { Checkbox, Input } from "@mui/material";
 import clsx from "clsx";
-import { FocusEvent, useCallback, useRef } from "react";
-import { Controller, useFormContext, useWatch } from "react-hook-form";
+import {
+  ChangeEvent,
+  FocusEvent,
+  forwardRef,
+  useCallback,
+  useRef,
+} from "react";
+import {
+  Controller,
+  RefCallBack,
+  useFormContext,
+  useWatch,
+} from "react-hook-form";
 
 import ReminderIndicator from "@components/ReminderIndicator";
 import { useTodoContext } from "@providers/TodoProvider/TodoProvider";
@@ -9,6 +20,103 @@ import { isNull } from "lodash";
 import { TodoSection } from "types";
 import { TextInputFieldName } from "types/todo";
 import styles from "./todoListHeader.module.css";
+
+type ListHeaderInputProps = {
+  refCallback: RefCallBack;
+  isCompleted: boolean;
+  isActiveFieldArray: boolean;
+  value: string;
+  onFocus: (event: FocusEvent<HTMLTextAreaElement>) => void;
+  onChange: (...event: any[]) => void;
+  onKeyDown: (event: React.KeyboardEvent<HTMLInputElement>) => void;
+};
+
+const ListHeaderInput = forwardRef<HTMLTextAreaElement, ListHeaderInputProps>(
+  function ListHeaderInput(props: ListHeaderInputProps, ref) {
+    const {
+      refCallback,
+      isCompleted,
+      isActiveFieldArray,
+      value,
+      onFocus,
+      onChange,
+      onKeyDown,
+    } = props;
+
+    const handleRefCallback = useCallback(
+      (inputRef: HTMLTextAreaElement) => {
+        refCallback(inputRef);
+      },
+      [refCallback]
+    );
+
+    return (
+      <Input
+        inputRef={handleRefCallback}
+        className={clsx(styles.headerInput, {
+          [styles.completed]: isCompleted,
+        })}
+        slotProps={{
+          input: {
+            tabIndex: isActiveFieldArray ? 0 : -1,
+          },
+        }}
+        value={value}
+        placeholder="Checklist for subtasks"
+        disableUnderline
+        multiline
+        onChange={onChange}
+        onFocus={onFocus}
+        onKeyDown={onKeyDown}
+      />
+    );
+  }
+);
+
+type ListHeaderCheckboxProps = {
+  refCallback: RefCallBack;
+  isCompleted: boolean;
+  isActiveFieldArray: boolean;
+  value: boolean;
+  onBlur?: () => void;
+  onFocus?: (event: FocusEvent<HTMLInputElement>) => void;
+  onChange: (...event: any[]) => void;
+  onKeyDown?: (event: React.KeyboardEvent<HTMLInputElement>) => void;
+  onChecked: (checked: boolean) => void;
+};
+
+const ListHeaderCheckbox = (props: ListHeaderCheckboxProps) => {
+  const { isActiveFieldArray, value, refCallback, onChange, onChecked } = props;
+
+  const handleRefCallback = useCallback(
+    (inputRef: HTMLInputElement) => {
+      refCallback(inputRef);
+    },
+    [refCallback]
+  );
+
+  const handleChange = useCallback(
+    (event: ChangeEvent<HTMLInputElement>) => {
+      onChange(event.target.checked);
+      onChecked(event.target.checked);
+    },
+    [onChange, onChecked]
+  );
+
+  return (
+    <Checkbox
+      slotProps={{
+        input: {
+          ref: handleRefCallback,
+          tabIndex: isActiveFieldArray ? -1 : 0,
+        },
+      }}
+      checked={value}
+      disabled={isActiveFieldArray}
+      onChange={handleChange}
+    />
+  );
+};
 
 type TodoListHeaderProps = {
   isActiveFieldArray: boolean;
@@ -128,19 +236,15 @@ const TodoListHeader = ({
           <Controller
             control={control}
             name={checkboxFieldName}
-            render={({ field: { value, onChange } }) => {
+            render={({ field: { ref: refCallback, value, onChange } }) => {
               return (
-                <Checkbox
-                  slotProps={{
-                    input: {
-                      tabIndex: isActiveFieldArray ? 0 : -1,
-                    },
-                  }}
-                  checked={value}
-                  onChange={(event) => {
-                    onChange(event);
-                    handleChecked(event.target.checked);
-                  }}
+                <ListHeaderCheckbox
+                  value={value}
+                  isCompleted={isCompleted}
+                  isActiveFieldArray={isActiveFieldArray}
+                  refCallback={refCallback}
+                  onChange={onChange}
+                  onChecked={handleChecked}
                 />
               );
             }}
@@ -151,27 +255,13 @@ const TodoListHeader = ({
           name={fieldName}
           render={({ field: { ref: refCallback, value, onChange } }) => {
             return (
-              <Input
-                slotProps={{
-                  input: {
-                    tabIndex: isActiveFieldArray ? 0 : -1,
-                  },
-                }}
-                inputRef={(ref) => {
-                  /* Allow using RHF functions that need refs on this component. */
-                  refCallback(ref);
-                  /* Access the HTMLElement for more functionality. */
-                  inputRef.current = ref;
-                }}
+              <ListHeaderInput
+                refCallback={refCallback}
+                isCompleted={isCompleted}
+                isActiveFieldArray={isActiveFieldArray}
                 value={value}
-                placeholder="Checklist for subtasks"
-                className={clsx(styles.headerInput, {
-                  [styles.completed]: isCompleted,
-                })}
-                disableUnderline
-                multiline
-                onChange={onChange}
                 onFocus={handleFocus}
+                onChange={onChange}
                 onKeyDown={handleKeyDown}
               />
             );

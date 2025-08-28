@@ -6,6 +6,7 @@ import { isEmpty, uniqueId } from "lodash";
 import { forwardRef, useCallback, useEffect, useMemo, useRef } from "react";
 import {
   Controller,
+  RefCallBack,
   useFieldArray,
   useFormContext,
   useWatch,
@@ -27,13 +28,14 @@ import styles from "./todoList.module.css";
 type TodoListProps = {
   sectionIndex: number;
   sectionFieldName: `todoSections.${number}`;
+  refCallback: RefCallBack;
 };
 
 const TodoList = forwardRef<HTMLDivElement, TodoListProps>(function TodoList(
   props: TodoListProps,
   ref
 ) {
-  const { sectionIndex, sectionFieldName } = props;
+  const { sectionIndex, sectionFieldName, refCallback } = props;
 
   const fieldName = `todoSections.${sectionIndex}.list`;
   const reminderDateFieldName = `todoSections.${sectionIndex}.reminderDateTime`;
@@ -246,6 +248,10 @@ const TodoList = forwardRef<HTMLDivElement, TodoListProps>(function TodoList(
     ]
   );
 
+  const handleRefCallback = useCallback(() => {
+    refCallback(ref);
+  }, [refCallback]);
+
   useEffect(() => {
     if (!isActiveFieldArray) return;
     if (focusedTextInputField.fieldName) return;
@@ -267,7 +273,7 @@ const TodoList = forwardRef<HTMLDivElement, TodoListProps>(function TodoList(
       onClickAway={handleClickAway}
     >
       <div
-        ref={ref}
+        ref={handleRefCallback}
         tabIndex={0}
         className={clsx(styles.listContainer, {
           [styles.isOverdue]: isReminderExpired,
