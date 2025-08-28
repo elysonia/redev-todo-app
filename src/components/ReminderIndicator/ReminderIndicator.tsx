@@ -4,6 +4,7 @@ import dayjs, { Dayjs } from "dayjs";
 import { useEffect, useMemo, useState } from "react";
 import { useFormContext, useWatch } from "react-hook-form";
 
+import { Tooltip } from "@mui/material";
 import { dayjsformatter } from "@utils/dayjsUtils";
 import styles from "./reminderIndicator.module.css";
 
@@ -47,14 +48,16 @@ const ReminderIndicator = ({
 
   if (!reminderText) return null;
   return (
-    <span
-      className={clsx(styles.reminderIndicator, {
-        [styles.isOverdue]: isReminderExpired,
-      })}
-    >
-      {reminderText}&nbsp;
-      <Alarm style={{ fontSize: "0.8rem" }} />
-    </span>
+    <Tooltip describeChild title={reminderText}>
+      <span
+        className={clsx(styles.reminderIndicator, {
+          [styles.isOverdue]: isReminderExpired,
+        })}
+      >
+        {reminderText}&nbsp;
+        <Alarm style={{ fontSize: "0.8rem" }} />
+      </span>
+    </Tooltip>
   );
 };
 

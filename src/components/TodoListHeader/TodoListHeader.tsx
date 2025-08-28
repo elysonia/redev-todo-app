@@ -1,4 +1,4 @@
-import { Checkbox, Input } from "@mui/material";
+import { Checkbox, Input, Tooltip } from "@mui/material";
 import clsx from "clsx";
 import { ChangeEvent, FocusEvent, forwardRef, useCallback } from "react";
 import {
@@ -239,14 +239,16 @@ const TodoListHeader = ({
             name={checkboxFieldName}
             render={({ field: { ref: refCallback, value, onChange } }) => {
               return (
-                <ListHeaderCheckbox
-                  value={value}
-                  isCompleted={isCompleted}
-                  isActiveFieldArray={isActiveFieldArray}
-                  refCallback={refCallback}
-                  onChange={onChange}
-                  onChecked={handleChecked}
-                />
+                <Tooltip describeChild title="Task checkbox">
+                  <ListHeaderCheckbox
+                    value={value}
+                    isCompleted={isCompleted}
+                    isActiveFieldArray={isActiveFieldArray}
+                    refCallback={refCallback}
+                    onChange={onChange}
+                    onChecked={handleChecked}
+                  />
+                </Tooltip>
               );
             }}
           />
@@ -256,15 +258,20 @@ const TodoListHeader = ({
           name={fieldName}
           render={({ field: { ref: refCallback, value, onChange } }) => {
             return (
-              <ListHeaderInput
-                refCallback={refCallback}
-                isCompleted={isCompleted}
-                isActiveFieldArray={isActiveFieldArray}
-                value={value}
-                onFocus={handleFocus}
-                onChange={onChange}
-                onKeyDown={handleKeyDown}
-              />
+              <Tooltip
+                describeChild
+                title={`Task name${value ? `: ${value}` : ""}`}
+              >
+                <ListHeaderInput
+                  refCallback={refCallback}
+                  isCompleted={isCompleted}
+                  isActiveFieldArray={isActiveFieldArray}
+                  value={value}
+                  onFocus={handleFocus}
+                  onChange={onChange}
+                  onKeyDown={handleKeyDown}
+                />
+              </Tooltip>
             );
           }}
         />

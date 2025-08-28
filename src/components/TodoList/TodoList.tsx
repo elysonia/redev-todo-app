@@ -319,30 +319,32 @@ const TodoList = forwardRef<HTMLDivElement, TodoListProps>(function TodoList(
               name={reminderDateFieldName}
               render={({ field: { ref: refCallback, value, onChange } }) => {
                 return (
-                  <ButtonFieldDateTimePicker
-                    disablePast
-                    ref={useRefCallback<HTMLDivButtonElement>(
-                      refCallback,
-                      reminderDateTimeRef
-                    )}
-                    value={value ? dayjs(value) : value}
-                    sx={{
-                      textTransform: "capitalize",
-                    }}
-                    slotProps={{
-                      actionBar: {
-                        actions: ["clear", "cancel", "nextOrAccept"],
-                      },
-                      field: {
-                        tabIndex: isActiveFieldArray ? 0 : -1,
-                        onKeyDown: handleKeyDown,
-                      },
-                    }}
-                    onChange={(event) => {
-                      handleReminderChange();
-                      onChange(event);
-                    }}
-                  />
+                  <Tooltip describeChild title="Add reminder to task">
+                    <ButtonFieldDateTimePicker
+                      disablePast
+                      ref={useRefCallback<HTMLDivButtonElement>(
+                        refCallback,
+                        reminderDateTimeRef
+                      )}
+                      value={value ? dayjs(value) : value}
+                      sx={{
+                        textTransform: "capitalize",
+                      }}
+                      slotProps={{
+                        actionBar: {
+                          actions: ["clear", "cancel", "nextOrAccept"],
+                        },
+                        field: {
+                          tabIndex: isActiveFieldArray ? 0 : -1,
+                          onKeyDown: handleKeyDown,
+                        },
+                      }}
+                      onChange={(event) => {
+                        handleReminderChange();
+                        onChange(event);
+                      }}
+                    />
+                  </Tooltip>
                 );
               }}
             />
