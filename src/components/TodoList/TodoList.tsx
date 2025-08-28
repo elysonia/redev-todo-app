@@ -17,6 +17,7 @@ import TodoItem from "@components/TodoItem";
 import TodoListHeader from "@components/TodoListHeader";
 import { useTodoContext } from "@providers/TodoProvider/TodoProvider";
 import { KeyboardEnum } from "enums";
+import { useRefCallback } from "hooks";
 import {
   HTMLDivButtonElement,
   TodoItem as TodoItemType,
@@ -179,6 +180,7 @@ const TodoList = forwardRef<HTMLDivElement, TodoListProps>(function TodoList(
       /* If tab key is pressed, switch to and between the action buttons. */
       if (event.key === KeyboardEnum.KeyEnum.tab) {
         event.preventDefault();
+
         if (event.target === submitButtonRef.current) {
           setFocusedTextInputField({
             fieldName: reminderDateFieldName as ObjectInputFieldName,
@@ -187,6 +189,7 @@ const TodoList = forwardRef<HTMLDivElement, TodoListProps>(function TodoList(
           setFocus(reminderDateFieldName);
           return;
         }
+
         if (event.target === reminderDateTimeRef.current) {
           submitButtonRef.current?.focus();
           setFocusedTextInputField({
@@ -220,6 +223,7 @@ const TodoList = forwardRef<HTMLDivElement, TodoListProps>(function TodoList(
           fieldName: lastItemFieldName,
           selectionStart: -1,
         });
+        setFocus(lastItemFieldName);
         return;
       }
       if (event.key === "ArrowDown") {
@@ -227,6 +231,7 @@ const TodoList = forwardRef<HTMLDivElement, TodoListProps>(function TodoList(
         event.preventDefault();
         if (event.target === reminderDateTimeRef.current) {
           submitButtonRef.current?.focus();
+          /* Submit button is not registered in the form */
           setFocusedTextInputField({
             fieldName: "",
             selectionStart: null,
@@ -237,6 +242,7 @@ const TodoList = forwardRef<HTMLDivElement, TodoListProps>(function TodoList(
           fieldName: reminderDateFieldName as ObjectInputFieldName,
           selectionStart: null,
         });
+        setFocus(reminderDateFieldName);
       }
     },
     [
@@ -248,9 +254,13 @@ const TodoList = forwardRef<HTMLDivElement, TodoListProps>(function TodoList(
     ]
   );
 
-  const handleRefCallback = useCallback(() => {
-    refCallback(ref);
-  }, [refCallback]);
+  useCallback(
+    (ref: HTMLDivButtonElement) => {
+      refCallback(ref);
+      reminderDateTimeRef.current = ref;
+    },
+    [refCallback]
+  );
 
   useEffect(() => {
     if (!isActiveFieldArray) return;
@@ -273,7 +283,7 @@ const TodoList = forwardRef<HTMLDivElement, TodoListProps>(function TodoList(
       onClickAway={handleClickAway}
     >
       <div
-        ref={handleRefCallback}
+        ref={useRefCallback<HTMLDivElement>(refCallback)}
         tabIndex={0}
         className={clsx(styles.listContainer, {
           [styles.isOverdue]: isReminderExpired,
@@ -284,6 +294,7 @@ const TodoList = forwardRef<HTMLDivElement, TodoListProps>(function TodoList(
           <TodoListHeader
             isActiveFieldArray={isActiveFieldArray}
             sectionFieldName={sectionFieldName}
+            onKeyDown={handleKeyDown}
           />
         )}
 
@@ -310,10 +321,10 @@ const TodoList = forwardRef<HTMLDivElement, TodoListProps>(function TodoList(
                 return (
                   <ButtonFieldDateTimePicker
                     disablePast
-                    ref={(ref) => {
-                      refCallback(ref);
-                      reminderDateTimeRef.current = ref;
-                    }}
+                    ref={useRefCallback<HTMLDivButtonElement>(
+                      refCallback,
+                      reminderDateTimeRef
+                    )}
                     value={value ? dayjs(value) : value}
                     sx={{
                       textTransform: "capitalize",

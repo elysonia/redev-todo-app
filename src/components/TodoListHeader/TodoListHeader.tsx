@@ -10,6 +10,7 @@ import {
 
 import ReminderIndicator from "@components/ReminderIndicator";
 import { useTodoContext } from "@providers/TodoProvider/TodoProvider";
+import { useRefCallback } from "hooks";
 import { isNull } from "lodash";
 import { TodoSection } from "types";
 import { TextInputFieldName } from "types/todo";
@@ -37,16 +38,9 @@ const ListHeaderInput = forwardRef<HTMLTextAreaElement, ListHeaderInputProps>(
       onKeyDown,
     } = props;
 
-    const handleRefCallback = useCallback(
-      (ref: HTMLTextAreaElement) => {
-        refCallback(ref);
-      },
-      [refCallback]
-    );
-
     return (
       <Input
-        inputRef={handleRefCallback}
+        inputRef={useRefCallback<HTMLTextAreaElement>(refCallback)}
         className={clsx(styles.headerInput, {
           [styles.completed]: isCompleted,
         })}
@@ -82,13 +76,6 @@ type ListHeaderCheckboxProps = {
 const ListHeaderCheckbox = (props: ListHeaderCheckboxProps) => {
   const { isActiveFieldArray, value, refCallback, onChange, onChecked } = props;
 
-  const handleRefCallback = useCallback(
-    (ref: HTMLInputElement) => {
-      refCallback(ref);
-    },
-    [refCallback]
-  );
-
   const handleChange = useCallback(
     (event: ChangeEvent<HTMLInputElement>) => {
       onChange(event);
@@ -101,7 +88,7 @@ const ListHeaderCheckbox = (props: ListHeaderCheckboxProps) => {
     <Checkbox
       slotProps={{
         input: {
-          ref: handleRefCallback,
+          ref: useRefCallback<HTMLInputElement>(refCallback),
           tabIndex: isActiveFieldArray ? -1 : 0,
         },
       }}

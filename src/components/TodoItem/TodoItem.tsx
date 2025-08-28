@@ -17,6 +17,7 @@ import {
   getDefaultTodoItem,
 } from "@utils/todoUtils";
 import { KeyboardEnum } from "enums";
+import { useRefCallback } from "hooks";
 import { TodoItem as TodoItemType, TodoSection } from "types";
 import { FocusedTextInputField, TextInputFieldName } from "types/todo";
 import styles from "./todoItem.module.css";
@@ -45,16 +46,9 @@ const ItemInput = forwardRef<HTMLTextAreaElement, ItemInputProps>(
       onKeyDown,
     } = props;
 
-    const handleRefCallback = useCallback(
-      (inputRef: HTMLTextAreaElement) => {
-        refCallback(inputRef);
-      },
-      [refCallback]
-    );
-
     return (
       <Input
-        inputRef={handleRefCallback}
+        inputRef={useRefCallback<HTMLTextAreaElement>(refCallback)}
         className={clsx(styles.item, {
           [styles.completed]: isCompleted,
         })}
@@ -90,13 +84,6 @@ type ItemCheckboxProps = {
 const ItemCheckbox = (props: ItemCheckboxProps) => {
   const { isActiveFieldArray, value, refCallback, onChange, onChecked } = props;
 
-  const handleRefCallback = useCallback(
-    (inputRef: HTMLInputElement) => {
-      refCallback(inputRef);
-    },
-    [refCallback]
-  );
-
   const handleChange = useCallback(
     (event: ChangeEvent<HTMLInputElement>) => {
       onChange(event);
@@ -109,7 +96,7 @@ const ItemCheckbox = (props: ItemCheckboxProps) => {
     <Checkbox
       slotProps={{
         input: {
-          ref: handleRefCallback,
+          ref: useRefCallback<HTMLInputElement>(refCallback),
           tabIndex: isActiveFieldArray ? -1 : 0,
         },
       }}
