@@ -1,12 +1,6 @@
 import { Checkbox, Input } from "@mui/material";
 import clsx from "clsx";
-import {
-  ChangeEvent,
-  FocusEvent,
-  forwardRef,
-  useCallback,
-  useRef,
-} from "react";
+import { ChangeEvent, FocusEvent, forwardRef, useCallback } from "react";
 import {
   Controller,
   RefCallBack,
@@ -44,8 +38,8 @@ const ListHeaderInput = forwardRef<HTMLTextAreaElement, ListHeaderInputProps>(
     } = props;
 
     const handleRefCallback = useCallback(
-      (inputRef: HTMLTextAreaElement) => {
-        refCallback(inputRef);
+      (ref: HTMLTextAreaElement) => {
+        refCallback(ref);
       },
       [refCallback]
     );
@@ -89,8 +83,8 @@ const ListHeaderCheckbox = (props: ListHeaderCheckboxProps) => {
   const { isActiveFieldArray, value, refCallback, onChange, onChecked } = props;
 
   const handleRefCallback = useCallback(
-    (inputRef: HTMLInputElement) => {
-      refCallback(inputRef);
+    (ref: HTMLInputElement) => {
+      refCallback(ref);
     },
     [refCallback]
   );
@@ -127,7 +121,6 @@ const TodoListHeader = ({
   isActiveFieldArray,
   sectionFieldName,
 }: TodoListHeaderProps) => {
-  const inputRef = useRef<HTMLTextAreaElement>(null);
   const fieldName = `${sectionFieldName}.name` as TextInputFieldName;
   const checkboxFieldName = `${sectionFieldName}.isCompleted`;
   const {
@@ -146,13 +139,31 @@ const TodoListHeader = ({
 
   const shouldShowCheckbox = !isActiveFieldArray || isCompleted;
 
+  const getInputState = (ref: HTMLTextAreaElement | null) => {
+    if (!ref) {
+      return {
+        value: "",
+        selectionStart: 0,
+        length: 0,
+      };
+    }
+
+    return {
+      value: ref.value,
+      selectionStart: ref.selectionStart,
+      length: ref.value.length,
+    };
+  };
+
   const handleKeyDown = useCallback(
     (event: React.KeyboardEvent<HTMLInputElement>) => {
       if (!isActiveFieldArray) return;
+      const target = event.target as HTMLTextAreaElement;
+      const inputState = getInputState(target);
 
       const shouldFocusOnFirstSubtask =
         event.key === "ArrowDown" &&
-        inputRef.current?.selectionStart === inputRef?.current?.textLength;
+        inputState.selectionStart === inputState.length;
 
       if (shouldFocusOnFirstSubtask) {
         event.preventDefault();
@@ -170,7 +181,8 @@ const TodoListHeader = ({
 
   const handleFocus = useCallback(
     (event: FocusEvent<HTMLTextAreaElement>) => {
-      if (!inputRef.current) return;
+      const target = event.target as HTMLTextAreaElement;
+      const inputState = getInputState(target);
       const eventCursorLocation = event?.target?.selectionStart;
 
       const shouldFocusAtStartOrMiddle =
@@ -183,17 +195,12 @@ const TodoListHeader = ({
         focusedTextInputField.selectionStart < 0;
 
       const cursorLocation = shouldFocusAtEnd
-        ? inputRef.current.textLength
+        ? inputState.length
         : shouldFocusAtStartOrMiddle
         ? focusedTextInputField.selectionStart
         : eventCursorLocation;
 
-      inputRef.current.setSelectionRange(
-        cursorLocation,
-        cursorLocation,
-        "forward"
-      );
-
+      target.setSelectionRange(cursorLocation, cursorLocation, "forward");
       setSectionFieldArrayName(sectionFieldName as `todoSections.${number}`);
     },
     [
