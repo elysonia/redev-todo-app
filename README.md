@@ -53,11 +53,11 @@ A simple todo app based on my Redmi Note 10 Pro default Tasks App that I use fre
 ## TODO
 
 - [ ] Task history
-- [ ] Allow users to delete string characters between selectionStart and selectionEnd in input.
+- [/] Allow users to delete string characters between selectionStart and selectionEnd in input.
 - [ ] Notification for alarms that had gone off, by clicking them users can be redirected to the attached task.
 - [ ] Alarm queue where the next alarm is autoplayed.
 - [ ] Set up testing to prevent regression.
 - [ ] Set up CI/CD
 - [ ] Use TSDoc to comment on variables and functions
-- [ ] Improve accessibility (add aria- )
+- [ ] Improve accessibility (add aria- labels)
 - [ ] Virtualization and memoization to improve performance on large lists.
