@@ -3,7 +3,7 @@ import { ClickAwayListener, IconButton, List, Tooltip } from "@mui/material";
 import clsx from "clsx";
 import dayjs from "dayjs";
 import { isEmpty, uniqueId } from "lodash";
-import { forwardRef, useCallback, useEffect, useMemo, useRef } from "react";
+import { useCallback, useEffect, useMemo, useRef } from "react";
 import {
   Controller,
   RefCallBack,
@@ -32,10 +32,7 @@ type TodoListProps = {
   refCallback: RefCallBack;
 };
 
-const TodoList = forwardRef<HTMLDivElement, TodoListProps>(function TodoList(
-  props: TodoListProps,
-  ref
-) {
+const TodoList = (props: TodoListProps) => {
   const { sectionIndex, sectionFieldName, refCallback } = props;
 
   const fieldName = `todoSections.${sectionIndex}.list`;
@@ -319,32 +316,30 @@ const TodoList = forwardRef<HTMLDivElement, TodoListProps>(function TodoList(
               name={reminderDateFieldName}
               render={({ field: { ref: refCallback, value, onChange } }) => {
                 return (
-                  <Tooltip describeChild title="Add reminder to task">
-                    <ButtonFieldDateTimePicker
-                      disablePast
-                      ref={useRefCallback<HTMLDivButtonElement>(
-                        refCallback,
-                        reminderDateTimeRef
-                      )}
-                      value={value ? dayjs(value) : value}
-                      sx={{
-                        textTransform: "capitalize",
-                      }}
-                      slotProps={{
-                        actionBar: {
-                          actions: ["clear", "cancel", "nextOrAccept"],
-                        },
-                        field: {
-                          tabIndex: isActiveFieldArray ? 0 : -1,
-                          onKeyDown: handleKeyDown,
-                        },
-                      }}
-                      onChange={(event) => {
-                        handleReminderChange();
-                        onChange(event);
-                      }}
-                    />
-                  </Tooltip>
+                  <ButtonFieldDateTimePicker
+                    disablePast
+                    ref={useRefCallback<HTMLDivButtonElement>(
+                      refCallback,
+                      reminderDateTimeRef
+                    )}
+                    value={value ? dayjs(value) : value}
+                    sx={{
+                      textTransform: "capitalize",
+                    }}
+                    slotProps={{
+                      actionBar: {
+                        actions: ["clear", "cancel", "nextOrAccept"],
+                      },
+                      field: {
+                        tabIndex: isActiveFieldArray ? 0 : -1,
+                        onKeyDown: handleKeyDown,
+                      },
+                    }}
+                    onChange={(event) => {
+                      handleReminderChange();
+                      onChange(event);
+                    }}
+                  />
                 );
               }}
             />
@@ -363,6 +358,6 @@ const TodoList = forwardRef<HTMLDivElement, TodoListProps>(function TodoList(
       </div>
     </ClickAwayListener>
   );
-});
+};
 
 export default TodoList;
