@@ -7,12 +7,12 @@ import { RefCallBack } from "react-hook-form";
  * @param refObject - an optional RefObject created from React.useRef or React.createRef.
  * @returns handleRefCallback - a memoized callback.
  */
-const useRefCallback = <E extends Element>(
+const useRefCallback = <T extends Element>(
   refCallback: RefCallBack,
-  refObject?: RefObject<E | null>
+  refObject?: RefObject<T | null>
 ) => {
   const handleRefCallback = useCallback(
-    (ref: E) => {
+    (ref: T) => {
       refCallback(ref);
 
       if (refObject) {
