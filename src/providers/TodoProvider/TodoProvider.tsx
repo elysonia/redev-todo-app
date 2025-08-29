@@ -25,8 +25,11 @@ import { useAudioPlayerContext } from "@providers/AudioPlayerProvider/AudioPlaye
 import { useTodoStore } from "@providers/TodoStoreProvider";
 import { defaultFocusedTextInputField } from "@utils/todoUtils";
 import { defaultTodoDraft } from "store";
-import { TodoSection } from "types";
-import { FocusedTextInputField, TodoSectionDayjs } from "types/todo";
+import {
+  FocusedTextInputField,
+  TodoSection,
+  TodoSectionDayjs,
+} from "types/todo";
 
 type TodoForm = {
   todoSections: TodoSection[];
