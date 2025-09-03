@@ -2,51 +2,17 @@
 
 import { GitHub } from "@mui/icons-material";
 import React, { useCallback } from "react";
-import { Controller, useFieldArray, useFormContext } from "react-hook-form";
+import { useFieldArray, useFormContext } from "react-hook-form";
 import { VList } from "virtua";
 
-import TodoList from "@components/TodoList";
 import Toolbar from "@components/Toolbar";
 import { useTodoContext } from "@providers/TodoProvider/TodoProvider";
 import { KeyboardEnum } from "enums";
+import Task from "./Task";
 import styles from "./todoSections.module.css";
 
 const thisYear = new Date().getFullYear();
 const sectionFocusShortcuts = [KeyboardEnum.KeyEnum.tab];
-
-type TodoSectionProps = {
-  index: number;
-  field: Record<"id", string>;
-};
-
-const TodoSection = React.memo(({ index, field }: TodoSectionProps) => {
-  const { control } = useFormContext();
-
-  return (
-    <Controller
-      key={`${field.id}.${index}`}
-      name={`todoSections.${index}`}
-      control={control}
-      render={({ field: { ref: refCallback, name } }) => {
-        return (
-          <div
-            key={field.id}
-            style={{
-              padding: "0 30px 30px",
-            }}
-          >
-            <TodoList
-              key={field.id}
-              refCallback={refCallback}
-              sectionIndex={index}
-              sectionFieldName={name}
-            />
-          </div>
-        );
-      }}
-    />
-  );
-});
 
 const TodoSections = () => {
   const { control } = useFormContext();
@@ -91,7 +57,7 @@ const TodoSections = () => {
           }}
         >
           {fields.map((field, index) => {
-            return <TodoSection key={field.id} index={index} field={field} />;
+            return <Task key={field.id} index={index} field={field} />;
           })}
         </VList>
       </div>
