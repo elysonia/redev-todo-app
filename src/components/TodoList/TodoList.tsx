@@ -34,7 +34,6 @@ type TodoListProps = {
 
 const TodoList = (props: TodoListProps) => {
   const { sectionIndex, sectionFieldName, refCallback } = props;
-
   const fieldName = `todoSections.${sectionIndex}.list`;
   const reminderDateFieldName = `todoSections.${sectionIndex}.reminderDateTime`;
   const submitButtonRef = useRef<HTMLButtonElement>(null);
@@ -59,7 +58,6 @@ const TodoList = (props: TodoListProps) => {
     control,
     name: `${sectionFieldName}.isReminderExpired`,
   });
-
   const isActiveFieldArray = sectionFieldArrayName === sectionFieldName;
   const shouldShowHeader = useMemo(() => {
     const headerFieldName = `${sectionFieldName}.name`;
@@ -249,14 +247,6 @@ const TodoList = (props: TodoListProps) => {
       getValues,
       setFocusedTextInputField,
     ]
-  );
-
-  useCallback(
-    (ref: HTMLDivButtonElement) => {
-      refCallback(ref);
-      reminderDateTimeRef.current = ref;
-    },
-    [refCallback]
   );
 
   useEffect(() => {
