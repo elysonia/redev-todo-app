@@ -286,17 +286,19 @@ const TodoList = (props: TodoListProps) => {
         )}
 
         <List>
-          {fields.map((item, itemIndex: number) => (
-            <TodoItem
-              key={item.id}
-              itemIndex={itemIndex}
-              sectionIndex={sectionIndex}
-              sectionFieldName={`todoSections.${sectionIndex}`}
-              listFieldName={fieldName}
-              listFieldArrayMethods={listFieldArrayMethods}
-              shouldShowHeader={shouldShowHeader}
-              onKeyDown={handleKeyDown}
-            />
+          {fields.map((field, itemIndex: number) => (
+            <div key={field.id}>
+              <TodoItem
+                key={field.id}
+                itemIndex={itemIndex}
+                sectionIndex={sectionIndex}
+                sectionFieldName={`todoSections.${sectionIndex}`}
+                listFieldName={fieldName}
+                listFieldArrayMethods={listFieldArrayMethods}
+                shouldShowHeader={shouldShowHeader}
+                onKeyDown={handleKeyDown}
+              />
+            </div>
           ))}
         </List>
         {isActiveFieldArray && (
