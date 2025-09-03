@@ -477,13 +477,22 @@ const TodoItem = ({
       })();
 
       target.setSelectionRange(cursorLocation, cursorLocation, "forward");
-      setSectionFieldArrayName(sectionFieldName as `todoSections.${number}`);
+
+      if (sectionFieldArrayName !== sectionFieldName) {
+        setSectionFieldArrayName(sectionFieldName as `todoSections.${number}`);
+        setFocusedTextInputField({
+          fieldName,
+          selectionStart: cursorLocation,
+        });
+      }
     },
     [
       fieldName,
       focusedTextInputField,
-      setSectionFieldArrayName,
+      sectionFieldArrayName,
       sectionFieldName,
+      setSectionFieldArrayName,
+      setFocusedTextInputField,
     ]
   );
 

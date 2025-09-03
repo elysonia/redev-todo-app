@@ -115,6 +115,7 @@ const TodoListHeader = ({
   const checkboxFieldName = `${sectionFieldName}.isCompleted`;
   const {
     focusedTextInputField,
+    sectionFieldArrayName,
     setFocusedTextInputField,
     setSectionFieldArrayName,
     setSnackbar,
@@ -195,13 +196,21 @@ const TodoListHeader = ({
         : eventCursorLocation;
 
       target.setSelectionRange(cursorLocation, cursorLocation, "forward");
-      setSectionFieldArrayName(sectionFieldName as `todoSections.${number}`);
+      if (sectionFieldArrayName !== sectionFieldName) {
+        setSectionFieldArrayName(sectionFieldName as `todoSections.${number}`);
+        setFocusedTextInputField({
+          fieldName,
+          selectionStart: cursorLocation,
+        });
+      }
     },
     [
       fieldName,
       sectionFieldName,
+      sectionFieldArrayName,
       focusedTextInputField,
       setSectionFieldArrayName,
+      setFocusedTextInputField,
     ]
   );
 
