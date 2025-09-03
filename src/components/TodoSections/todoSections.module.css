@@ -12,6 +12,7 @@
 .sectionsContainer {
   height: 100%;
   justify-content: center;
+  min-width: 300px;
   width: clamp(30%, 530px, 370px);
 }
 
