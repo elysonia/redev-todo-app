@@ -16,7 +16,7 @@ const sectionFocusShortcuts = [KeyboardEnum.KeyEnum.tab];
 
 const TodoSections = () => {
   const { control } = useFormContext();
-  const { sectionFieldArrayName } = useTodoContext();
+  const { vListRef, sectionFieldArrayName } = useTodoContext();
   const backgroundImageUrl =
     "https://images.unsplash.com/photo-1686579809662-829e8374d0a8?q=80&w=2072&auto=format&fit=crop&ixlib=rb-4.1.0&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D";
 
@@ -49,6 +49,7 @@ const TodoSections = () => {
       <Toolbar sectionFieldArrayMethods={sectionFieldArrayMethods} />
       <div className={styles.sectionsContainer} onKeyDown={handleListKeyDown}>
         <VList
+          ref={vListRef}
           tabIndex={-1}
           /* Inline styling to effectively override default library styling */
           style={{

@@ -6,10 +6,12 @@ import { debounce, isEmpty } from "lodash";
 import {
   createContext,
   PropsWithChildren,
+  RefObject,
   useCallback,
   useContext,
   useEffect,
   useMemo,
+  useRef,
   useState,
 } from "react";
 import {
@@ -19,6 +21,7 @@ import {
   InternalFieldName,
   useForm,
 } from "react-hook-form";
+import { VListHandle } from "virtua";
 import { useShallow } from "zustand/react/shallow";
 
 import { useAudioPlayerContext } from "@providers/AudioPlayerProvider/AudioPlayerProvider";
@@ -42,6 +45,7 @@ type RHFSubscribeProps = Partial<FormState<TodoForm>> & {
 };
 
 type TodoContextProps = {
+  vListRef: RefObject<VListHandle | null>;
   snackbar: SnackbarProps;
   focusedTextInputField: FocusedTextInputField;
   sectionFieldArrayName: `todoSections.${number}` | "";
@@ -52,6 +56,7 @@ type TodoContextProps = {
 };
 
 const defaultTodoContext: TodoContextProps = {
+  vListRef: { current: null },
   snackbar: {},
   focusedTextInputField: defaultFocusedTextInputField,
   sectionFieldArrayName: "",
@@ -63,6 +68,7 @@ const defaultTodoContext: TodoContextProps = {
 export const TodoContext = createContext<TodoContextProps>(defaultTodoContext);
 
 const TodoProvider = ({ children }: PropsWithChildren) => {
+  const vListRef = useRef<VListHandle | null>(null);
   /* Path to the current section in the form. */
   const [sectionFieldArrayName, setSectionFieldArrayName] = useState<
     `todoSections.${number}` | ""
@@ -182,7 +188,7 @@ const TodoProvider = ({ children }: PropsWithChildren) => {
           ? reminder.reminderDateTime.format("h:mm A")
           : "";
 
-        const body = `${incompleteTasks.length} out of ${reminder.list.length} left to do.\nRemaining: ${incompleteTaskPreviewString}`;
+        const body = `${incompleteTasks.length} out of ${reminder.list.length} left to do. ${incompleteTaskPreviewString}`;
         new Notification(
           `Reminder for ${reminder.name || "Subtasks"} at ${time}`,
           {
@@ -203,6 +209,7 @@ const TodoProvider = ({ children }: PropsWithChildren) => {
 
   const todoValue: TodoContextProps = useMemo(() => {
     return {
+      vListRef,
       snackbar,
       focusedTextInputField,
       sectionFieldArrayName,
@@ -212,6 +219,7 @@ const TodoProvider = ({ children }: PropsWithChildren) => {
       onSubmit: handleSubmit,
     };
   }, [
+    vListRef,
     snackbar,
     focusedTextInputField,
     sectionFieldArrayName,

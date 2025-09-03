@@ -17,6 +17,7 @@ type ToolbarProps = {
 
 const ToolbarProps = ({ sectionFieldArrayMethods }: ToolbarProps) => {
   const {
+    vListRef,
     onSubmit,
     setSnackbar,
     setFocusedTextInputField,
@@ -46,6 +47,7 @@ const ToolbarProps = ({ sectionFieldArrayMethods }: ToolbarProps) => {
     } else {
       prepend(todoSection);
     }
+    vListRef.current?.scrollToIndex(0);
   }, [
     prepend,
     getValues,
