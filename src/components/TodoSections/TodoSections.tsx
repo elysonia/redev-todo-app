@@ -84,10 +84,10 @@ const TodoSections = () => {
       <div className={styles.sectionsContainer} onKeyDown={handleListKeyDown}>
         <VList
           tabIndex={-1}
+          /* Inline styling to effectively override default library styling */
           style={{
-            padding: "80px 0px",
-            scrollbarWidth: "none",
             height: "100%",
+            padding: "80px 14px",
           }}
         >
           {fields.map((field, index) => {
