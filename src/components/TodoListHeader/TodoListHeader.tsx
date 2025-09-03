@@ -90,7 +90,7 @@ const ListHeaderCheckbox = (props: ListHeaderCheckboxProps) => {
       slotProps={{
         input: {
           ref: useRefCallback<HTMLInputElement>(refCallback),
-          tabIndex: isActiveFieldArray ? -1 : 0,
+          tabIndex: -1,
         },
       }}
       checked={value}
@@ -267,20 +267,15 @@ const TodoListHeader = ({
           name={fieldName}
           render={({ field: { ref: refCallback, value, onChange } }) => {
             return (
-              <Tooltip
-                describeChild
-                title={`Task name${value ? `: ${value}` : ""}`}
-              >
-                <ListHeaderInput
-                  refCallback={refCallback}
-                  isCompleted={isCompleted}
-                  isActiveFieldArray={isActiveFieldArray}
-                  value={value}
-                  onFocus={handleFocus}
-                  onChange={onChange}
-                  onKeyDown={handleKeyDown}
-                />
-              </Tooltip>
+              <ListHeaderInput
+                refCallback={refCallback}
+                isCompleted={isCompleted}
+                isActiveFieldArray={isActiveFieldArray}
+                value={value}
+                onFocus={handleFocus}
+                onChange={onChange}
+                onKeyDown={handleKeyDown}
+              />
             );
           }}
         />

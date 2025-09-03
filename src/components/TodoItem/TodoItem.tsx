@@ -97,7 +97,7 @@ const ItemCheckbox = (props: ItemCheckboxProps) => {
       slotProps={{
         input: {
           ref: useRefCallback<HTMLInputElement>(refCallback),
-          tabIndex: isActiveFieldArray ? -1 : 0,
+          tabIndex: -1,
         },
       }}
       disabled={isActiveFieldArray}
