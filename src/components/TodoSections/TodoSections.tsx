@@ -1,22 +1,56 @@
 "use client";
 
 import { GitHub } from "@mui/icons-material";
+import React, { useCallback } from "react";
 import { Controller, useFieldArray, useFormContext } from "react-hook-form";
+import { VList } from "virtua";
 
 import TodoList from "@components/TodoList";
 import Toolbar from "@components/Toolbar";
 import { useTodoContext } from "@providers/TodoProvider/TodoProvider";
 import { KeyboardEnum } from "enums";
-import { useCallback } from "react";
 import styles from "./todoSections.module.css";
 
 const thisYear = new Date().getFullYear();
 const sectionFocusShortcuts = [KeyboardEnum.KeyEnum.tab];
 
+type TodoSectionProps = {
+  index: number;
+  field: Record<"id", string>;
+};
+
+const TodoSection = React.memo(({ index, field }: TodoSectionProps) => {
+  const { control } = useFormContext();
+
+  return (
+    <Controller
+      key={`${field.id}.${index}`}
+      name={`todoSections.${index}`}
+      control={control}
+      render={({ field: { ref: refCallback, name } }) => {
+        return (
+          <div
+            key={field.id}
+            style={{
+              padding: "0 30px 30px",
+            }}
+          >
+            <TodoList
+              key={field.id}
+              refCallback={refCallback}
+              sectionIndex={index}
+              sectionFieldName={name}
+            />
+          </div>
+        );
+      }}
+    />
+  );
+});
+
 const TodoSections = () => {
-  const methods = useFormContext();
+  const { control } = useFormContext();
   const { sectionFieldArrayName } = useTodoContext();
-  const { control } = methods;
   const backgroundImageUrl =
     "https://images.unsplash.com/photo-1686579809662-829e8374d0a8?q=80&w=2072&auto=format&fit=crop&ixlib=rb-4.1.0&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D";
 
@@ -39,7 +73,6 @@ const TodoSections = () => {
     [sectionFieldArrayName]
   );
 
-  /* TODO: Minimize rerendering */
   return (
     <div
       className={styles.todosBackground}
@@ -49,25 +82,18 @@ const TodoSections = () => {
     >
       <Toolbar sectionFieldArrayMethods={sectionFieldArrayMethods} />
       <div className={styles.sectionsContainer} onKeyDown={handleListKeyDown}>
-        {fields.map((field, index) => {
-          return (
-            <Controller
-              key={`${field.id}.${index}`}
-              name={`todoSections.${index}`}
-              control={control}
-              render={({ field: { ref: refCallback, name } }) => {
-                return (
-                  <TodoList
-                    refCallback={refCallback}
-                    key={field.id}
-                    sectionIndex={index}
-                    sectionFieldName={name}
-                  />
-                );
-              }}
-            />
-          );
-        })}
+        <VList
+          tabIndex={-1}
+          style={{
+            padding: "80px 0px",
+            scrollbarWidth: "none",
+            height: "100%",
+          }}
+        >
+          {fields.map((field, index) => {
+            return <TodoSection key={field.id} index={index} field={field} />;
+          })}
+        </VList>
       </div>
       <footer className={styles.footer}>
         <span>Re:Dev &copy; {thisYear}</span> &nbsp;&bull;&nbsp;
