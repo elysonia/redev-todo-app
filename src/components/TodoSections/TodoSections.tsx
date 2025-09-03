@@ -48,19 +48,12 @@ const TodoSections = () => {
     >
       <Toolbar sectionFieldArrayMethods={sectionFieldArrayMethods} />
       <div className={styles.sectionsContainer} onKeyDown={handleListKeyDown}>
-        <VList
-          ref={vListRef}
-          tabIndex={-1}
-          /* Inline styling to effectively override default library styling */
-          style={{
-            height: "100%",
-            padding: "80px 14px",
-          }}
-        >
+        <VList ref={vListRef} tabIndex={-1} className={styles.vListContainer}>
           {fields.map((field, index) => {
             return <Task key={field.id} index={index} field={field} />;
           })}
         </VList>
+        <div className={styles.taskViewer}>sssssssssss</div>
       </div>
       <footer className={styles.footer}>
         <span>Re:Dev &copy; {thisYear}</span> &nbsp;&bull;&nbsp;
